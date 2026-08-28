@@ -21,7 +21,11 @@ object SeedMingRepository : MingRepository {
     // 离线演示与内容服务采用同一年的粒度，避免把一个年号内相距数十年的事件混在同一页。
     private val seedEventYears = mapOf(
         "定国号，建元“洪武”" to 1368,
-        "北征大都" to 1368,
+        "元顺帝北走上都" to 1368,
+        "明军进入大都" to 1368,
+        "改大都为北平府" to 1368,
+        "定应天为南京" to 1368,
+        "卫所制度初定" to 1368,
         "建文改元" to 1399,
         "削藩议政" to 1399,
         "永乐改元" to 1403,
@@ -54,7 +58,11 @@ object SeedMingRepository : MingRepository {
     private val reignData = listOf(
         Reign("洪武", "1368—1398", "洪武元年 · 1368", "大明肇建，定都应天府。", listOf(
             HistoricalEvent("正月", "定国号，建元“洪武”", "朱元璋即皇帝位，国号大明，开启洪武纪年。", "应天府", MingShilu),
-            HistoricalEvent("八月", "北征大都", "徐达等部北定大都，元廷北遁，北方局势随之改变。", "大都", MingShilu),
+            HistoricalEvent("七月", "元顺帝北走上都", "明军北进后，元顺帝离开大都北走上都，元廷统治中心随之北移。", "大都—上都", MingShilu),
+            HistoricalEvent("八月", "明军进入大都", "徐达率北伐军进入元大都，明军取得北方战略要地。", "大都", MingShilu),
+            HistoricalEvent("八月", "改大都为北平府", "明廷诏改大都路为北平府，北方政治空间进入新的行政格局。", "北平府", MingShilu),
+            HistoricalEvent("八月", "定应天为南京", "应天府建为南京，明初两京格局由此展开。", "南京", MingShilu),
+            HistoricalEvent("是年", "卫所制度初定", "明廷在建国与北伐并行的背景下编定卫所，军政组织逐步制度化。", "应天府", MingShilu),
         )),
         Reign("建文", "1399—1402", "建文元年 · 1399", "削藩与靖难，王朝的第一次大转折。", listOf(
             HistoricalEvent("正月", "建文改元", "朱允炆继统，朝廷由此启用建文年号。", "南京", MingShilu),

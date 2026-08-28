@@ -158,8 +158,10 @@ private val appSections = listOf(
         label = "我的",
         iconRes = R.drawable.nav_profile_woodblock,
         activeColor = Brass,
-        iconSize = 17.dp,
-        selectedIconSize = 19.dp,
+        // 头像原图的有效笔画范围比其他木刻图标更大；不改资源，仅按其
+        // 实际留白校准到与时间、人物图标相同的视觉尺寸。
+        iconSize = 19.dp,
+        selectedIconSize = 21.dp,
     ),
 )
 
@@ -752,33 +754,43 @@ private fun ReignYearRail(reign: Reign, selectedYear: Int, onSelected: (Int) -> 
         items((reign.startYear()..reign.endYear()).toList(), key = { it }) { year ->
             val selected = year == selectedYear
             val eventCount = eventCountByYear[year] ?: 0
+            val sequence = (year - reign.startYear() + 1).toString().padStart(2, '0')
             Surface(
                 modifier = Modifier
-                    .widthIn(min = 64.dp)
-                    .clip(CutCornerShape(6.dp))
+                    .widthIn(min = 56.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .clickable { onSelected(year) },
                 color = if (selected) Celadon else PaperLight,
-                shape = CutCornerShape(6.dp),
+                shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(1.dp, if (selected) Celadon else LineGold.copy(alpha = .82f)),
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     Text(
-                        text = if (year == reign.startYear()) "元年" else "${chineseYearNumber(year - reign.startYear() + 1)}年",
+                        text = sequence,
                         color = if (selected) PaperLight else Ink,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 15.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                     )
-                    Text(
-                        text = "$year${if (eventCount > 0) " · $eventCount 事" else ""}",
-                        color = if (selected) PaperLight.copy(alpha = .92f) else InkSoft,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 10.sp,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(
+                            text = "$year",
+                            color = if (selected) PaperLight.copy(alpha = .92f) else InkSoft,
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 10.sp,
+                        )
+                        if (eventCount > 0) {
+                            Surface(
+                                modifier = Modifier.size(4.dp),
+                                shape = RoundedCornerShape(50),
+                                color = if (selected) PaperLight else Vermilion,
+                            ) {}
+                        }
+                    }
                 }
             }
         }
