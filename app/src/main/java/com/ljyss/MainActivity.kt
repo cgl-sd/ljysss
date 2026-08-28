@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -597,19 +596,22 @@ private fun WorldPressTarget(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     var tapCount by remember { mutableIntStateOf(0) }
-    val pulse = remember { Animatable(1f) }
+    val inkFlash = remember { Animatable(0f) }
 
     LaunchedEffect(tapCount) {
         if (tapCount > 0) {
-            pulse.snapTo(0f)
-            pulse.animateTo(1f, animationSpec = tween(420, easing = FastOutSlowInEasing))
+            inkFlash.snapTo(0.20f)
+            inkFlash.animateTo(0f, animationSpec = tween(260))
         }
     }
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(if (circular) 50 else 10))
-            .background(if (pressed) Ink.copy(alpha = 0.12f) else Color.Transparent)
+            .background(
+                if (pressed) Ink.copy(alpha = 0.12f)
+                else pulseColor.copy(alpha = inkFlash.value),
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -618,26 +620,7 @@ private fun WorldPressTarget(
                     onClick()
                 },
             ),
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            if (pulse.value < 1f) {
-                val radius = size.minDimension * (0.32f + 0.56f * pulse.value)
-                val center = androidx.compose.ui.geometry.Offset(size.width / 2, size.height / 2)
-                drawCircle(
-                    color = pulseColor.copy(alpha = (1f - pulse.value) * 0.72f),
-                    radius = radius,
-                    center = center,
-                    style = Stroke(width = 1.5.dp.toPx()),
-                )
-                drawCircle(
-                    color = PaperLight.copy(alpha = (1f - pulse.value) * 0.46f),
-                    radius = radius * 0.7f,
-                    center = center,
-                    style = Stroke(width = 1.dp.toPx()),
-                )
-            }
-        }
-    }
+    )
 }
 
 @Composable
