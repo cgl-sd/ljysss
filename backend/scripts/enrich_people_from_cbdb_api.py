@@ -14,6 +14,7 @@ import json
 import sqlite3
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -113,6 +114,7 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=0, help="处理条数；0 表示全部")
     parser.add_argument("--offset", type=int, default=0, help="跳过前若干条")
     parser.add_argument("--sleep", type=float, default=0.1, help="请求间隔秒数")
+    parser.add_argument("--workers", type=int, default=4, help="并发请求数，默认 4")
     parser.add_argument("--pending-only", action="store_true", help="跳过已经由 CBDB API 核验的人物")
     args = parser.parse_args()
 
@@ -139,17 +141,26 @@ def main() -> int:
     if args.limit:
         people = people[: args.limit]
 
-    records: list[tuple[sqlite3.Row, dict | None, str]] = []
-    for index, item in enumerate(people, start=1):
+    if args.workers < 1 or args.workers > 8:
+        parser.error("--workers 必须介于 1 和 8 之间")
+
+    def retrieve(item: sqlite3.Row) -> tuple[sqlite3.Row, dict | None, str]:
         person_id = item["id"].removeprefix("cbdb-")
         try:
             record = fetch(person_id)
-            records.append((item, record, ""))
-            print(f"[{index}/{len(people)}] {item['name']}: 已取得 CBDB 档案", flush=True)
+            return item, record, ""
         except RuntimeError as error:
-            records.append((item, None, str(error)))
-            print(f"[{index}/{len(people)}] {item['name']}: 检索失败（{error}）", flush=True)
-        time.sleep(args.sleep)
+            return item, None, str(error)
+
+    records: list[tuple[sqlite3.Row, dict | None, str]] = []
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+        for index, (item, record, error) in enumerate(executor.map(retrieve, people), start=1):
+            records.append((item, record, error))
+            if record is None:
+                print(f"[{index}/{len(people)}] {item['name']}: 检索失败（{error}）", flush=True)
+            else:
+                print(f"[{index}/{len(people)}] {item['name']}: 已取得 CBDB 档案", flush=True)
+            time.sleep(args.sleep)
 
     with connect() as db:
         for item, record, error in records:
