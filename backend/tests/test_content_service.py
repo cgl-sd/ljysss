@@ -27,7 +27,23 @@ class ContentServiceTest(unittest.TestCase):
     def test_rebuild_schema_exposes_uniform_section_endpoints(self):
         from app.main import get_event_sections
 
-        self.assertEqual([], get_event_sections("hongwu-founding"))
+        sections = {section["section_key"] for section in get_event_sections("hongwu-founding")}
+        self.assertEqual({"background", "course", "people", "result", "impact", "verification"}, sections)
+
+    def test_every_person_and_event_has_a_uniform_profile_template(self):
+        from app.database import connect
+
+        with connect() as database:
+            people = database.execute("SELECT COUNT(*) FROM person").fetchone()[0]
+            people_with_life = database.execute(
+                "SELECT COUNT(DISTINCT person_id) FROM person_section WHERE section_key = 'life'"
+            ).fetchone()[0]
+            events = database.execute("SELECT COUNT(*) FROM event").fetchone()[0]
+            events_with_background = database.execute(
+                "SELECT COUNT(DISTINCT event_id) FROM event_section WHERE section_key = 'background'"
+            ).fetchone()[0]
+        self.assertEqual(people, people_with_life)
+        self.assertEqual(events, events_with_background)
 
     def test_researched_person_profile_survives_catalog_synchronization(self):
         person = get_person("caobianjiao")
