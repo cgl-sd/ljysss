@@ -16,6 +16,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+from http.client import HTTPException
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -45,7 +46,7 @@ def fetch(person_id: str) -> dict:
             with urlopen(request, timeout=20) as response:
                 payload = json.load(response)
                 return payload["Package"]["PersonAuthority"]["PersonInfo"]["Person"]
-        except (HTTPError, URLError, KeyError, json.JSONDecodeError) as error:
+        except (HTTPError, URLError, HTTPException, OSError, KeyError, json.JSONDecodeError) as error:
             if attempt == 3:
                 raise RuntimeError(str(error)) from error
             time.sleep(2 * (attempt + 1))
