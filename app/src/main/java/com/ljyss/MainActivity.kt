@@ -100,6 +100,7 @@ import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.Reign
+import com.ljyss.data.model.SpecialItem
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
 import com.ljyss.ui.theme.Indigo
@@ -183,7 +184,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
         when (selectedSection) {
             0 -> TimelineScreen(repository, innerPadding)
             1 -> PeopleScreen(repository, innerPadding)
-            2 -> WorldScreen(innerPadding)
+            2 -> WorldScreen(repository, innerPadding)
             else -> ProfileScreen(innerPadding)
         }
     }
@@ -484,12 +485,6 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                     item { RelationshipLedger(repository.personRelations()) }
                 } else {
                     item { EventRelationshipNetwork(allEvents) }
-                }
-            }
-            PeopleTab.INSTITUTIONS -> {
-                item { InstitutionIntro() }
-                items(repository.institutions(), key = { it.id }) { institution ->
-                    InstitutionCard(institution)
                 }
             }
         }
@@ -866,83 +861,145 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
 }
 
 @Composable
-private fun WorldScreen(contentPadding: PaddingValues) {
+private fun WorldScreen(repository: MingRepository, contentPadding: PaddingValues) {
+    var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
     var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
 
-    WorldReferenceMing(
-        modernOverlayEnabled = modernOverlayEnabled,
-        onModernOverlayToggle = {
-            modernOverlayEnabled = !modernOverlayEnabled
-        },
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .padding(bottom = contentPadding.calculateBottomPadding()),
-    )
-}
-
-/**
- * The approved Ming atlas remains static. The only control is the bottom-right layers
- * button, which toggles the preserved comparison overlay.
- */
-@Composable
-private fun WorldReferenceMing(
-    modernOverlayEnabled: Boolean,
-    onModernOverlayToggle: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier.background(XuanPaper)) {
-        Image(
-            painter = painterResource(R.drawable.world_reference_screen),
-            contentDescription = "明代两京十三省地图",
-            // 参考图本身已是经用户确认的 1:1 地图构图；只留极薄安全留白，不重绘其标题或图例。
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 8.dp),
-            contentScale = ContentScale.Crop,
-            alignment = Alignment.Center,
-        )
-
-        if (modernOverlayEnabled) {
-            Image(
-                painter = painterResource(R.drawable.modern_reference_map),
-                contentDescription = "现代区划对照图已叠加",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 8.dp)
-                    // The comparison layer ends before the source image's intentional lower
-                    // parchment margin, leaving the static Ming map visible beneath it.
-                    .drawWithContent {
-                        clipRect(
-                            bottom = size.height - 58.dp.toPx(),
-                        ) {
-                            this@drawWithContent.drawContent()
-                        }
-                    }
-                    .alpha(0.68f),
-                contentScale = ContentScale.Crop,
-                alignment = Alignment.Center,
+    MingList(contentPadding) {
+        item { MingMasthead() }
+        item { OrnamentalTitle("天下") }
+        item {
+            WorldSectionRail(
+                selected = worldSection,
+                onSelected = { worldSection = it },
             )
         }
+        when (worldSection) {
+            WorldSection.MAP -> {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(460.dp)
+                            .clip(CutCornerShape(10.dp))
+                            .background(XuanPaper),
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.world_reference_screen),
+                            contentDescription = "明代两京十三省地图",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            alignment = Alignment.Center,
+                        )
+                        if (modernOverlayEnabled) {
+                            Image(
+                                painter = painterResource(R.drawable.modern_reference_map),
+                                contentDescription = "现代区划对照图已叠加",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .alpha(0.68f),
+                                contentScale = ContentScale.Crop,
+                                alignment = Alignment.Center,
+                            )
+                        }
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(12.dp),
+                            shape = RoundedCornerShape(50),
+                            color = PaperLight.copy(alpha = 0.94f),
+                            border = BorderStroke(1.dp, Brass.copy(alpha = 0.55f)),
+                        ) {
+                            IconButton(
+                                onClick = { modernOverlayEnabled = !modernOverlayEnabled },
+                                modifier = Modifier.size(44.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Layers,
+                                    contentDescription = "切换现代区划图层",
+                                    tint = Ink,
+                                )
+                            }
+                        }
+                    }
+                }
+                item {
+                    SourceNote("舆图为经确认的明代两京十三省参考图；右下角按钮叠加现代区划对照（临时示意），后续以真实现代图层替换。")
+                }
+            }
+            WorldSection.INSTITUTIONS -> {
+                item { InstitutionIntro() }
+                items(repository.institutions(), key = { it.id }) { institution ->
+                    InstitutionCard(institution)
+                }
+            }
+            WorldSection.RELICS -> {
+                val specials = repository.specialItems()
+                if (specials.isEmpty()) {
+                    item { SourceNote("典章科普内容将在内容服务载入后显示。") }
+                } else {
+                    items(specials, key = { it.id }) { item ->
+                        SpecialItemCard(item)
+                    }
+                }
+            }
+        }
+    }
+}
 
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp),
-            shape = RoundedCornerShape(50),
-            color = PaperLight.copy(alpha = 0.94f),
-            border = BorderStroke(1.dp, Brass.copy(alpha = 0.55f)),
-        ) {
-            IconButton(
-                onClick = onModernOverlayToggle,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Layers,
-                    contentDescription = "切换现代区划图层",
-                    tint = Ink,
+/** 天下页的三个栏目：舆图 / 机构 / 典章。 */
+private enum class WorldSection(val label: String) {
+    MAP("舆图"),
+    INSTITUTIONS("机构"),
+    RELICS("典章"),
+}
+
+@Composable
+private fun WorldSectionRail(selected: WorldSection, onSelected: (WorldSection) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = PaperLight.copy(alpha = 0.88f),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold),
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            WorldSection.entries.forEach { section ->
+                val active = section == selected
+                Text(
+                    text = section.label,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(CutCornerShape(5.dp))
+                        .clickable { onSelected(section) }
+                        .background(if (active) Celadon else Color.Transparent)
+                        .padding(vertical = 10.dp),
+                    color = if (active) PaperLight else Ink,
+                    textAlign = TextAlign.Center,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SpecialItemCard(item: SpecialItem) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(9.dp),
+        border = BorderStroke(1.25.dp, LineGold),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.96f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(item.name, color = Ink, modifier = Modifier.weight(1f), fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                Seal(item.category)
+            }
+            Text(item.era, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, textAlign = TextAlign.Justify)
         }
     }
 }

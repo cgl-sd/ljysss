@@ -78,6 +78,7 @@ def bootstrap_content() -> dict:
         "people": people,
         "relationships": list_relationships(),
         "institutions": list_institutions(),
+        "specials": list_specials(),
     }
 
 
@@ -252,6 +253,13 @@ def list_institutions() -> list[dict]:
             (institution["id"],),
         )
     return institutions
+
+
+@app.get("/v1/specials")
+def list_specials() -> list[dict]:
+    """天下页“典章”科普：宫殿、器物与制度名物。"""
+
+    return records("SELECT id, name, category, era, description FROM special_item ORDER BY position")
 
 
 @app.get("/v1/sources/{source_id}")

@@ -62,7 +62,6 @@ enum class PeopleTab(val label: String) {
     DYNASTY("朝代档案"),
     PEOPLE("人物"),
     RELATIONSHIPS("关系"),
-    INSTITUTIONS("机构"),
 }
 
 enum class RelationshipType(val label: String) {
@@ -98,6 +97,15 @@ data class Institution(
 data class InstitutionReform(
     val year: String,
     val title: String,
+    val description: String,
+)
+
+/** 天下页“典章”科普条目：宫殿、器物与制度名物。 */
+data class SpecialItem(
+    val id: String,
+    val name: String,
+    val category: String,
+    val era: String,
     val description: String,
 )
 

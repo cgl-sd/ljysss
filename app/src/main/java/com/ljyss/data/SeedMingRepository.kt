@@ -12,6 +12,7 @@ import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionReform
 import com.ljyss.data.model.Reign
+import com.ljyss.data.model.SpecialItem
 
 /**
  * 仅用于首版界面演示。正式资料将由后端按来源、时间和地理范围维护。
@@ -396,6 +397,9 @@ object SeedMingRepository : MingRepository {
     override fun personRelations(): List<PersonRelation> = relationData
 
     override fun institutions(): List<Institution> = institutionData
+
+    // 离线种子不含典章科普；天下页对空列表显示引导文案。
+    override fun specialItems(): List<SpecialItem> = emptyList()
 
     override fun mapLayers(): List<MapLayer> = layerData
 

@@ -107,6 +107,16 @@ class ContentServiceTest(unittest.TestCase):
         # 六分类收拢后不应再出现旧标签。
         self.assertFalse(categories & {"皇帝", "后妃", "宦官", "藩王", "勋贵", "名臣", "名将", "文人"})
 
+    def test_world_page_special_items_are_served(self):
+        payload = bootstrap_content()
+        specials = payload["specials"]
+        self.assertGreaterEqual(len(specials), 8)
+        names = {item["name"] for item in specials}
+        self.assertIn("尚方宝剑", names)
+        self.assertIn("王命旗牌", names)
+        for item in specials:
+            self.assertTrue(item["description"].strip())
+
     def test_emperors_have_no_minister_or_general_relations(self):
         from app.database import connect
 

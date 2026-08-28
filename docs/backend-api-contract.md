@@ -26,6 +26,8 @@ PostgreSQL + PostGIS + 对象存储
 | `GET /v1/events?reign=hongwu&year=1368` | 按年号和年份查询事件 |
 | `GET /v1/people?category=emperor&q=` | 人物分类与检索 |
 | `GET /v1/people/{id}` | 生平、任职、参与事件、关系与史料 |
+| `GET /v1/institutions` | 中央、监察、军事、内廷与地方机构档案 |
+| `GET /v1/specials` | 天下页“典章”科普：宫殿、器物与制度名物 |
 | `GET /v1/map/layers?period=ming&year=1368` | 行政区、邻国、势力范围和事件点图层 |
 | `GET /v1/map/labels?period=ming&year=1368` | 地图标注、两京、省治与周边政权名称 |
 | `GET /v1/map/timeline?from=1368&to=1644` | 地图页时间刻度与可切换年份 |
@@ -40,6 +42,6 @@ PostgreSQL + PostGIS + 对象存储
 
 ## 当前 App 的接入方式
 
-`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构和来源。当前目录有 17 年号、51 个事件、748 位明朝人物、52 条关系、12 个机构。
+`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构、典章和来源（gzip 压缩传输）。当前目录有 17 年号、51 个事件、748 位明朝人物、52 条关系、12 个机构、8 项典章。
 
 正式发布的下一步是将本地 SQLite 迁移至 PostgreSQL + PostGIS，给 API 配置 HTTPS 地址，并以 Room 落地缓存、增量同步和离线专题包；地图栅格参考图也再替换为带有效时间范围的可查询 GeoJSON 图层。

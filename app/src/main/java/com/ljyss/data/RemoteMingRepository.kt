@@ -12,6 +12,7 @@ import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.PersonSection
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Reign
+import com.ljyss.data.model.SpecialItem
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -26,6 +27,7 @@ class RemoteMingRepository private constructor(
     private val peopleData: List<HistoricalPerson>,
     private val relationData: List<PersonRelation>,
     private val institutionData: List<Institution>,
+    private val specialData: List<SpecialItem>,
     private val mapFallback: MingRepository,
 ) : MingRepository {
     override fun reigns(): List<Reign> = reignData
@@ -38,6 +40,8 @@ class RemoteMingRepository private constructor(
     override fun personRelations(): List<PersonRelation> = relationData
 
     override fun institutions(): List<Institution> = institutionData
+
+    override fun specialItems(): List<SpecialItem> = specialData
 
     override fun mapLayers(): List<MapLayer> = mapFallback.mapLayers()
 
@@ -158,13 +162,23 @@ class RemoteMingRepository private constructor(
                     },
                 )
             }
+            // specials 为后加栏目，旧内容服务缺省时保持空列表即可。
+            val specials = root.optJSONArray("specials")?.mapObjects { item ->
+                SpecialItem(
+                    id = item.getString("id"),
+                    name = item.getString("name"),
+                    category = item.getString("category"),
+                    era = item.getString("era"),
+                    description = item.getString("description"),
+                )
+            }.orEmpty()
             // 联网时只采用服务端的单一内容源，避免前端演示资料与编辑库叠加后重复或不一致。
             // 这些阈值是首批编目库的完整性校验；不满足时 MainActivity 会保留离线资料而非半同步。
             require(reigns.size == 17) { "内容服务缺少年号资料" }
             require(people.size >= 700) { "内容服务人物资料尚未同步完成" }
             require(relations.size >= 30) { "内容服务人物家系资料尚未同步完成" }
             require(institutions.size >= 12) { "内容服务机构资料尚未同步完成" }
-            return RemoteMingRepository(reigns, people, relations, institutions, mapFallback)
+            return RemoteMingRepository(reigns, people, relations, institutions, specials, mapFallback)
         }
 
         private fun JSONArray.forEachObject(block: (JSONObject) -> Unit) {

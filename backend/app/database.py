@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from .catalog import EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATIONS, SOURCE
+from .catalog import EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATIONS, SOURCE, SPECIAL_ITEMS
 
 DATA_DIRECTORY = Path(__file__).resolve().parent.parent / "data"
 DATABASE_PATH = DATA_DIRECTORY / "ming_history.sqlite3"
@@ -145,6 +145,17 @@ CREATE TABLE IF NOT EXISTS institution_reform (
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     PRIMARY KEY(institution_id, position)
+);
+
+-- 天下页的“典章”科普：宫殿、器物与制度名物，与机构分列。
+CREATE TABLE IF NOT EXISTS special_item (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    era TEXT NOT NULL,
+    description TEXT NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    source_id TEXT NOT NULL REFERENCES source(id)
 );
 """
 
@@ -290,6 +301,20 @@ def initialize_database() -> None:
                     for position, (year, title, description) in enumerate(institution["reforms"])
                 ],
             )
+        connection.executemany(
+            """
+            INSERT INTO special_item(id, name, category, era, description, position, source_id)
+            VALUES (:id, :name, :category, :era, :description, :position, :source_id)
+            ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                category = excluded.category,
+                era = excluded.era,
+                description = excluded.description,
+                position = excluded.position,
+                source_id = excluded.source_id
+            """,
+            [{**item, "position": position, "source_id": source_id} for position, item in enumerate(SPECIAL_ITEMS)],
+        )
         _apply_asset_metadata(connection)
 
 
