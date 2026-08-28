@@ -22,15 +22,14 @@ data class HistoricalEvent(
     val consequence: String = "",
 )
 
-enum class PersonCategory(val label: String) {
-    EMPERORS("皇帝"),
-    MINISTERS("名臣"),
-    GENERALS("名将"),
-    NOBLES("勋贵"),
-    CONSORTS("后妃"),
-    PRINCES("藩王"),
-    LITERATI("文人"),
-    EUNUCHS("宦官"),
+/** 人物六分类：帝王 / 内廷（后妃·宦官）/ 封爵（藩王·勋贵）/ 朝臣 / 将帅 / 文苑。 */
+enum class PersonCategory(val label: String, val subtitle: String) {
+    EMPERORS("帝王", "皇帝与本朝君主"),
+    COURT("内廷", "后妃与宦官"),
+    TITLED("封爵", "藩王与勋贵"),
+    MINISTERS("朝臣", "辅政文臣"),
+    GENERALS("将帅", "武将与督师"),
+    LITERATI("文苑", "文人与学者"),
 }
 
 data class HistoricalPerson(

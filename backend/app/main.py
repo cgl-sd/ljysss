@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.gzip import GZipMiddleware
 
 from .database import DATABASE_PATH, connect, initialize_database
 
@@ -22,6 +23,8 @@ app = FastAPI(
     description="人物、事件、关系、机构与史料来源的本地内容服务。",
     lifespan=lifespan,
 )
+# bootstrap 全量资料约 2MB 文本，gzip 后约 0.4MB；客户端以 Accept-Encoding 声明。
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
 def records(query: str, parameters: tuple = ()) -> list[dict]:

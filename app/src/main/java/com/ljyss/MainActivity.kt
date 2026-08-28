@@ -332,10 +332,23 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
-    val people = repository.people(selectedCategory).filter { person ->
+    // 排序键含字符串解析，只在资料变化时算一次；搜索与切类目仅做线性过滤。
+    val sortedPeople = remember(repository) {
+        allPeople.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
+    }
+    val childrenByPerson = remember(relations) {
+        relations
+            .filter { it.type in parentChildTypes() }
+            .groupBy { it.fromName }
+            .mapValues { entry -> entry.value.map { it.toName } }
+    }
+    val people = remember(sortedPeople, selectedCategory, query) {
         val keyword = query.trim()
-        keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword)
-    }.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
+        sortedPeople.filter { person ->
+            person.category == selectedCategory &&
+                (keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword))
+        }
+    }
 
     fun returnFromProfile() {
         val origin = profileOrigin
@@ -372,7 +385,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
 
     MingList(contentPadding) {
         item { MingMasthead() }
-        item { OrnamentalTitle("人事") }
+        item { OrnamentalTitle("人物") }
         item {
             PeopleTabRail(
                 selected = selectedTab,
@@ -439,18 +452,13 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                         )
                     }
                     item { PersonChronologyRail(reigns) }
-                    item {
-                        SourceNote("现收录 ${allPeople.size} 位人物；勋贵家系的已编子嗣会在人物卡中列出，图像资料后续另行补入。")
-                    }
                     if (people.isEmpty()) {
                         item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
                     } else {
                         items(people, key = { it.name }) { person ->
                             PersonCard(
                                 person = person,
-                                children = relations
-                                    .filter { it.fromName == person.name && it.type in parentChildTypes() }
-                                    .map { it.toName },
+                                children = childrenByPerson[person.name].orEmpty(),
                                 expanded = false,
                                 onClick = {
                                     selectedPersonName = person.name
@@ -703,12 +711,8 @@ private fun DynastyArchive(
     people: List<HistoricalPerson>,
     onPersonSelected: (HistoricalPerson) -> Unit,
 ) {
-    val ministers = people.filter { it.category == PersonCategory.MINISTERS }
-    val generals = people.filter { it.category == PersonCategory.GENERALS }
-    // 爵位是可叠加身份：开国将领仍会在武将组出现，同时在此处按封号索引。
-    val nobles = people.filter {
-        it.category == PersonCategory.NOBLES || it.title.contains("公") || it.title.contains("侯") || it.title.contains("伯")
-    }.distinctBy { it.name }
+    // 本朝人物按六分类全量归档：朝臣、将帅之外，封爵、内廷、文苑与帝王同列，避免遗漏。
+    val groups = PersonCategory.entries.map { category -> category to people.filter { it.category == category } }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -721,18 +725,18 @@ private fun DynastyArchive(
             modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("${reign.title}朝人事档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+            Text("${reign.title}朝档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
             Text(reign.summary, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
             Text(
-                "本朝已编 ${people.size} 人、${reign.events.size} 件事件；人物可同时出现在军政与封爵索引中。",
+                "本朝已编 ${people.size} 人、${reign.events.size} 件大事；人物按六分类全量入档。",
                 color = Vermilion,
                 fontFamily = FontFamily.Serif,
                 fontSize = 14.sp,
             )
-            ArchiveGroup("文臣", ministers, onPersonSelected)
-            ArchiveGroup("武将", generals, onPersonSelected)
-            ArchiveGroup("勋贵与封号", nobles, onPersonSelected)
-            Text("相关人事事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            groups.forEach { (category, members) ->
+                ArchiveGroup(category.label, category.subtitle, members, onPersonSelected)
+            }
+            Text("本朝大事", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             if (reign.events.isEmpty()) {
                 Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
             } else {
@@ -759,13 +763,18 @@ private fun DynastyArchive(
 @Composable
 private fun ArchiveGroup(
     title: String,
+    hint: String,
     people: List<HistoricalPerson>,
     onPersonSelected: (HistoricalPerson) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(7.dp))
+            Text(hint, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+        }
         if (people.isEmpty()) {
-            Text("待编目", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+            Text("本朝暂无已编人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
         } else {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 items(people, key = { it.name }) { person ->
@@ -1392,22 +1401,33 @@ private fun CategoryRail(selectedCategory: PersonCategory, onSelected: (PersonCa
             val selected = category == selectedCategory
             Surface(
                 modifier = Modifier
-                    .widthIn(min = 82.dp)
+                    .widthIn(min = 88.dp)
                     .clip(CutCornerShape(8.dp))
                     .clickable { onSelected(category) },
                 color = if (selected) Vermilion else PaperLight,
                 shape = CutCornerShape(8.dp),
                 border = BorderStroke(1.dp, if (selected) Vermilion else LineGold),
             ) {
-                Text(
-                    text = category.label,
-                    modifier = Modifier.padding(horizontal = 15.dp, vertical = 12.dp),
-                    color = if (selected) PaperLight else Ink,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                )
+                Column(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = category.label,
+                        color = if (selected) PaperLight else Ink,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = category.subtitle,
+                        color = if (selected) PaperLight.copy(alpha = 0.85f) else InkSoft,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 10.sp,
+                        lineHeight = 13.sp,
+                    )
+                }
             }
         }
     }

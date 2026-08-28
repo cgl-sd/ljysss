@@ -99,11 +99,13 @@ class ContentServiceTest(unittest.TestCase):
         }
         self.assertTrue(expected <= names)
 
-    def test_new_categories_include_consorts_and_princes(self):
+    def test_new_categories_include_court_and_titled_groups(self):
         payload = bootstrap_content()
         categories = {person["category"] for person in payload["people"]}
-        self.assertIn("后妃", categories)
-        self.assertIn("藩王", categories)
+        self.assertIn("内廷", categories)
+        self.assertIn("封爵", categories)
+        # 六分类收拢后不应再出现旧标签。
+        self.assertFalse(categories & {"皇帝", "后妃", "宦官", "藩王", "勋贵", "名臣", "名将", "文人"})
 
     def test_emperors_have_no_minister_or_general_relations(self):
         from app.database import connect

@@ -52,10 +52,18 @@ class RemoteMingRepository private constructor(
                 connectTimeout = 3_500
                 readTimeout = 8_000
                 requestMethod = "GET"
+                // 服务端 GZipMiddleware 按此声明压缩 bootstrap（约 2MB → 0.4MB）。
+                setRequestProperty("Accept-Encoding", "gzip")
             }
             val json = try {
                 check(connection.responseCode in 200..299) { "内容服务返回 ${connection.responseCode}" }
-                connection.inputStream.bufferedReader().use { it.readText() }
+                val raw = connection.inputStream
+                val stream = if (connection.contentEncoding.equals("gzip", ignoreCase = true)) {
+                    java.util.zip.GZIPInputStream(raw)
+                } else {
+                    raw
+                }
+                stream.bufferedReader().use { it.readText() }
             } finally {
                 connection.disconnect()
             }
