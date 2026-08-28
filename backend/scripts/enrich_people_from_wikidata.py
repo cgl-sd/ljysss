@@ -15,6 +15,7 @@ import sqlite3
 import sys
 import time
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, quote
 from urllib.request import Request, urlopen
 
@@ -42,8 +43,18 @@ ENTITY_PROPERTIES = {
 def api(params: dict[str, str]) -> dict:
     query = urlencode({"format": "json", **params})
     request = Request(f"{API}?{query}", headers={"User-Agent": USER_AGENT})
-    with urlopen(request, timeout=25) as response:
-        return json.load(response)
+    for attempt in range(4):
+        try:
+            with urlopen(request, timeout=10) as response:
+                return json.load(response)
+        except HTTPError as error:
+            if error.code != 429 or attempt == 3:
+                raise
+        except URLError:
+            if attempt == 3:
+                raise
+        time.sleep(3 * (attempt + 1))
+    raise RuntimeError("维基数据请求重试耗尽")
 
 
 def normalize(value: str) -> str:
@@ -147,13 +158,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="从 Wikidata 精确匹配建立人物生平与家族资料")
     parser.add_argument("--all", action="store_true", help="处理所有人物；默认只处理首批核心人物")
     parser.add_argument("--limit", type=int, default=0, help="限制处理条数，0 表示不限制")
-    parser.add_argument("--sleep", type=float, default=0.12, help="每次检索之间的等待秒数")
+    parser.add_argument("--offset", type=int, default=0, help="跳过前若干条，用于分批持久化")
+    parser.add_argument("--sleep", type=float, default=1.5, help="每次检索之间的等待秒数")
     args = parser.parse_args()
 
     initialize_database()
     with connect() as db:
         where = "" if args.all else "WHERE source_id <> 'cbdb-20210525'"
         people = db.execute(f"SELECT * FROM person {where} ORDER BY id").fetchall()
+    people = people[args.offset :]
     if args.limit:
         people = people[: args.limit]
 
@@ -162,13 +175,13 @@ def main() -> int:
         try:
             entity_id = matching_entity(person["name"])
         except Exception as error:  # Network errors leave this record untouched for a later retry.
-            print(f"[{index}/{len(people)}] {person['name']}: 检索失败（{error}）")
+            print(f"[{index}/{len(people)}] {person['name']}: 检索失败（{error}）", flush=True)
             continue
         if entity_id:
             matches[person["id"]] = entity_id
-            print(f"[{index}/{len(people)}] {person['name']}: {entity_id}")
+            print(f"[{index}/{len(people)}] {person['name']}: {entity_id}", flush=True)
         else:
-            print(f"[{index}/{len(people)}] {person['name']}: 未找到精确匹配")
+            print(f"[{index}/{len(people)}] {person['name']}: 未找到精确匹配", flush=True)
         time.sleep(args.sleep)
 
     entity_map = entities(list(matches.values()))
@@ -217,7 +230,7 @@ def main() -> int:
                     ("person", person_id, "life", 2, "百度百科检索", f"https://baike.baidu.com/search/word?word={quote(person['name'])}", person["name"], "用于人工复核"),
                 ],
             )
-    print(f"完成：{len(matches)}/{len(people)} 位人物获得精确维基数据匹配。")
+    print(f"完成：{len(matches)}/{len(people)} 位人物获得精确维基数据匹配。", flush=True)
     return 0
 
 
