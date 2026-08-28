@@ -65,6 +65,12 @@ class ContentServiceTest(unittest.TestCase):
         self.assertIn("公开资料记录的生卒信息", sections["life"])
         self.assertIn("family", sections)
 
+    def test_baike_verified_profiles_include_education_and_children(self):
+        person = get_person("zhangjuzheng")
+        self.assertIn("嘉靖二十六年（1547）中进士", person["biography"])
+        self.assertIn("张允修", person["family_summary"])
+        self.assertEqual("已校验", person["verification_status"])
+
     def test_same_name_entity_is_not_mixed_into_the_wrong_profile(self):
         person = get_person("wangzhi-minister")
         self.assertEqual("未校验", person["verification_status"])
