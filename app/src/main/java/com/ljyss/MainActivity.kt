@@ -158,8 +158,8 @@ private val appSections = listOf(
         label = "我的",
         iconRes = R.drawable.nav_profile_woodblock,
         activeColor = Brass,
-        iconSize = 20.dp,
-        selectedIconSize = 22.dp,
+        iconSize = 17.dp,
+        selectedIconSize = 19.dp,
     ),
 )
 
