@@ -119,6 +119,30 @@ def names(entity: dict, property_name: str, lookup: dict[str, dict]) -> list[str
     return [label(lookup[value]) for value in entity_ids(entity, ENTITY_PROPERTIES[property_name]) if value in lookup and label(lookup[value])]
 
 
+def compatible_identity(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> bool:
+    """Reject clear same-name collisions before synthesizing a profile."""
+
+    text = " ".join(
+        [
+            *[entry.get("value", "") for entry in entity.get("descriptions", {}).values()],
+            *names(entity, "occupation", lookup),
+            *names(entity, "position", lookup),
+        ]
+    )
+    expected_eunuch = "太监" in person["title"] or "宦官" in person["category"]
+    expected_civil = "尚书" in person["title"] or "大学士" in person["title"]
+    entity_eunuch = "宦官" in text or "太监" in text or "eunuch" in text.lower()
+    entity_civil = "尚书" in text or "大学士" in text or "minister" in text.lower()
+    expected_years = [int(value) for value in re.findall(r"\d{4}", person["years"])]
+    actual_birth = [int(value) for value in time_values(entity, ENTITY_PROPERTIES["birth"])]
+    actual_death = [int(value) for value in time_values(entity, ENTITY_PROPERTIES["death"])]
+    chronology_conflict = (
+        (expected_years and actual_birth and abs(expected_years[0] - actual_birth[0]) > 5)
+        or (len(expected_years) > 1 and actual_death and abs(expected_years[-1] - actual_death[0]) > 5)
+    )
+    return not (chronology_conflict or (expected_eunuch and entity_civil) or (expected_civil and entity_eunuch))
+
+
 def profile_text(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> tuple[str, str]:
     birth = time_values(entity, ENTITY_PROPERTIES["birth"])
     death = time_values(entity, ENTITY_PROPERTIES["death"])
@@ -198,10 +222,11 @@ def main() -> int:
             person_id = person["id"]
             entity_id = matches.get(person_id)
             entity = entity_map.get(entity_id, {})
-            if entity_id:
+            if entity_id and compatible_identity(person, entity, lookup):
                 life, family = profile_text(person, entity, lookup)
                 verification = "已校验" if "zhwiki" in entity.get("sitelinks", {}) else "未校验"
             else:
+                entity_id = None
                 life = re.sub(
                     r"本条已建立人物、年号与资料来源的关联；具体仕历、卷次和原文引文仍待编辑校核。",
                     "",

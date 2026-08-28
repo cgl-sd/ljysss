@@ -36,6 +36,11 @@ class ContentServiceTest(unittest.TestCase):
         self.assertIn("公开资料记录的生卒信息", sections["life"])
         self.assertIn("family", sections)
 
+    def test_same_name_entity_is_not_mixed_into_the_wrong_profile(self):
+        person = get_person("wangzhi-minister")
+        self.assertEqual("未校验", person["verification_status"])
+        self.assertNotIn("海盗", person["biography"])
+
     def test_noble_family_children_are_structured_relationships(self):
         person = get_person("xuda")
         children = {
