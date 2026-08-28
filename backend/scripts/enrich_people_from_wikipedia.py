@@ -20,6 +20,8 @@ import argparse
 import json
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -36,6 +38,7 @@ from enrich_people_from_wikidata import (  # noqa: E402
     entity_data,
     entity_ids,
     label,
+    matching_entity,
     names,
     office_timeline,
     time_values,
@@ -66,16 +69,37 @@ def api(host: str, params: dict[str, str]) -> dict:
     request = Request(f"{host}?{query}", headers={"User-Agent": USER_AGENT})
     for attempt in range(5):
         try:
-            with urlopen(request, timeout=20) as response:
-                return json.load(response)
+            # DNS 解析没有超时概念，污染或丢包时 getaddrinfo 可能无限挂起；
+            # 用线程看门狗把单次请求硬性限制在 30 秒内。
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(urlopen, request, None, 20)
+                with future.result(timeout=30) as response:
+                    return json.load(response)
+        except FuturesTimeoutError:
+            raise TimeoutError(f"{host} 请求超过 30 秒")
         except HTTPError as error:
             if error.code not in (429, 503) or attempt == 4:
                 raise
-        except URLError:
-            if attempt == 4:
+            time.sleep(5 * (attempt + 1))
+        except (URLError, TimeoutError):
+            # 连接级失败多为平台故障：快速跳过，让单条人物失败不拖垮整批。
+            if attempt >= 1:
                 raise
-        time.sleep(5 * (attempt + 1))
+            time.sleep(3)
     raise RuntimeError("请求重试耗尽")
+
+
+def zh_wikipedia_reachable() -> bool:
+    """单次轻量探活；维基媒体偶发平台级故障时切换为纯维基数据通道。"""
+
+    try:
+        api(
+            WIKI_API,
+            {"action": "query", "meta": "siteinfo", "format": "json", "formatversion": "2"},
+        )
+        return True
+    except Exception:
+        return False
 
 
 def search_zh_article(name: str) -> str | None:
@@ -221,62 +245,91 @@ def main() -> int:
     already_matched = {p["id"]: p["wikidata_entity"] for p in people if p["wikidata_entity"]}
     print(f"待处理人物 {len(people)} 位，其中已有维基数据匹配 {len(already_matched)} 位。", flush=True)
 
-    # ---- 1. 中文维基百科条目检索（已匹配者直接走实体回链，无需检索） ----
+    # ---- 1. 条目/实体匹配：中文维基百科可达时按条目检索，不可达或中途失效时逐条匹配维基数据 ----
+    zh_channel = zh_wikipedia_reachable()
+    print(f"中文维基百科可达性：{zh_channel}。", flush=True)
+    candidate_ids: dict[str, str] = {}
     title_of: dict[str, str] = {}
     pending = [p for p in people if p["id"] not in already_matched]
+    consecutive_failures = 0
     for index, person in enumerate(pending, start=1):
-        try:
-            title = search_zh_article(person["name"])
-        except Exception as error:
-            print(f"[{index}/{len(pending)}] {person['name']}: 检索失败（{error}）", flush=True)
-            continue
-        if title:
-            title_of[person["id"]] = title
+        if zh_channel:
+            try:
+                title = search_zh_article(person["name"])
+                consecutive_failures = 0
+                if title:
+                    title_of[person["id"]] = title
+            except Exception as error:
+                consecutive_failures += 1
+                print(f"[{index}/{len(pending)}] {person['name']}: 检索失败（{error}）", flush=True)
+                if consecutive_failures >= 5 and not zh_wikipedia_reachable():
+                    zh_channel = False
+                    print("中文维基百科通道失效，切换维基数据逐条匹配。", flush=True)
+        else:
+            try:
+                entity_id = matching_entity(person["name"])
+                consecutive_failures = 0
+                if entity_id:
+                    candidate_ids[person["id"]] = entity_id
+            except Exception as error:
+                consecutive_failures += 1
+                print(f"[{index}/{len(pending)}] {person['name']}: 匹配失败（{error}）", flush=True)
+                if consecutive_failures >= 5:
+                    print("维基数据通道也失效，中止本轮；网络恢复后重跑即可续传。", flush=True)
+                    break
         if index % 100 == 0:
-            print(f"已检索 {index}/{len(pending)}，命中 {len(title_of)}。", flush=True)
+            channel = "条目检索" if zh_channel else "实体匹配"
+            print(f"已{channel} {index}/{len(pending)}，命中 {len(candidate_ids) + len(title_of)}。", flush=True)
         time.sleep(args.sleep)
-    print(f"条目检索命中 {len(title_of)}/{len(pending)}。", flush=True)
+    if zh_channel:
+        resolved_by_title = entities_by_zh_titles(sorted(set(title_of.values())))
+        for person_id, title in title_of.items():
+            entity = resolved_by_title.get(title)
+            if entity and entity.get("id"):
+                candidate_ids[person_id] = entity["id"]
+        print(f"条目检索命中 {len(title_of)}/{len(pending)}。", flush=True)
+    else:
+        print(f"维基数据逐条匹配命中 {len(candidate_ids)}/{len(pending)}。", flush=True)
 
-    # ---- 2. 条目标题解析为维基数据实体 ----
-    resolved = entities_by_zh_titles(sorted(set(title_of.values())))
+    # ---- 2. 实体拉取 + 身份兼容校验 ----
     existing_entities = entity_data(sorted(set(already_matched.values())))
-
-    # ---- 3. 职务/亲属等关联实体的标签补全（身份校验依赖这些文本） ----
-    candidate_entities = list(existing_entities.values()) + list(resolved.values())
+    candidate_entities = entity_data(sorted(set(candidate_ids.values())))
+    entity_by_id = {
+        entity["id"]: entity
+        for entity in [*existing_entities.values(), *candidate_entities.values()]
+        if entity.get("id")
+    }
     related_ids = {
         value
-        for entity in candidate_entities
+        for entity in entity_by_id.values()
         for property_id in PROPERTY_IDS.values()
         for value in entity_ids(entity, property_id)
     }
-    lookup = {**existing_entities, **resolved, **entity_data(sorted(related_ids))}
-    for entity in candidate_entities:
-        lookup.setdefault(entity.get("id", ""), entity)
+    lookup = {**entity_by_id, **entity_data(sorted(related_ids))}
 
     accepted: dict[str, str] = {}
     entity_of: dict[str, dict] = {}
     rejected = 0
     for person in people:
         person_id = person["id"]
-        entity = None
-        if person_id in already_matched:
-            entity = existing_entities.get(already_matched[person_id])
-        elif person_id in title_of:
-            entity = resolved.get(title_of[person_id])
+        entity_id = already_matched.get(person_id) or candidate_ids.get(person_id)
+        if not entity_id:
+            continue
+        entity = entity_by_id.get(entity_id)
         if entity and compatible_identity(person, entity, lookup):
-            accepted[person_id] = entity.get("id", "")
+            accepted[person_id] = entity_id
             entity_of[person_id] = entity
         elif entity:
             rejected += 1
     print(f"身份校验通过 {len(accepted)} 位，排除同名冲突 {rejected} 位。", flush=True)
 
-    # ---- 4. 导语抓取 ----
+    # ---- 3. 导语抓取（维基百科不可达时跳过，综述仅用结构化事实） ----
     sitelinks: dict[str, str] = {}
     for person_id in accepted:
         title = entity_of[person_id].get("sitelinks", {}).get("zhwiki", {}).get("title")
         if title:
             sitelinks[person_id] = title
-    extracts = wiki_extracts(sorted(set(sitelinks.values()))) if sitelinks else {}
+    extracts = wiki_extracts(sorted(set(sitelinks.values()))) if sitelinks and zh_channel else {}
     print(f"确认中文维基百科条目 {len(sitelinks)} 位，抓到导语 {len(extracts)} 篇。", flush=True)
 
     # ---- 4. 综述写库 ----
