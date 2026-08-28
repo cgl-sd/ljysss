@@ -26,6 +26,7 @@ enum class PersonCategory(val label: String) {
     EMPERORS("皇帝"),
     MINISTERS("名臣"),
     GENERALS("名将"),
+    NOBLES("勋贵"),
     LITERATI("文人"),
     EUNUCHS("宦官"),
 }
@@ -57,6 +58,7 @@ enum class RelationshipType(val label: String) {
     COMMAND("统属"),
     RIVAL("政争"),
     MENTOR("师承"),
+    PARENT_CHILD("父子"),
 }
 
 data class PersonRelation(

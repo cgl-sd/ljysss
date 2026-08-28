@@ -324,6 +324,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     var query by rememberSaveable { mutableStateOf("") }
     var expandedPerson by rememberSaveable { mutableStateOf<String?>(null) }
+    val relations = remember(repository) { repository.personRelations() }
     val people = repository.people(selectedCategory).filter { person ->
         val keyword = query.trim()
         keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword)
@@ -363,7 +364,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 }
                 item { PersonChronologyRail(repository.reigns()) }
                 item {
-                    SourceNote("现收录 ${repository.allPeople().size} 位人物；未有传世肖像者使用“绢本示意像”并明确标注。")
+                    SourceNote("现收录 ${repository.allPeople().size} 位人物；勋贵家系的已编子嗣会在人物卡中列出，图像资料后续另行补入。")
                 }
                 if (people.isEmpty()) {
                     item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
@@ -371,6 +372,9 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                     items(people, key = { it.name }) { person ->
                         PersonCard(
                             person = person,
+                            children = relations
+                                .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
+                                .map { it.toName },
                             expanded = expandedPerson == person.name,
                             onClick = {
                                 expandedPerson = if (expandedPerson == person.name) null else person.name
@@ -1179,6 +1183,7 @@ private fun relationshipColor(type: RelationshipType): Color = when (type) {
     RelationshipType.COLLEAGUE -> Brass
     RelationshipType.RIVAL -> InkSoft
     RelationshipType.MENTOR -> Celadon
+    RelationshipType.PARENT_CHILD -> Vermilion
 }
 
 @Composable
@@ -1274,7 +1279,12 @@ private val PersonCardPortraitWidth = 116.dp
 private val PersonCardPortraitHeight = 160.dp
 
 @Composable
-private fun PersonCard(person: HistoricalPerson, expanded: Boolean, onClick: () -> Unit) {
+private fun PersonCard(
+    person: HistoricalPerson,
+    children: List<String>,
+    expanded: Boolean,
+    onClick: () -> Unit,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1329,6 +1339,15 @@ private fun PersonCard(person: HistoricalPerson, expanded: Boolean, onClick: () 
                         Text("字（号）：${person.courtesyName}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                     Text(person.biography, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 22.sp)
+                    if (children.isNotEmpty()) {
+                        Text(
+                            "已编子嗣（${children.size}）：${children.joinToString("、")}",
+                            color = Vermilion,
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 14.sp,
+                            lineHeight = 21.sp,
+                        )
+                    }
                     Text("资料：${person.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 20.sp)
                 }
             }

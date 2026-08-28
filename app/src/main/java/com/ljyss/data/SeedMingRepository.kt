@@ -217,6 +217,21 @@ object SeedMingRepository : MingRepository {
         HistoricalPerson("陈矩", "司礼监太监", "万历", "1541—1611", "万历朝司礼监太监，常被作为内廷中较审慎的个案讨论。", PersonCategory.EUNUCHS),
         HistoricalPerson("王安", "司礼监秉笔太监", "泰昌、天启", "？—1621", "泰昌、天启之际的内廷人物。", PersonCategory.EUNUCHS),
         HistoricalPerson("曹化淳", "司礼监太监", "崇祯", "1589—1662", "崇祯朝内廷人物，晚明京师政局中多有记载。", PersonCategory.EUNUCHS),
+        // 勋贵家系：保留子嗣本人的人物条目，并通过“父子”关系连接，避免只在父辈生平中一笔带过。
+        HistoricalPerson("徐辉祖", "魏国公", "建文", "？—1407", "徐达长子，承袭魏国公；靖难后被削爵幽禁。", PersonCategory.NOBLES),
+        HistoricalPerson("徐添福", "魏国公世子", "洪武", "？—？", "徐达次子，早卒，未能承袭魏国公爵。", PersonCategory.NOBLES),
+        HistoricalPerson("徐膺绪", "中军都督佥事", "永乐", "？—？", "徐达第三子，仕至中军都督佥事。", PersonCategory.NOBLES),
+        HistoricalPerson("徐增寿", "定国公", "建文、永乐", "？—1402", "徐达第四子，永乐初追封定国公。", PersonCategory.NOBLES),
+        HistoricalPerson("常茂", "郑国公", "洪武", "？—1391", "常遇春长子，承袭郑国公。", PersonCategory.NOBLES),
+        HistoricalPerson("常升", "开平王后裔", "洪武、建文", "？—？", "常遇春次子，明初勋贵家系成员。", PersonCategory.NOBLES),
+        HistoricalPerson("沐春", "西平侯", "洪武、建文", "？—1398", "沐英长子，承袭西平侯，镇守云南。", PersonCategory.NOBLES),
+        HistoricalPerson("沐晟", "西平侯、黔国公", "永乐、洪熙、宣德", "1368—1439", "沐英次子，长期镇守云南，后进封黔国公。", PersonCategory.NOBLES),
+        HistoricalPerson("沐斌", "黔国公", "正统、景泰", "？—？", "沐晟之子，承袭黔国公。", PersonCategory.NOBLES),
+        HistoricalPerson("李景隆", "曹国公", "建文、永乐", "？—？", "李文忠长子，建文朝曾领兵北伐。", PersonCategory.NOBLES),
+        HistoricalPerson("李增枝", "前军左都督", "建文、永乐", "？—？", "李文忠次子，官至前军左都督。", PersonCategory.NOBLES),
+        HistoricalPerson("李芳英", "中都正留守", "洪武、建文", "？—？", "李文忠第三子，官至中都正留守。", PersonCategory.NOBLES),
+        HistoricalPerson("刘琏", "江西参政", "洪武", "？—1380", "刘基长子，曾任监察御史、江西参政。", PersonCategory.NOBLES, courtesyName = "孟藻"),
+        HistoricalPerson("刘璟", "阁门使", "洪武、建文", "？—1402", "刘基次子，曾任阁门使、谷王长史。", PersonCategory.NOBLES, courtesyName = "仲璟"),
     )
 
     private val relationData = listOf(
@@ -232,6 +247,20 @@ object SeedMingRepository : MingRepository {
         PersonRelation("魏忠贤", "朱由校", RelationshipType.RULER_MINISTER, "天启", "天启朝内廷权力结构是研究晚明政治的重要线索。"),
         PersonRelation("袁崇焕", "孙承宗", RelationshipType.COMMAND, "天启", "孙承宗经略辽东期间，袁崇焕参与宁远防务。"),
         PersonRelation("袁崇焕", "朱由检", RelationshipType.RULER_MINISTER, "崇祯", "崇祯初辽东经略与边政决策紧密关联。"),
+        PersonRelation("徐达", "徐辉祖", RelationshipType.PARENT_CHILD, "洪武、建文", "徐辉祖为徐达长子，承袭魏国公。"),
+        PersonRelation("徐达", "徐添福", RelationshipType.PARENT_CHILD, "洪武", "徐添福为徐达次子，早卒。"),
+        PersonRelation("徐达", "徐膺绪", RelationshipType.PARENT_CHILD, "洪武、永乐", "徐膺绪为徐达第三子，任中军都督佥事。"),
+        PersonRelation("徐达", "徐增寿", RelationshipType.PARENT_CHILD, "洪武、建文", "徐增寿为徐达第四子，后追封定国公。"),
+        PersonRelation("常遇春", "常茂", RelationshipType.PARENT_CHILD, "洪武", "常茂为常遇春长子，承袭郑国公。"),
+        PersonRelation("常遇春", "常升", RelationshipType.PARENT_CHILD, "洪武、建文", "常升为常遇春次子。"),
+        PersonRelation("沐英", "沐春", RelationshipType.PARENT_CHILD, "洪武、建文", "沐春为沐英长子，承袭西平侯。"),
+        PersonRelation("沐英", "沐晟", RelationshipType.PARENT_CHILD, "洪武、永乐", "沐晟为沐英次子，后进封黔国公。"),
+        PersonRelation("沐晟", "沐斌", RelationshipType.PARENT_CHILD, "正统、景泰", "沐斌为沐晟之子，承袭黔国公。"),
+        PersonRelation("李文忠", "李景隆", RelationshipType.PARENT_CHILD, "洪武、建文", "李景隆为李文忠长子，承袭曹国公。"),
+        PersonRelation("李文忠", "李增枝", RelationshipType.PARENT_CHILD, "洪武、建文", "李增枝为李文忠次子。"),
+        PersonRelation("李文忠", "李芳英", RelationshipType.PARENT_CHILD, "洪武、建文", "李芳英为李文忠第三子。"),
+        PersonRelation("刘基", "刘琏", RelationshipType.PARENT_CHILD, "洪武", "刘琏为刘基长子，仕至江西参政。"),
+        PersonRelation("刘基", "刘璟", RelationshipType.PARENT_CHILD, "洪武、建文", "刘璟为刘基次子，曾任阁门使。"),
     )
 
     private val institutionData = listOf(

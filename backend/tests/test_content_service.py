@@ -13,8 +13,8 @@ class ContentServiceTest(unittest.TestCase):
         payload = bootstrap_content()
         self.assertEqual(17, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
-        self.assertGreaterEqual(len(payload["people"]), 130)
-        self.assertGreaterEqual(len(payload["relationships"]), 49)
+        self.assertGreaterEqual(len(payload["people"]), 144)
+        self.assertGreaterEqual(len(payload["relationships"]), 63)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
     def test_person_detail_exposes_source_status_and_relationships(self):
@@ -22,6 +22,15 @@ class ContentServiceTest(unittest.TestCase):
         self.assertEqual("张居正", person["name"])
         self.assertTrue(person["review_status"])
         self.assertTrue(person["relationships"])
+
+    def test_noble_family_children_are_structured_relationships(self):
+        person = get_person("xuda")
+        children = {
+            relationship["to_name"]
+            for relationship in person["relationships"]
+            if relationship["from_name"] == "徐达" and relationship["relation_type"] == "父子"
+        }
+        self.assertEqual({"徐辉祖", "徐添福", "徐膺绪", "徐增寿"}, children)
 
 
 if __name__ == "__main__":
