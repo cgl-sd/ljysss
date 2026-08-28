@@ -389,7 +389,6 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             person = selectedPerson,
                             relations = relations,
                             reigns = reigns,
-                            returnLabel = if (profileOrigin == "dynasty") "返回朝代档案" else "返回人物目录",
                             onBack = ::returnFromProfile,
                         )
                     }
@@ -457,7 +456,6 @@ private fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
     reigns: List<Reign>,
-    returnLabel: String,
     onBack: () -> Unit,
 ) {
     val children = relations
@@ -487,23 +485,18 @@ private fun PersonProfile(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
-            Surface(
+            Text(
+                "← 返回",
                 modifier = Modifier
                     .align(Alignment.Start)
                     .clip(CutCornerShape(5.dp))
-                    .clickable(onClick = onBack),
-                shape = CutCornerShape(5.dp),
-                color = Vermilion,
-            ) {
-                Text(
-                    "← $returnLabel",
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    color = PaperLight,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
+                    .clickable(onClick = onBack)
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
+                color = InkSoft,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+            )
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
