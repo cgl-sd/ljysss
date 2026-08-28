@@ -60,6 +60,41 @@ CREATE TABLE IF NOT EXISTS event (
 CREATE INDEX IF NOT EXISTS event_by_reign_year ON event(reign_id, year);
 CREATE INDEX IF NOT EXISTS person_by_category ON person(category);
 
+-- 对外页面只显示统一栏目；出处在本表和 content_reference 中保存，供编辑校核。
+CREATE TABLE IF NOT EXISTS person_section (
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    section_key TEXT NOT NULL,
+    title TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    PRIMARY KEY(person_id, section_key)
+);
+
+CREATE TABLE IF NOT EXISTS event_section (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    section_key TEXT NOT NULL,
+    title TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    PRIMARY KEY(event_id, section_key)
+);
+
+CREATE TABLE IF NOT EXISTS content_reference (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content_type TEXT NOT NULL CHECK(content_type IN ('person', 'event')),
+    content_id TEXT NOT NULL,
+    section_key TEXT NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL DEFAULT '',
+    locator TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    UNIQUE(content_type, content_id, section_key, position)
+);
+
+CREATE INDEX IF NOT EXISTS content_reference_by_content
+    ON content_reference(content_type, content_id, section_key);
+
 CREATE TABLE IF NOT EXISTS person_relation (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     from_person_id TEXT NOT NULL REFERENCES person(id),

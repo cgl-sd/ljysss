@@ -22,6 +22,12 @@ class ContentServiceTest(unittest.TestCase):
         self.assertEqual("张居正", person["name"])
         self.assertTrue(person["review_status"])
         self.assertTrue(person["relationships"])
+        self.assertIn("sections", person)
+
+    def test_rebuild_schema_exposes_uniform_section_endpoints(self):
+        from app.main import get_event_sections
+
+        self.assertEqual([], get_event_sections("hongwu-founding"))
 
     def test_noble_family_children_are_structured_relationships(self):
         person = get_person("xuda")

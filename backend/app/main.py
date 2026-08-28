@@ -156,6 +156,16 @@ def get_person(person_id: str) -> dict:
     if not person:
         raise HTTPException(status_code=404, detail="未找到该人物")
 
+    person["sections"] = records(
+        """
+        SELECT section_key, title, content
+        FROM person_section
+        WHERE person_id = ?
+        ORDER BY position
+        """,
+        (person_id,),
+    )
+
     person["relationships"] = records(
         """
         SELECT pr.*, fp.name AS from_name, tp.name AS to_name
@@ -168,6 +178,21 @@ def get_person(person_id: str) -> dict:
         (person_id, person_id),
     )
     return person
+
+
+@app.get("/v1/events/{event_id}/sections")
+def get_event_sections(event_id: str) -> list[dict]:
+    if not record("SELECT id FROM event WHERE id = ?", (event_id,)):
+        raise HTTPException(status_code=404, detail="未找到该事件")
+    return records(
+        """
+        SELECT section_key, title, content
+        FROM event_section
+        WHERE event_id = ?
+        ORDER BY position
+        """,
+        (event_id,),
+    )
 
 
 @app.get("/v1/relationships")
