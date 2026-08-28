@@ -57,10 +57,22 @@ def list_reigns() -> list[dict]:
 def bootstrap_content() -> dict:
     """A single offline-sync payload for the Android client during local development."""
 
+    sections_by_person: dict[str, list[dict]] = {}
+    for row in records(
+        """
+        SELECT person_id, section_key, title, position, content
+        FROM person_section
+        ORDER BY person_id, position
+        """
+    ):
+        sections_by_person.setdefault(row["person_id"], []).append(row)
+    people = list_people(category=None, q=None)
+    for person in people:
+        person["sections"] = sections_by_person.get(person["id"], [])
     return {
         "reigns": list_reigns(),
         "events": list_events(reign=None, year=None, q=None),
-        "people": list_people(category=None, q=None),
+        "people": people,
         "relationships": list_relationships(),
         "institutions": list_institutions(),
     }

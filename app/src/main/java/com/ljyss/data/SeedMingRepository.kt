@@ -159,6 +159,9 @@ object SeedMingRepository : MingRepository {
         HistoricalPerson("刘瑾", "司礼监太监", "正德", "1451—1510", "正德初年权势显赫，反映内廷权力对朝政的影响。", PersonCategory.EUNUCHS),
         HistoricalPerson("冯保", "司礼监太监", "万历", "？—1583", "与万历初年政局关系密切。", PersonCategory.EUNUCHS),
         HistoricalPerson("魏忠贤", "司礼监太监", "天启", "1568—1627", "天启年间内廷权力的代表人物，晚明政治史争议集中。", PersonCategory.EUNUCHS),
+        // 后妃与藩王：离线种子至少覆盖每一类人物，保证断网时全部栏目可浏览。
+        HistoricalPerson("马皇后", "明太祖皇后", "洪武", "1332—1382", "孝慈高皇后马氏，明太祖朱元璋的皇后，明初宫廷政治的重要参与者。", PersonCategory.CONSORTS),
+        HistoricalPerson("朱常洵", "福王", "万历", "1586—1641", "明神宗第三子，封福王；明末宗室中的重要人物。", PersonCategory.PRINCES),
         // 名臣：首批扩展名录，卷次与引文位置由后端资料校对流程补全。
         HistoricalPerson("李善长", "韩国公", "洪武", "1314—1390", "明初开国功臣，长期参与制度草创与中枢政务。", PersonCategory.MINISTERS, courtesyName = "百室"),
         HistoricalPerson("宋濂", "翰林学士承旨", "洪武", "1310—1381", "明初重要文臣与学者，主持《元史》修纂并参与朝廷文教事务。", PersonCategory.MINISTERS, courtesyName = "景濂"),

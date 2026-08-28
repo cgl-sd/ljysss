@@ -48,6 +48,15 @@ data class HistoricalPerson(
     val portraitKey: String? = null,
     /** 内部数据状态；用户端不再区分来源，界面不展示此字段。 */
     val verificationStatus: String = "已校验",
+    /** 服务端按栏目组织的详情正文；离线种子资料为空列表，界面自动降级为 biography 单段。 */
+    val sections: List<PersonSection> = emptyList(),
+)
+
+/** 人物详情结构化栏目（life／family／verification），按服务端 position 排序。 */
+data class PersonSection(
+    val key: String,
+    val title: String,
+    val content: String,
 )
 
 enum class PeopleTab(val label: String) {

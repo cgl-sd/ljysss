@@ -252,6 +252,7 @@ def main() -> int:
         action="store_true",
         help="先通过 Wikidata Query Service 批量查询精确中文名称，再回退到单条检索。",
     )
+    parser.add_argument("--ids", help="只处理指定的逗号分隔人物 ID（与 --all/--source-id 互斥）")
     parser.add_argument("--limit", type=int, default=0, help="限制处理条数，0 表示不限制")
     parser.add_argument("--offset", type=int, default=0, help="跳过前若干条，用于分批持久化")
     parser.add_argument("--sleep", type=float, default=1.5, help="每次检索之间的等待秒数")
@@ -260,9 +261,15 @@ def main() -> int:
     initialize_database()
     if args.all and args.source_id:
         parser.error("--all 与 --source-id 不能同时使用")
+    if args.ids and (args.all or args.source_id):
+        parser.error("--ids 不能与 --all/--source-id 同时使用")
     conditions: list[str] = []
     parameters: list[str] = []
-    if args.source_id:
+    if args.ids:
+        ids = [item.strip() for item in args.ids.split(",") if item.strip()]
+        conditions.append(f"id IN ({', '.join('?' * len(ids))})")
+        parameters.extend(ids)
+    elif args.source_id:
         conditions.append("source_id = ?")
         parameters.append(args.source_id)
     elif not args.all:

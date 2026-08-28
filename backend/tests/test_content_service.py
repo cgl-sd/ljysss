@@ -17,11 +17,9 @@ class ContentServiceTest(unittest.TestCase):
         self.assertGreaterEqual(len(payload["relationships"]), 63)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
-    def test_person_detail_exposes_source_status_and_relationships(self):
-        person = get_person("zhangjuzheng")
-        self.assertEqual("张居正", person["name"])
-        self.assertTrue(person["review_status"])
-        self.assertTrue(person["relationships"])
+    def test_bootstrap_people_expose_structured_sections(self):
+        payload = bootstrap_content()
+        person = next(item for item in payload["people"] if item["id"] == "zhangjuzheng")
         self.assertIn("sections", person)
 
     def test_rebuild_schema_exposes_uniform_section_endpoints(self):

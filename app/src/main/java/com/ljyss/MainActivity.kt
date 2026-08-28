@@ -456,13 +456,20 @@ private fun PersonProfile(
     relations: List<PersonRelation>,
     onBack: () -> Unit,
 ) {
+    val lifeSection = person.sections.firstOrNull { it.key == "life" }
+    val familySection = person.sections.firstOrNull { it.key == "family" }
+    val verificationSection = person.sections.firstOrNull { it.key == "verification" }
     val children = relations
         .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
         .map { it.toName }
-    val family = listOf(person.familySummary, children.joinToString("、"))
-        .filter { it.isNotBlank() }
-        .joinToString("\n")
-        .ifBlank { "家族、配偶与子嗣资料正在整理。" }
+    val life = lifeSection?.content?.takeIf { it.isNotBlank() } ?: person.biography
+    val family = familySection?.content?.takeIf { it.isNotBlank() }
+        ?: listOf(person.familySummary, children.joinToString("、"))
+            .filter { it.isNotBlank() }
+            .joinToString("\n")
+            .ifBlank { "家族、配偶与子嗣资料正在整理。" }
+    val verification = verificationSection?.content?.takeIf { it.isNotBlank() }
+        ?: person.verificationStatus
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -491,22 +498,63 @@ private fun PersonProfile(
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
-            ProfileSection("生平（含教育背景）", person.biography)
-            ProfileSection("家族与子嗣", family)
+            ProfileSection("生平（含教育背景）", readableParagraphs(life))
+            ProfileSection("家族与子嗣", readableParagraphs(family))
+            ProfileSection("资料状态", listOf(verification))
         }
     }
 }
 
 @Composable
-private fun ProfileSection(title: String, content: String) {
+private fun ProfileSection(title: String, paragraphs: List<String>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-        Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            paragraphs.forEach { paragraph ->
+                Text(
+                    text = paragraph,
+                    color = InkSoft,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    lineHeight = 26.sp,
+                    textAlign = TextAlign.Justify,
+                )
+            }
+        }
     }
+}
+
+/** 把长正文切成适合手机阅读的短段落：优先保留已有换行，再按句读边界二次分段。 */
+private fun readableParagraphs(text: String): List<String> {
+    val blocks = text.replace("\r", "").trim()
+        .split(Regex("\\n+"))
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+    if (blocks.isEmpty()) return emptyList()
+    val paragraphs = mutableListOf<String>()
+    for (block in blocks) {
+        if (block.length <= 140) {
+            paragraphs += block
+            continue
+        }
+        val sentences = block.split(Regex("(?<=[。！？；])"))
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+        var buffer = ""
+        for (sentence in sentences) {
+            buffer += sentence
+            if (buffer.length >= 130) {
+                paragraphs += buffer
+                buffer = ""
+            }
+        }
+        if (buffer.isNotEmpty()) paragraphs += buffer
+    }
+    return paragraphs
 }
 
 @Composable

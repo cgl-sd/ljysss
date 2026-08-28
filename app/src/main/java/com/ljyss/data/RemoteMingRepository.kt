@@ -9,6 +9,7 @@ import com.ljyss.data.model.MapLabel
 import com.ljyss.data.model.MapPeriod
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
+import com.ljyss.data.model.PersonSection
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Reign
 import org.json.JSONArray
@@ -109,6 +110,18 @@ class RemoteMingRepository private constructor(
                     portraitKey = person.optString("portrait_key")
                         .takeUnless { it.isBlank() || it == "null" },
                     verificationStatus = person.optString("verification_status", "未校验"),
+                    sections = person.optJSONArray("sections")
+                        ?.let { array ->
+                            List(array.length()) { index ->
+                                val section = array.getJSONObject(index)
+                                PersonSection(
+                                    key = section.getString("section_key"),
+                                    title = section.getString("title"),
+                                    content = section.getString("content"),
+                                )
+                            }
+                        }
+                        .orEmpty(),
                 )
             }
             val relations = root.getJSONArray("relationships").mapObjects { relation ->

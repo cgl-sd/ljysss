@@ -35,11 +35,9 @@ class ExampleUnitTest {
     @Test
     fun offlinePeopleCatalogue_coversItsCoreReadingCategories() {
         assertTrue(SeedMingRepository.allPeople().size >= 80)
-        PersonCategory.entries
-            .filterNot { it == PersonCategory.RELATED_PEOPLE }
-            .forEach { category ->
+        PersonCategory.entries.forEach { category ->
             assertTrue("Missing people in ${category.label}", SeedMingRepository.people(category).isNotEmpty())
-            }
+        }
     }
 
     @Test
