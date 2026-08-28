@@ -123,20 +123,42 @@ def matching_entity(name: str) -> str | None:
     return None
 
 
-def entities(entity_ids: list[str]) -> dict[str, dict]:
+def entity_data(entity_ids: list[str]) -> dict[str, dict]:
+    """通过 Special:EntityData 批量拉取实体（wbgetentities 被限流时的替代通道）。
+
+    返回与 wbgetentities 相同的 claims/sitelinks 结构；失败的批次回退到 action API。
+    """
     found: dict[str, dict] = {}
-    for start in range(0, len(entity_ids), 40):
-        batch = entity_ids[start : start + 40]
-        result = api(
-            {
-                "action": "wbgetentities",
-                "ids": "|".join(batch),
-                "props": "labels|descriptions|claims|sitelinks",
-                "languages": "zh|zh-hans|en",
-            }
+    for start in range(0, len(entity_ids), 20):
+        batch = entity_ids[start : start + 20]
+        request = Request(
+            f"https://www.wikidata.org/wiki/Special:EntityData/{','.join(batch)}.json",
+            headers={"User-Agent": USER_AGENT},
         )
-        found.update(result.get("entities", {}))
+        for attempt in range(4):
+            try:
+                with urlopen(request, timeout=20) as response:
+                    found.update(json.load(response).get("entities", {}))
+                break
+            except (HTTPError, URLError, json.JSONDecodeError):
+                if attempt == 3:
+                    # 回退到 action API 批量拉取，保留原重试语义。
+                    result = api(
+                        {
+                            "action": "wbgetentities",
+                            "ids": "|".join(batch),
+                            "props": "labels|descriptions|claims|sitelinks",
+                            "languages": "zh|zh-hans|en",
+                        }
+                    )
+                    found.update(result.get("entities", {}))
+                    break
+                time.sleep(3 * (attempt + 1))
     return found
+
+
+def entities(entity_ids: list[str]) -> dict[str, dict]:
+    return entity_data(entity_ids)
 
 
 def entity_ids(entity: dict, property_id: str) -> list[str]:
@@ -195,6 +217,35 @@ def compatible_identity(person: sqlite3.Row, entity: dict, lookup: dict[str, dic
     return not (chronology_conflict or (expected_eunuch and entity_civil) or (expected_civil and entity_eunuch))
 
 
+def qualifier_year(claim: dict, property_id: str) -> str:
+    """职位／教育声明的起止年限定符（P580／P582）。"""
+    for snak in claim.get("qualifiers", {}).get(property_id, []):
+        value = snak.get("datavalue", {}).get("value")
+        if isinstance(value, dict) and isinstance(value.get("time"), str):
+            year = value["time"][1:5]
+            if year.isdigit():
+                return year
+    return ""
+
+
+def office_timeline(entity: dict, lookup: dict[str, dict]) -> list[str]:
+    """把 P39 职位按起止年排序成任职经历时间线，弥补生平正文缺少仕历结构的问题。"""
+    rows: list[tuple[int, str]] = []
+    for claim in entity.get("claims", {}).get(ENTITY_PROPERTIES["position"], []):
+        value = claim.get("mainsnak", {}).get("datavalue", {}).get("value")
+        if not isinstance(value, dict) or not value.get("id", "").startswith("Q"):
+            continue
+        title = label(lookup.get(value["id"], {}))
+        if not title:
+            continue
+        start = qualifier_year(claim, "P580")
+        end = qualifier_year(claim, "P582")
+        span = f"（{start}—{end}）" if (start or end) else ""
+        rows.append((int(start or "9999"), f"{title}{span}"))
+    rows.sort(key=lambda row: row[0])
+    return [row[1] for row in rows]
+
+
 def profile_text(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> tuple[str, str]:
     birth = time_values(entity, ENTITY_PROPERTIES["birth"])
     death = time_values(entity, ENTITY_PROPERTIES["death"])
@@ -202,6 +253,7 @@ def profile_text(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> 
     education = names(entity, "education", lookup)
     occupation = names(entity, "occupation", lookup)
     positions = names(entity, "position", lookup)
+    timeline = office_timeline(entity, lookup)
     details = []
     if birth or death:
         details.append(f"公开资料记录的生卒信息为“{'—'.join([birth[0] if birth else '？', death[0] if death else '？'])}”。")
@@ -213,6 +265,8 @@ def profile_text(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> 
         details.append(f"资料将其身份概括为{'、'.join(occupation[:3])}。")
     if positions:
         details.append(f"公开任职记录包括{'、'.join(positions[:4])}。")
+    if timeline:
+        details.append("任职经历按起止年排列：" + "；".join(timeline[:8]) + "。")
     life = re.sub(
         r"本条已建立人物、年号与资料来源的关联；具体仕历、卷次和原文引文仍待编辑校核。",
         "",
