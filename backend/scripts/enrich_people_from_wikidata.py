@@ -26,6 +26,7 @@ sys.path.insert(0, str(BACKEND_DIRECTORY))
 from app.database import connect, initialize_database  # noqa: E402
 
 API = "https://www.wikidata.org/w/api.php"
+SPARQL_API = "https://query.wikidata.org/sparql"
 USER_AGENT = "LiangjingYishisanshengResearch/1.0 (historical educational app)"
 ENTITY_PROPERTIES = {
     "birth": "P569",
@@ -56,6 +57,56 @@ def api(params: dict[str, str]) -> dict:
                 raise
         time.sleep(3 * (attempt + 1))
     raise RuntimeError("维基数据请求重试耗尽")
+
+
+def sparql_batch_matches(names_to_ids: dict[str, str]) -> dict[str, str]:
+    """Fetch exact Chinese-label candidates in one request to avoid API throttling.
+
+    Ambiguous names intentionally stay out of the result and fall back to the
+    existing one-at-a-time matcher, where identity checks can reject collisions.
+    """
+
+    if not names_to_ids:
+        return {}
+    def literal(name: str) -> str:
+        escaped = name.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"@zh'
+
+    literals = " ".join(literal(name) for name in names_to_ids)
+    query = f"""
+        SELECT ?person ?name WHERE {{
+          VALUES ?name {{ {literals} }}
+          ?person rdfs:label ?name .
+        }}
+    """
+    request = Request(
+        f"{SPARQL_API}?{urlencode({'format': 'json', 'query': query})}",
+        headers={"User-Agent": USER_AGENT, "Accept": "application/sparql-results+json"},
+    )
+    for attempt in range(4):
+        try:
+            with urlopen(request, timeout=30) as response:
+                bindings = json.load(response).get("results", {}).get("bindings", [])
+                candidates: dict[str, list[str]] = {}
+                for binding in bindings:
+                    name = binding.get("name", {}).get("value", "")
+                    uri = binding.get("person", {}).get("value", "")
+                    entity_id = uri.rsplit("/", 1)[-1]
+                    if name in names_to_ids and entity_id.startswith("Q"):
+                        candidates.setdefault(name, []).append(entity_id)
+                return {
+                    names_to_ids[name]: values[0]
+                    for name, values in candidates.items()
+                    if len(set(values)) == 1
+                }
+        except HTTPError as error:
+            if error.code != 429 or attempt == 3:
+                raise
+        except URLError:
+            if attempt == 3:
+                raise
+        time.sleep(3 * (attempt + 1))
+    raise RuntimeError("维基数据批量查询重试耗尽")
 
 
 def normalize(value: str) -> str:
@@ -196,6 +247,11 @@ def main() -> int:
         action="store_true",
         help="只处理尚未完成精确匹配、未找到或身份排除判断的人物；网络失败会保留在待处理队列。",
     )
+    parser.add_argument(
+        "--batch-search",
+        action="store_true",
+        help="先通过 Wikidata Query Service 批量查询精确中文名称，再回退到单条检索。",
+    )
     parser.add_argument("--limit", type=int, default=0, help="限制处理条数，0 表示不限制")
     parser.add_argument("--offset", type=int, default=0, help="跳过前若干条，用于分批持久化")
     parser.add_argument("--sleep", type=float, default=1.5, help="每次检索之间的等待秒数")
@@ -231,7 +287,17 @@ def main() -> int:
 
     matches: dict[str, str] = {}
     outcomes: dict[str, tuple[str, str]] = {}
+    if args.batch_search:
+        try:
+            matches = sparql_batch_matches({person["name"]: person["id"] for person in people})
+            for person_id in matches:
+                outcomes[person_id] = ("matched", "Wikidata Query Service 精确中文名称匹配")
+            print(f"批量精确名称匹配：{len(matches)}/{len(people)}", flush=True)
+        except Exception as error:
+            print(f"批量检索失败，将回退至单条检索（{error}）", flush=True)
     for index, person in enumerate(people, start=1):
+        if person["id"] in matches:
+            continue
         try:
             entity_id = matching_entity(person["name"])
         except Exception as error:  # Network errors leave this record untouched for a later retry.
