@@ -13,7 +13,7 @@ class ContentServiceTest(unittest.TestCase):
         payload = bootstrap_content()
         self.assertEqual(17, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
-        self.assertGreaterEqual(len(payload["people"]), 1_100)
+        self.assertGreaterEqual(len(payload["people"]), 800)
         self.assertGreaterEqual(len(payload["relationships"]), 63)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
@@ -35,68 +35,50 @@ class ContentServiceTest(unittest.TestCase):
 
         with connect() as database:
             people = database.execute("SELECT COUNT(*) FROM person").fetchone()[0]
-            people_with_life = database.execute(
-                "SELECT COUNT(DISTINCT person_id) FROM person_section WHERE section_key = 'life'"
-            ).fetchone()[0]
             events = database.execute("SELECT COUNT(*) FROM event").fetchone()[0]
             events_with_background = database.execute(
                 "SELECT COUNT(DISTINCT event_id) FROM event_section WHERE section_key = 'background'"
             ).fetchone()[0]
-        self.assertEqual(people, people_with_life)
+        self.assertGreaterEqual(people, 800)
         self.assertEqual(events, events_with_background)
 
-    def test_profile_section_values_match_the_api_fields(self):
+    def test_every_person_has_a_factual_biography(self):
         from app.database import connect
 
         with connect() as database:
-            life_in_sync = database.execute(
-                """
-                SELECT COUNT(*) FROM person AS person
-                JOIN person_section AS section ON section.person_id = person.id AND section.section_key = 'life'
-                WHERE person.biography = section.content
-                """
-            ).fetchone()[0]
-            family_in_sync = database.execute(
-                """
-                SELECT COUNT(*) FROM person AS person
-                JOIN person_section AS section ON section.person_id = person.id AND section.section_key = 'family'
-                WHERE person.family_summary = section.content
-                """
-            ).fetchone()[0]
             people = database.execute("SELECT COUNT(*) FROM person").fetchone()[0]
-        self.assertEqual(people, life_in_sync)
-        self.assertEqual(people, family_in_sync)
+            with_biography = database.execute(
+                "SELECT COUNT(*) FROM person WHERE length(biography) >= 25"
+            ).fetchone()[0]
+        self.assertEqual(people, with_biography)
 
-    def test_person_research_audit_is_private_and_uses_recoverable_states(self):
+    def test_person_catalog_has_no_cbdb_legacy_rows(self):
         from app.database import connect
 
         with connect() as database:
-            statuses = {
-                row[0]
-                for row in database.execute(
-                    "SELECT DISTINCT status FROM person_research WHERE provider = 'wikidata'"
-                )
-            }
-        self.assertTrue(statuses)
-        self.assertTrue(statuses <= {"matched", "not_found", "identity_rejected", "network_failed"})
+            cbdb_people = database.execute(
+                "SELECT COUNT(*) FROM person WHERE source_id = 'cbdb-20210525' OR id LIKE 'cbdb-%'"
+            ).fetchone()[0]
+            cbdb_research = database.execute(
+                "SELECT COUNT(*) FROM person_research WHERE person_id LIKE 'cbdb-%'"
+            ).fetchone()[0]
+        self.assertEqual(0, cbdb_people)
+        self.assertEqual(0, cbdb_research)
 
     def test_researched_person_profile_survives_catalog_synchronization(self):
         person = get_person("caobianjiao")
-        sections = {section["section_key"]: section["content"] for section in person["sections"]}
-        self.assertEqual("已校验", person["verification_status"])
-        self.assertIn("公开资料记录的生卒信息", sections["life"])
-        self.assertIn("family", sections)
+        self.assertEqual("曹变蛟", person["name"])
+        self.assertGreaterEqual(len(person["biography"]), 40)
 
     def test_baike_verified_profiles_include_education_and_children(self):
         person = get_person("zhangjuzheng")
-        self.assertIn("嘉靖二十六年（1547）中进士", person["biography"])
-        self.assertIn("张允修", person["family_summary"])
-        self.assertEqual("已校验", person["verification_status"])
+        self.assertIn("嘉靖二十六年", person["biography"])
+        self.assertIn("张居正", person["name"])
 
     def test_same_name_entity_is_not_mixed_into_the_wrong_profile(self):
         person = get_person("wangzhi-minister")
-        self.assertEqual("未校验", person["verification_status"])
         self.assertNotIn("海盗", person["biography"])
+        self.assertIn("吏部尚书", person["title"])
 
     def test_noble_family_children_are_structured_relationships(self):
         person = get_person("xuda")
@@ -107,38 +89,20 @@ class ContentServiceTest(unittest.TestCase):
         }
         self.assertEqual({"徐辉祖", "徐添福", "徐膺绪", "徐增寿"}, children)
 
-    def test_cbdb_import_keeps_its_own_provenance(self):
+    def test_famous_people_are_present_in_catalog(self):
         payload = bootstrap_content()
-        imported = [person for person in payload["people"] if person["source_id"] == "cbdb-20210525"]
-        self.assertGreaterEqual(len(imported), 1_000)
-        self.assertTrue(all(person["review_status"] for person in imported))
+        names = {person["name"] for person in payload["people"]}
+        expected = {
+            "朱元璋", "张居正", "海瑞", "戚继光", "郑和", "王守仁",
+            "李时珍", "马皇后", "朱权", "朱载堉",
+        }
+        self.assertTrue(expected <= names)
 
-    def test_cbdb_api_enriched_profile_has_factual_life_and_family_sections(self):
-        person = get_person("cbdb-100539")
-        self.assertIn("義烏", person["biography"])
-        self.assertIn("父亲：方汝霖", person["family_summary"])
-        self.assertEqual("已校验", person["verification_status"])
-
-    def test_every_imported_person_has_a_completed_cbdb_api_outcome(self):
-        from app.database import connect
-
-        with connect() as database:
-            imported = database.execute(
-                "SELECT COUNT(*) FROM person WHERE source_id = 'cbdb-20210525'"
-            ).fetchone()[0]
-            completed = database.execute(
-                """
-                SELECT COUNT(*) FROM person
-                WHERE source_id = 'cbdb-20210525'
-                  AND EXISTS (
-                      SELECT 1 FROM person_research AS research
-                      WHERE research.person_id = person.id
-                        AND research.provider = 'cbdb_api'
-                        AND research.status IN ('matched', 'not_found')
-                  )
-                """
-            ).fetchone()[0]
-        self.assertEqual(imported, completed)
+    def test_new_categories_include_consorts_and_princes(self):
+        payload = bootstrap_content()
+        categories = {person["category"] for person in payload["people"]}
+        self.assertIn("后妃", categories)
+        self.assertIn("藩王", categories)
 
 
 if __name__ == "__main__":

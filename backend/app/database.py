@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from .catalog import CBDB_SOURCE, EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATIONS, SOURCE
+from .catalog import EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATIONS, SOURCE
 
 DATA_DIRECTORY = Path(__file__).resolve().parent.parent / "data"
 DATABASE_PATH = DATA_DIRECTORY / "ming_history.sqlite3"
@@ -174,7 +174,7 @@ def initialize_database() -> None:
             """,
             [
                 tuple(source[key] for key in ("id", "title", "citation", "url", "review_status"))
-                for source in (SOURCE, CBDB_SOURCE)
+                for source in (SOURCE,)
             ],
         )
         connection.executemany(
@@ -191,6 +191,11 @@ def initialize_database() -> None:
         )
 
         source_id = SOURCE["id"]
+        # 编目库已不含 CBDB 索引导入条目；清理历史库中残留的 CBDB 数据及其关联审计记录。
+        connection.execute("DELETE FROM person_research WHERE person_id LIKE 'cbdb-%'")
+        connection.execute("DELETE FROM person_section WHERE person_id LIKE 'cbdb-%'")
+        connection.execute("DELETE FROM content_reference WHERE content_type = 'person' AND content_id LIKE 'cbdb-%'")
+        connection.execute("DELETE FROM person WHERE source_id = 'cbdb-20210525'")
         connection.executemany(
             """
             INSERT INTO person(id, name, title, reign, years, category, courtesy_name, summary, biography, family_summary, source_id)

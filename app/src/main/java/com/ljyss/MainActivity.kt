@@ -493,7 +493,6 @@ private fun PersonProfile(
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
             ProfileSection("生平（含教育背景）", person.biography)
             ProfileSection("家族与子嗣", family)
-            ProfileSection("资料状态", person.verificationStatus)
         }
     }
 }
@@ -1552,7 +1551,6 @@ private fun PersonCard(
                             lineHeight = 21.sp,
                         )
                     }
-                    Text("资料状态：${person.verificationStatus}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 20.sp)
                 }
             }
         }

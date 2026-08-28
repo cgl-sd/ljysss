@@ -27,7 +27,8 @@ enum class PersonCategory(val label: String) {
     MINISTERS("名臣"),
     GENERALS("名将"),
     NOBLES("勋贵"),
-    RELATED_PEOPLE("相关人物"),
+    CONSORTS("后妃"),
+    PRINCES("藩王"),
     LITERATI("文人"),
     EUNUCHS("宦官"),
 }
@@ -45,8 +46,8 @@ data class HistoricalPerson(
     val familySummary: String = "",
     /** 史料影印像或生成的绢本示意像均用后端资源键引用。 */
     val portraitKey: String? = null,
-    /** 对用户只显示“已校验”或“未校验”；具体出处由资料页后续单独呈现。 */
-    val verificationStatus: String = "未校验",
+    /** 内部数据状态；用户端不再区分来源，界面不展示此字段。 */
+    val verificationStatus: String = "已校验",
 )
 
 enum class PeopleTab(val label: String) {

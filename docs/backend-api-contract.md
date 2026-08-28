@@ -40,6 +40,6 @@ PostgreSQL + PostGIS + 对象存储
 
 ## 当前 App 的接入方式
 
-`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构和来源。当前目录有 17 年号、47 个事件、130 位人物、49 条关系、12 个机构。
+`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构和来源。当前目录有 17 年号、51 个事件、819 位人物、63 条关系、12 个机构。
 
 正式发布的下一步是将本地 SQLite 迁移至 PostgreSQL + PostGIS，给 API 配置 HTTPS 地址，并以 Room 落地缓存、增量同步和离线专题包；地图栅格参考图也再替换为带有效时间范围的可查询 GeoJSON 图层。
