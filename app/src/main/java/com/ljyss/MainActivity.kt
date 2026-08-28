@@ -2,6 +2,7 @@ package com.ljyss
 
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -333,6 +334,12 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
         keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword)
     }.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
 
+    // 人物履历打开后，系统返回键与页面内返回键保持同一行为，避免用户被困在详情页。
+    BackHandler(enabled = selectedPersonName != null) {
+        selectedPersonName = null
+        query = ""
+    }
+
     MingList(contentPadding) {
         item { MingMasthead() }
         item { OrnamentalTitle("人事") }
@@ -372,7 +379,10 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             person = selectedPerson,
                             relations = relations,
                             events = reigns.flatMap { it.events },
-                            onBack = { selectedPersonName = null },
+                            onBack = {
+                                selectedPersonName = null
+                                query = ""
+                            },
                         )
                     }
                 } else {
@@ -458,21 +468,27 @@ private fun PersonProfile(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
-            Text(
-                "‹ 返回人物目录",
+            Surface(
                 modifier = Modifier
                     .align(Alignment.Start)
                     .clip(CutCornerShape(5.dp))
-                    .clickable(onClick = onBack)
-                    .padding(horizontal = 5.dp, vertical = 4.dp),
+                    .clickable(onClick = onBack),
+                shape = CutCornerShape(5.dp),
                 color = Vermilion,
-                fontFamily = FontFamily.Serif,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            ) {
+                Text(
+                    "← 返回人物目录",
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    color = PaperLight,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
+            ProfileSection("档案概览", "分类：${person.category.label}。活动时期：${person.reign}。生卒信息：${person.years}。")
             ProfileSection("生平介绍", person.biography)
             if (person.courtesyName.isNotBlank()) ProfileSection("字／号", person.courtesyName)
             if (children.isNotEmpty()) ProfileSection("子嗣（${children.size}）", children.joinToString("、"))
@@ -491,7 +507,10 @@ private fun PersonProfile(
                     relatedEvents.joinToString("\n") { event -> "${event.year ?: ""} ${event.title}" },
                 )
             }
-            Text("资料：${person.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 20.sp)
+            ProfileSection(
+                "资料状态",
+                "资料来源：${person.sourceLabel}。当前资料用于人物检索与导览；尚未校核的具体官职、亲属、封号和事迹不会作为确定事实展示。",
+            )
         }
     }
 }

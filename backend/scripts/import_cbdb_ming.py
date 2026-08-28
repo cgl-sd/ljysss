@@ -44,6 +44,17 @@ def index_summary(index_year: int | None) -> str:
     return "CBDB 收录的明代人物，生平索引待进一步校核。"
 
 
+def index_biography(name: str, years: str, index_year: int | None) -> str:
+    era = f"CBDB 为该人物标注的索引年代为 {index_year} 年。" if index_year and 1000 <= index_year <= 1800 else "CBDB 当前条目未提供可直接采用的索引年代。"
+    return (
+        f"{name}收录于中国历代人物传记资料库（CBDB）的明代人物索引。"
+        f"本项目现保存的基础年代信息为“{years}”；{era}"
+        "这一页的作用是提供可检索、可继续扩展的个人档案入口，而不是用简短标签代替完整传记。"
+        "现阶段仅依据已导入的索引字段呈现姓名与年代，不从未逐条核验的原始备注中推断官职、籍贯、婚姻、子嗣、封号或具体事迹。"
+        "后续补充时会将仕历、家族、交游与相关事件分别关联到明确出处，并在每一项旁标出版本、卷次或资料状态。"
+    )
+
+
 def source_rows(source_path: Path, limit: int, existing_names: set[str]) -> list[dict[str, object]]:
     source = sqlite3.connect(f"file:{source_path}?mode=ro", uri=True)
     source.row_factory = sqlite3.Row
@@ -85,10 +96,7 @@ def source_rows(source_path: Path, limit: int, existing_names: set[str]) -> list
                     "category": "相关人物",
                     "courtesy_name": "",
                     "summary": summary,
-                    "biography": (
-                        f"{summary} 本项目目前仅保留姓名与年代索引；具体仕历、亲属、封号和长篇生平"
-                        "须按原始资料逐条校核后补录。"
-                    ),
+                    "biography": index_biography(name, years, row["c_index_year"]),
                     "source_id": CBDB_SOURCE["id"],
                 }
             )
