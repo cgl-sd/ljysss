@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""Build structured person profiles from exact Wikidata/Wikipedia matches.
+
+The app stores only a concise, original synthesis of structured public facts. It
+does not copy encyclopedia prose. Each successful match writes private audit
+references; the mobile UI exposes only the verification state.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sqlite3
+import sys
+import time
+from pathlib import Path
+from urllib.parse import urlencode, quote
+from urllib.request import Request, urlopen
+
+BACKEND_DIRECTORY = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(BACKEND_DIRECTORY))
+
+from app.database import connect, initialize_database  # noqa: E402
+
+API = "https://www.wikidata.org/w/api.php"
+USER_AGENT = "LiangjingYishisanshengResearch/1.0 (historical educational app)"
+ENTITY_PROPERTIES = {
+    "birth": "P569",
+    "death": "P570",
+    "birth_place": "P19",
+    "education": "P69",
+    "occupation": "P106",
+    "position": "P39",
+    "father": "P22",
+    "mother": "P25",
+    "spouse": "P26",
+    "child": "P40",
+}
+
+
+def api(params: dict[str, str]) -> dict:
+    query = urlencode({"format": "json", **params})
+    request = Request(f"{API}?{query}", headers={"User-Agent": USER_AGENT})
+    with urlopen(request, timeout=25) as response:
+        return json.load(response)
+
+
+def normalize(value: str) -> str:
+    return re.sub(r"[\s·・．.（）()\-—]", "", value).replace("臺", "台")
+
+
+def matching_entity(name: str) -> str | None:
+    result = api({"action": "wbsearchentities", "search": name, "language": "zh", "limit": "10"})
+    target = normalize(name)
+    for candidate in result.get("search", []):
+        names = [candidate.get("label", ""), candidate.get("match", {}).get("text", ""), *candidate.get("aliases", [])]
+        if any(normalize(value) == target for value in names):
+            return candidate["id"]
+    return None
+
+
+def entities(entity_ids: list[str]) -> dict[str, dict]:
+    found: dict[str, dict] = {}
+    for start in range(0, len(entity_ids), 40):
+        batch = entity_ids[start : start + 40]
+        result = api(
+            {
+                "action": "wbgetentities",
+                "ids": "|".join(batch),
+                "props": "labels|descriptions|claims|sitelinks",
+                "languages": "zh|zh-hans|en",
+            }
+        )
+        found.update(result.get("entities", {}))
+    return found
+
+
+def entity_ids(entity: dict, property_id: str) -> list[str]:
+    values = []
+    for claim in entity.get("claims", {}).get(property_id, []):
+        value = claim.get("mainsnak", {}).get("datavalue", {}).get("value")
+        if isinstance(value, dict) and value.get("id", "").startswith("Q"):
+            values.append(value["id"])
+    return list(dict.fromkeys(values))
+
+
+def time_values(entity: dict, property_id: str) -> list[str]:
+    values = []
+    for claim in entity.get("claims", {}).get(property_id, []):
+        value = claim.get("mainsnak", {}).get("datavalue", {}).get("value")
+        if isinstance(value, dict) and isinstance(value.get("time"), str):
+            year = value["time"][1:5]
+            if year.isdigit():
+                values.append(year)
+    return list(dict.fromkeys(values))
+
+
+def label(entity: dict) -> str:
+    labels = entity.get("labels", {})
+    for language in ("zh-hans", "zh", "en"):
+        if language in labels:
+            return labels[language]["value"]
+    return ""
+
+
+def names(entity: dict, property_name: str, lookup: dict[str, dict]) -> list[str]:
+    return [label(lookup[value]) for value in entity_ids(entity, ENTITY_PROPERTIES[property_name]) if value in lookup and label(lookup[value])]
+
+
+def profile_text(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> tuple[str, str]:
+    birth = time_values(entity, ENTITY_PROPERTIES["birth"])
+    death = time_values(entity, ENTITY_PROPERTIES["death"])
+    birth_place = names(entity, "birth_place", lookup)
+    education = names(entity, "education", lookup)
+    occupation = names(entity, "occupation", lookup)
+    positions = names(entity, "position", lookup)
+    details = []
+    if birth or death:
+        details.append(f"公开资料记录的生卒信息为“{'—'.join([birth[0] if birth else '？', death[0] if death else '？'])}”。")
+    if birth_place:
+        details.append(f"出生地相关记录指向{birth_place[0]}。")
+    if education:
+        details.append(f"教育背景可查为{education[0]}。")
+    if occupation:
+        details.append(f"资料将其身份概括为{'、'.join(occupation[:3])}。")
+    if positions:
+        details.append(f"公开任职记录包括{'、'.join(positions[:4])}。")
+    life = re.sub(
+        r"本条已建立人物、年号与资料来源的关联；具体仕历、卷次和原文引文仍待编辑校核。",
+        "",
+        person["biography"],
+    ).strip()
+    if details:
+        life = f"{life}\n\n" + "".join(details)
+
+    family_parts = []
+    family_labels = (("father", "父亲"), ("mother", "母亲"), ("spouse", "配偶"), ("child", "子女"))
+    for key, title in family_labels:
+        values = names(entity, key, lookup)
+        if values:
+            family_parts.append(f"{title}：{'、'.join(values)}。")
+    return life, "".join(family_parts)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="从 Wikidata 精确匹配建立人物生平与家族资料")
+    parser.add_argument("--all", action="store_true", help="处理所有人物；默认只处理首批核心人物")
+    parser.add_argument("--limit", type=int, default=0, help="限制处理条数，0 表示不限制")
+    parser.add_argument("--sleep", type=float, default=0.12, help="每次检索之间的等待秒数")
+    args = parser.parse_args()
+
+    initialize_database()
+    with connect() as db:
+        where = "" if args.all else "WHERE source_id <> 'cbdb-20210525'"
+        people = db.execute(f"SELECT * FROM person {where} ORDER BY id").fetchall()
+    if args.limit:
+        people = people[: args.limit]
+
+    matches: dict[str, str] = {}
+    for index, person in enumerate(people, start=1):
+        try:
+            entity_id = matching_entity(person["name"])
+        except Exception as error:  # Network errors leave this record untouched for a later retry.
+            print(f"[{index}/{len(people)}] {person['name']}: 检索失败（{error}）")
+            continue
+        if entity_id:
+            matches[person["id"]] = entity_id
+            print(f"[{index}/{len(people)}] {person['name']}: {entity_id}")
+        else:
+            print(f"[{index}/{len(people)}] {person['name']}: 未找到精确匹配")
+        time.sleep(args.sleep)
+
+    entity_map = entities(list(matches.values()))
+    related_ids = {
+        value
+        for entity in entity_map.values()
+        for property_id in ENTITY_PROPERTIES.values()
+        for value in entity_ids(entity, property_id)
+    }
+    lookup = {**entity_map, **entities(sorted(related_ids))}
+
+    with connect() as db:
+        person_by_id = {person["id"]: person for person in people}
+        for person_id, entity_id in matches.items():
+            person = person_by_id[person_id]
+            entity = entity_map[entity_id]
+            life, family = profile_text(person, entity, lookup)
+            has_wikipedia = "zhwiki" in entity.get("sitelinks", {})
+            verification = "已校验" if has_wikipedia else "未校验"
+            db.execute(
+                "UPDATE person SET biography = ?, family_summary = ?, verification_status = ? WHERE id = ?",
+                (life, family, verification, person_id),
+            )
+            db.executemany(
+                """
+                INSERT INTO person_section(person_id, section_key, title, position, content)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(person_id, section_key) DO UPDATE SET title = excluded.title, position = excluded.position, content = excluded.content
+                """,
+                [
+                    (person_id, "life", "生平（含教育背景）", 0, life),
+                    (person_id, "family", "家族与子嗣", 1, family),
+                    (person_id, "verification", "资料状态", 2, verification),
+                ],
+            )
+            db.executemany(
+                """
+                INSERT INTO content_reference(content_type, content_id, section_key, position, title, url, locator, note)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(content_type, content_id, section_key, position) DO UPDATE SET
+                    title = excluded.title, url = excluded.url, locator = excluded.locator, note = excluded.note
+                """,
+                [
+                    ("person", person_id, "life", 0, "维基数据人物条目", f"https://www.wikidata.org/wiki/{entity_id}", entity_id, "结构化资料交叉检索"),
+                    ("person", person_id, "life", 1, "中文维基百科检索", f"https://zh.wikipedia.org/wiki/{quote(person['name'])}", person["name"], "用于人工复核"),
+                    ("person", person_id, "life", 2, "百度百科检索", f"https://baike.baidu.com/search/word?word={quote(person['name'])}", person["name"], "用于人工复核"),
+                ],
+            )
+    print(f"完成：{len(matches)}/{len(people)} 位人物获得精确维基数据匹配。")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS person (
     courtesy_name TEXT NOT NULL DEFAULT '',
     summary TEXT NOT NULL,
     biography TEXT NOT NULL,
+    family_summary TEXT NOT NULL DEFAULT '',
+    verification_status TEXT NOT NULL DEFAULT '未校验',
     portrait_key TEXT,
     source_id TEXT NOT NULL REFERENCES source(id)
 );
@@ -146,6 +148,7 @@ def initialize_database() -> None:
 
     with connect() as connection:
         connection.executescript(SCHEMA)
+        _migrate_person_columns(connection)
         connection.executemany(
             """
             INSERT INTO source(id, title, citation, url, review_status) VALUES (?, ?, ?, ?, ?)
@@ -176,8 +179,8 @@ def initialize_database() -> None:
         source_id = SOURCE["id"]
         connection.executemany(
             """
-            INSERT INTO person(id, name, title, reign, years, category, courtesy_name, summary, biography, source_id)
-            VALUES (:id, :name, :title, :reign, :years, :category, :courtesy_name, :summary, :biography, :source_id)
+            INSERT INTO person(id, name, title, reign, years, category, courtesy_name, summary, biography, family_summary, source_id)
+            VALUES (:id, :name, :title, :reign, :years, :category, :courtesy_name, :summary, :biography, :family_summary, :source_id)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,
                 title = excluded.title,
@@ -186,10 +189,16 @@ def initialize_database() -> None:
                 category = excluded.category,
                 courtesy_name = excluded.courtesy_name,
                 summary = excluded.summary,
-                biography = excluded.biography,
+                biography = CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM person_section
+                        WHERE person_id = person.id AND section_key = 'life'
+                    ) THEN person.biography
+                    ELSE excluded.biography
+                END,
                 source_id = excluded.source_id
             """,
-            [{**person, "source_id": source_id} for person in PEOPLE],
+            [{**person, "family_summary": "", "source_id": source_id} for person in PEOPLE],
         )
         connection.executemany(
             """
@@ -263,6 +272,16 @@ def initialize_database() -> None:
                 ],
             )
         _apply_asset_metadata(connection)
+
+
+def _migrate_person_columns(connection: sqlite3.Connection) -> None:
+    """Apply additive SQLite migrations for databases created by earlier app versions."""
+
+    columns = {row[1] for row in connection.execute("PRAGMA table_info(person)")}
+    if "family_summary" not in columns:
+        connection.execute("ALTER TABLE person ADD COLUMN family_summary TEXT NOT NULL DEFAULT ''")
+    if "verification_status" not in columns:
+        connection.execute("ALTER TABLE person ADD COLUMN verification_status TEXT NOT NULL DEFAULT '未校验'")
 
 
 def _apply_asset_metadata(connection: sqlite3.Connection) -> None:

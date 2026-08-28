@@ -459,7 +459,9 @@ private fun PersonProfile(
     val children = relations
         .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
         .map { it.toName }
-    val family = children.joinToString("、")
+    val family = listOf(person.familySummary, children.joinToString("、"))
+        .filter { it.isNotBlank() }
+        .joinToString("\n")
         .ifBlank { "家族、配偶与子嗣资料正在整理。" }
 
     Card(

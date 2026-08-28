@@ -42,6 +42,7 @@ data class HistoricalPerson(
     val id: String = "",
     val courtesyName: String = "",
     val biography: String = note,
+    val familySummary: String = "",
     /** 史料影印像或生成的绢本示意像均用后端资源键引用。 */
     val portraitKey: String? = null,
     /** 对用户只显示“已校验”或“未校验”；具体出处由资料页后续单独呈现。 */
