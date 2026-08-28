@@ -13,7 +13,9 @@ class ContentServiceTest(unittest.TestCase):
         payload = bootstrap_content()
         self.assertEqual(17, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
-        self.assertGreaterEqual(len(payload["people"]), 800)
+        # 748 为剔除清朝与现代错撞词条后的目录规模；下限放宽到 700 以容纳后续增补。
+        self.assertGreaterEqual(len(payload["people"]), 700)
+        self.assertLessEqual(len(payload["people"]), 760)
         self.assertGreaterEqual(len(payload["relationships"]), 63)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
@@ -37,7 +39,7 @@ class ContentServiceTest(unittest.TestCase):
             events_with_background = database.execute(
                 "SELECT COUNT(DISTINCT event_id) FROM event_section WHERE section_key = 'background'"
             ).fetchone()[0]
-        self.assertGreaterEqual(people, 800)
+        self.assertGreaterEqual(people, 700)
         self.assertEqual(events, events_with_background)
 
     def test_every_person_has_a_factual_biography(self):
@@ -101,6 +103,54 @@ class ContentServiceTest(unittest.TestCase):
         categories = {person["category"] for person in payload["people"]}
         self.assertIn("后妃", categories)
         self.assertIn("藩王", categories)
+
+    def test_purged_non_ming_entries_stay_out_of_the_catalog(self):
+        from app.catalog import PEOPLE
+        from app.database import connect
+
+        # purge_non_ming_people.py 的代表样本：清朝人物、现代错撞、非明朝/神话。
+        purged_ids = {
+            "caiyurong", "kongsizhen", "kongyoude", "shangkexi", "shilang",
+            "gengjingzhong", "yuchenglong", "zhaoliangdong", "zhuchun",
+            "zhangjie", "xuke", "luguangzu", "zhumei", "tanglong",
+            "liqing", "lichanggeng",
+        }
+        catalog_ids = {person["id"] for person in PEOPLE}
+        self.assertFalse(purged_ids & catalog_ids, "被清理的词条重新出现在编目目录中")
+        with connect() as database:
+            marks = ",".join("?" * len(purged_ids))
+            leftover = database.execute(
+                f"SELECT COUNT(*) FROM person WHERE id IN ({marks})", sorted(purged_ids)
+            ).fetchone()[0]
+        self.assertEqual(0, leftover)
+
+    def test_every_parseable_person_chronology_stays_within_ming_bounds(self):
+        import re
+
+        from app.database import connect
+
+        with connect() as database:
+            rows = database.execute("SELECT id, years FROM person").fetchall()
+        for row in rows:
+            match = re.match(r"^\s*([?？\d]{1,4})\s*—\s*([?？\d]{1,4})\s*$", row["years"])
+            if not match:
+                continue
+            birth, death = match.group(1), match.group(2)
+            if birth.isdigit():
+                self.assertLessEqual(int(birth), 1644, f"{row['id']} 生年晚于明亡：{row['years']}")
+            if death.isdigit():
+                self.assertLessEqual(int(death), 1700, f"{row['id']} 卒年晚于南明终局：{row['years']}")
+
+    def test_family_sections_describe_member_outcomes(self):
+        payload = bootstrap_content()
+        people = {person["id"]: person for person in payload["people"]}
+        family = people["zhangjuzheng"]["sections"]
+        family_content = next(section["content"] for section in family if section["section_key"] == "family")
+        self.assertIn("张敬修", family_content)
+        self.assertIn("自缢", family_content)
+        self.assertIn("张懋修", family_content)
+        # 结局叙述逐行成段，而不是只列姓名。
+        self.assertGreaterEqual(len(family_content.splitlines()), 3)
 
 
 if __name__ == "__main__":
