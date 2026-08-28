@@ -127,7 +127,7 @@ def main() -> int:
                 SELECT 1 FROM person_research AS research
                 WHERE research.person_id = person.id
                   AND research.provider = 'cbdb_api'
-                  AND research.status = 'matched'
+                  AND research.status IN ('matched', 'not_found')
             )
         """
     with connect() as db:
@@ -168,14 +168,15 @@ def main() -> int:
             source_id = item["id"].removeprefix("cbdb-")
             checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
             if record is None:
+                status = "not_found" if error.startswith("HTTP Error 404") else "network_failed"
                 db.execute(
                     """
                     INSERT INTO person_research(person_id, provider, status, entity_id, checked_at, note)
-                    VALUES (?, 'cbdb_api', 'network_failed', '', ?, ?)
+                    VALUES (?, 'cbdb_api', ?, '', ?, ?)
                     ON CONFLICT(person_id, provider) DO UPDATE SET
                         status = excluded.status, checked_at = excluded.checked_at, note = excluded.note
                     """,
-                    (item["id"], checked_at, error),
+                    (item["id"], status, checked_at, error),
                 )
                 continue
             life, family, sources = profile(record, item["name"], item["years"])
