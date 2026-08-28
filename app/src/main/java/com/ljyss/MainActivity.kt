@@ -490,6 +490,17 @@ private fun WorldReferenceMing(
             alignment = Alignment.Center,
         )
 
+        // “明代／现代”是旧参考位图中烘焙的分段控件，并非可用的切换功能。
+        // 用与地图底纸一致的静态遮罩去除它，地图范围与其余明代组件保持原样。
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 61.dp)
+                .width(148.dp)
+                .height(35.dp)
+                .background(XuanPaper.copy(alpha = 0.98f), RoundedCornerShape(20.dp)),
+        )
+
         if (modernOverlayEnabled) {
             Image(
                 painter = painterResource(R.drawable.modern_reference_map),
