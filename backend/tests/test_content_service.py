@@ -97,6 +97,27 @@ class ContentServiceTest(unittest.TestCase):
         self.assertIn("父亲：方汝霖", person["family_summary"])
         self.assertEqual("已校验", person["verification_status"])
 
+    def test_every_imported_person_has_a_completed_cbdb_api_outcome(self):
+        from app.database import connect
+
+        with connect() as database:
+            imported = database.execute(
+                "SELECT COUNT(*) FROM person WHERE source_id = 'cbdb-20210525'"
+            ).fetchone()[0]
+            completed = database.execute(
+                """
+                SELECT COUNT(*) FROM person
+                WHERE source_id = 'cbdb-20210525'
+                  AND EXISTS (
+                      SELECT 1 FROM person_research AS research
+                      WHERE research.person_id = person.id
+                        AND research.provider = 'cbdb_api'
+                        AND research.status IN ('matched', 'not_found')
+                  )
+                """
+            ).fetchone()[0]
+        self.assertEqual(imported, completed)
+
 
 if __name__ == "__main__":
     unittest.main()
