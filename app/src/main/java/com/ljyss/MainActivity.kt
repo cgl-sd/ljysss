@@ -326,6 +326,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
+    var profileOrigin by rememberSaveable { mutableStateOf<String?>(null) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
@@ -334,10 +335,17 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
         keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword)
     }.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
 
-    // 人物履历打开后，系统返回键与页面内返回键保持同一行为，避免用户被困在详情页。
-    BackHandler(enabled = selectedPersonName != null) {
+    fun returnFromProfile() {
+        val origin = profileOrigin
         selectedPersonName = null
+        profileOrigin = null
         query = ""
+        if (origin == "dynasty") selectedTab = PeopleTab.DYNASTY
+    }
+
+    // 人物履历打开后，系统返回键与页面内返回键保持同一行为，并恢复进入详情前的栏目。
+    BackHandler(enabled = selectedPersonName != null) {
+        returnFromProfile()
     }
 
     MingList(contentPadding) {
@@ -349,6 +357,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 onSelected = {
                     selectedTab = it
                     selectedPersonName = null
+                    profileOrigin = null
                 },
             )
         }
@@ -366,6 +375,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             selectedCategory = person.category
                             query = person.name
                             selectedPersonName = person.name
+                            profileOrigin = "dynasty"
                             selectedTab = PeopleTab.PEOPLE
                         },
                     )
@@ -379,10 +389,8 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             person = selectedPerson,
                             relations = relations,
                             events = reigns.flatMap { it.events },
-                            onBack = {
-                                selectedPersonName = null
-                                query = ""
-                            },
+                            returnLabel = if (profileOrigin == "dynasty") "返回朝代档案" else "返回人物目录",
+                            onBack = ::returnFromProfile,
                         )
                     }
                 } else {
@@ -421,7 +429,10 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                                     .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
                                     .map { it.toName },
                                 expanded = false,
-                                onClick = { selectedPersonName = person.name },
+                                onClick = {
+                                    selectedPersonName = person.name
+                                    profileOrigin = "people"
+                                },
                             )
                         }
                     }
@@ -446,6 +457,7 @@ private fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
     events: List<HistoricalEvent>,
+    returnLabel: String,
     onBack: () -> Unit,
 ) {
     val children = relations
@@ -477,7 +489,7 @@ private fun PersonProfile(
                 color = Vermilion,
             ) {
                 Text(
-                    "← 返回人物目录",
+                    "← $returnLabel",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     color = PaperLight,
                     fontFamily = FontFamily.Serif,
