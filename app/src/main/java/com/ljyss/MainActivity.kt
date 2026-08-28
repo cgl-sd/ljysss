@@ -320,10 +320,12 @@ private fun chineseYearNumber(value: Int): String {
 
 @Composable
 private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValues) {
-    var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.PEOPLE) }
+    var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.DYNASTY) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
+    var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var expandedPerson by rememberSaveable { mutableStateOf<String?>(null) }
+    val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val people = repository.people(selectedCategory).filter { person ->
         val keyword = query.trim()
@@ -332,11 +334,29 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
 
     MingList(contentPadding) {
         item { MingMasthead() }
-        item { OrnamentalTitle("人物") }
+        item { OrnamentalTitle("人事") }
         item {
             PeopleTabRail(selected = selectedTab, onSelected = { selectedTab = it })
         }
         when (selectedTab) {
+            PeopleTab.DYNASTY -> {
+                val selectedReign = reigns.firstOrNull { it.title == selectedReignTitle } ?: reigns.first()
+                item {
+                    ReignRail(reigns, selectedReign.title) { selectedReignTitle = it }
+                }
+                item {
+                    DynastyArchive(
+                        reign = selectedReign,
+                        people = repository.allPeople().filter { it.reign.contains(selectedReign.title) },
+                        onPersonSelected = { person ->
+                            selectedCategory = person.category
+                            query = person.name
+                            expandedPerson = person.name
+                            selectedTab = PeopleTab.PEOPLE
+                        },
+                    )
+                }
+            }
             PeopleTab.PEOPLE -> {
                 item {
                     CategoryRail(
@@ -362,7 +382,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                         },
                     )
                 }
-                item { PersonChronologyRail(repository.reigns()) }
+                item { PersonChronologyRail(reigns) }
                 item {
                     SourceNote("现收录 ${repository.allPeople().size} 位人物；勋贵家系的已编子嗣会在人物卡中列出，图像资料后续另行补入。")
                 }
@@ -391,6 +411,97 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 item { InstitutionIntro() }
                 items(repository.institutions(), key = { it.id }) { institution ->
                     InstitutionCard(institution)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DynastyArchive(
+    reign: Reign,
+    people: List<HistoricalPerson>,
+    onPersonSelected: (HistoricalPerson) -> Unit,
+) {
+    val ministers = people.filter { it.category == PersonCategory.MINISTERS }
+    val generals = people.filter { it.category == PersonCategory.GENERALS }
+    // 爵位是可叠加身份：开国将领仍会在武将组出现，同时在此处按封号索引。
+    val nobles = people.filter {
+        it.category == PersonCategory.NOBLES || it.title.contains("公") || it.title.contains("侯") || it.title.contains("伯")
+    }.distinctBy { it.name }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(10.dp),
+        border = BorderStroke(1.25.dp, LineGold),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.95f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("${reign.title}朝人事档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+            Text(reign.summary, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
+            Text(
+                "本朝已编 ${people.size} 人、${reign.events.size} 件事件；人物可同时出现在军政与封爵索引中。",
+                color = Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 14.sp,
+            )
+            ArchiveGroup("文臣", ministers, onPersonSelected)
+            ArchiveGroup("武将", generals, onPersonSelected)
+            ArchiveGroup("勋贵与封号", nobles, onPersonSelected)
+            Text("相关人事事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            if (reign.events.isEmpty()) {
+                Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+            } else {
+                reign.events.sortedBy { it.year ?: Int.MAX_VALUE }.forEach { event ->
+                    Surface(
+                        color = XuanPaper.copy(alpha = 0.68f),
+                        shape = CutCornerShape(6.dp),
+                        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.75f)),
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text("${event.year ?: ""} ${event.month} · ${event.title}", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text(event.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp, lineHeight = 20.sp)
+                            if (event.participants.isNotEmpty()) {
+                                Text("相关人物：${event.participants.joinToString("、")}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchiveGroup(
+    title: String,
+    people: List<HistoricalPerson>,
+    onPersonSelected: (HistoricalPerson) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        if (people.isEmpty()) {
+            Text("待编目", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+        } else {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                items(people, key = { it.name }) { person ->
+                    Surface(
+                        modifier = Modifier
+                            .clip(CutCornerShape(5.dp))
+                            .clickable { onPersonSelected(person) },
+                        shape = CutCornerShape(5.dp),
+                        color = PaperShade,
+                        border = BorderStroke(1.dp, LineGold),
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)) {
+                            Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            Text(person.title, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 11.sp)
+                        }
+                    }
                 }
             }
         }
