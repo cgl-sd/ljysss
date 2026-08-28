@@ -45,6 +45,19 @@ class ContentServiceTest(unittest.TestCase):
         self.assertEqual(people, people_with_life)
         self.assertEqual(events, events_with_background)
 
+    def test_person_research_audit_is_private_and_uses_recoverable_states(self):
+        from app.database import connect
+
+        with connect() as database:
+            statuses = {
+                row[0]
+                for row in database.execute(
+                    "SELECT DISTINCT status FROM person_research WHERE provider = 'wikidata'"
+                )
+            }
+        self.assertTrue(statuses)
+        self.assertTrue(statuses <= {"matched", "not_found", "identity_rejected", "network_failed"})
+
     def test_researched_person_profile_survives_catalog_synchronization(self):
         person = get_person("caobianjiao")
         sections = {section["section_key"]: section["content"] for section in person["sections"]}

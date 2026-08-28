@@ -14,6 +14,7 @@ import re
 import sqlite3
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, quote
@@ -190,6 +191,11 @@ def main() -> int:
         action="store_true",
         help="只复核当前仍标记为“未校验”的人物。",
     )
+    parser.add_argument(
+        "--pending-only",
+        action="store_true",
+        help="只处理尚未完成精确匹配、未找到或身份排除判断的人物；网络失败会保留在待处理队列。",
+    )
     parser.add_argument("--limit", type=int, default=0, help="限制处理条数，0 表示不限制")
     parser.add_argument("--offset", type=int, default=0, help="跳过前若干条，用于分批持久化")
     parser.add_argument("--sleep", type=float, default=1.5, help="每次检索之间的等待秒数")
@@ -207,6 +213,15 @@ def main() -> int:
         conditions.append("source_id <> 'cbdb-20210525'")
     if args.unverified_only:
         conditions.append("verification_status = '未校验'")
+    if args.pending_only:
+        conditions.append(
+            """NOT EXISTS (
+                SELECT 1 FROM person_research AS research
+                WHERE research.person_id = person.id
+                  AND research.provider = 'wikidata'
+                  AND research.status IN ('matched', 'not_found', 'identity_rejected')
+            )"""
+        )
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     with connect() as db:
         people = db.execute(f"SELECT * FROM person {where} ORDER BY id", parameters).fetchall()
@@ -215,16 +230,19 @@ def main() -> int:
         people = people[: args.limit]
 
     matches: dict[str, str] = {}
+    outcomes: dict[str, tuple[str, str]] = {}
     for index, person in enumerate(people, start=1):
         try:
             entity_id = matching_entity(person["name"])
         except Exception as error:  # Network errors leave this record untouched for a later retry.
+            outcomes[person["id"]] = ("network_failed", str(error))
             print(f"[{index}/{len(people)}] {person['name']}: 检索失败（{error}）", flush=True)
             continue
         if entity_id:
             matches[person["id"]] = entity_id
             print(f"[{index}/{len(people)}] {person['name']}: {entity_id}", flush=True)
         else:
+            outcomes[person["id"]] = ("not_found", "未找到中文名称的精确实体匹配")
             print(f"[{index}/{len(people)}] {person['name']}: 未找到精确匹配", flush=True)
         time.sleep(args.sleep)
 
@@ -245,6 +263,7 @@ def main() -> int:
             if entity_id and compatible_identity(person, entity, lookup):
                 life, family = profile_text(person, entity, lookup)
                 verification = "已校验" if "zhwiki" in entity.get("sitelinks", {}) else "未校验"
+                outcome = ("matched", entity_id)
             else:
                 entity_id = None
                 life = re.sub(
@@ -254,6 +273,7 @@ def main() -> int:
                 ).strip()
                 family = ""
                 verification = "未校验"
+                outcome = outcomes.get(person_id, ("identity_rejected", "同名实体与人物年代或身份不一致"))
             db.execute(
                 "UPDATE person SET biography = ?, family_summary = ?, verification_status = ? WHERE id = ?",
                 (life, family, verification, person_id),
@@ -283,6 +303,24 @@ def main() -> int:
                 ] + ([
                     ("person", person_id, "life", 0, "维基数据人物条目", f"https://www.wikidata.org/wiki/{entity_id}", entity_id, "结构化资料交叉检索"),
                 ] if entity_id else []),
+            )
+            db.execute(
+                """
+                INSERT INTO person_research(person_id, provider, status, entity_id, checked_at, note)
+                VALUES (?, 'wikidata', ?, ?, ?, ?)
+                ON CONFLICT(person_id, provider) DO UPDATE SET
+                    status = excluded.status,
+                    entity_id = excluded.entity_id,
+                    checked_at = excluded.checked_at,
+                    note = excluded.note
+                """,
+                (
+                    person_id,
+                    outcome[0],
+                    entity_id or "",
+                    datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    outcome[1],
+                ),
             )
     print(f"完成：{len(matches)}/{len(people)} 位人物获得精确维基数据匹配。", flush=True)
     return 0

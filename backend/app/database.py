@@ -97,6 +97,20 @@ CREATE TABLE IF NOT EXISTS content_reference (
 CREATE INDEX IF NOT EXISTS content_reference_by_content
     ON content_reference(content_type, content_id, section_key);
 
+-- 外部检索过程只作编辑审计；用户端仍只显示“已校验”或“未校验”。
+CREATE TABLE IF NOT EXISTS person_research (
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('matched', 'not_found', 'identity_rejected', 'network_failed')),
+    entity_id TEXT NOT NULL DEFAULT '',
+    checked_at TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY(person_id, provider)
+);
+
+CREATE INDEX IF NOT EXISTS person_research_by_status
+    ON person_research(provider, status);
+
 CREATE TABLE IF NOT EXISTS person_relation (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     from_person_id TEXT NOT NULL REFERENCES person(id),
