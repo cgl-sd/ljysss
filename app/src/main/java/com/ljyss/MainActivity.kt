@@ -6,8 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -34,8 +32,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -60,7 +56,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -579,47 +574,16 @@ private fun WorldReferenceMing(
                 .padding(horizontal = 5.dp)
                 .fillMaxWidth()
                 .height(122.dp),
-            circular = false,
-            pulseColor = Brass,
             onClick = {},
         )
     }
 }
 
 @Composable
-private fun WorldPressTarget(
-    modifier: Modifier,
-    circular: Boolean = true,
-    pulseColor: Color = Celadon,
-    onClick: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-    var tapCount by remember { mutableIntStateOf(0) }
-    val inkFlash = remember { Animatable(0f) }
-
-    LaunchedEffect(tapCount) {
-        if (tapCount > 0) {
-            inkFlash.snapTo(0.20f)
-            inkFlash.animateTo(0f, animationSpec = tween(260))
-        }
-    }
-
+private fun WorldPressTarget(modifier: Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(if (circular) 50 else 10))
-            .background(
-                if (pressed) Ink.copy(alpha = 0.12f)
-                else pulseColor.copy(alpha = inkFlash.value),
-            )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = {
-                    tapCount += 1
-                    onClick()
-                },
-            ),
+            .clickable(interactionSource = null, indication = null, onClick = onClick),
     )
 }
 
