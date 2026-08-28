@@ -29,6 +29,13 @@ class ContentServiceTest(unittest.TestCase):
 
         self.assertEqual([], get_event_sections("hongwu-founding"))
 
+    def test_researched_person_profile_survives_catalog_synchronization(self):
+        person = get_person("caobianjiao")
+        sections = {section["section_key"]: section["content"] for section in person["sections"]}
+        self.assertEqual("已校验", person["verification_status"])
+        self.assertIn("公开资料记录的生卒信息", sections["life"])
+        self.assertIn("family", sections)
+
     def test_noble_family_children_are_structured_relationships(self):
         person = get_person("xuda")
         children = {
