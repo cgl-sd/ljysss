@@ -154,7 +154,7 @@ class RemoteMingRepository private constructor(
             // 这些阈值是首批编目库的完整性校验；不满足时 MainActivity 会保留离线资料而非半同步。
             require(reigns.size == 17) { "内容服务缺少年号资料" }
             require(people.size >= 700) { "内容服务人物资料尚未同步完成" }
-            require(relations.size >= 63) { "内容服务人物家系资料尚未同步完成" }
+            require(relations.size >= 30) { "内容服务人物家系资料尚未同步完成" }
             require(institutions.size >= 12) { "内容服务机构资料尚未同步完成" }
             return RemoteMingRepository(reigns, people, relations, institutions, mapFallback)
         }

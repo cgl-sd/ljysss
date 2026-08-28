@@ -16,7 +16,9 @@ class ContentServiceTest(unittest.TestCase):
         # 748 为剔除清朝与现代错撞词条后的目录规模；下限放宽到 700 以容纳后续增补。
         self.assertGreaterEqual(len(payload["people"]), 700)
         self.assertLessEqual(len(payload["people"]), 760)
-        self.assertGreaterEqual(len(payload["relationships"]), 63)
+        # 皇帝不与文臣武将建关系后，全库仅保留家庭、同僚与南明阵营类关系。
+        self.assertGreaterEqual(len(payload["relationships"]), 30)
+        self.assertLessEqual(len(payload["relationships"]), 35)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
     def test_bootstrap_people_expose_structured_sections(self):
@@ -103,6 +105,21 @@ class ContentServiceTest(unittest.TestCase):
         categories = {person["category"] for person in payload["people"]}
         self.assertIn("后妃", categories)
         self.assertIn("藩王", categories)
+
+    def test_emperors_have_no_minister_or_general_relations(self):
+        from app.database import connect
+
+        with connect() as database:
+            offenders = database.execute(
+                """
+                SELECT pr.id FROM person_relation pr
+                JOIN person a ON a.id = pr.from_person_id
+                JOIN person b ON b.id = pr.to_person_id
+                WHERE (a.category = '皇帝' AND b.category IN ('名臣', '名将'))
+                   OR (b.category = '皇帝' AND a.category IN ('名臣', '名将'))
+                """
+            ).fetchall()
+        self.assertEqual([], offenders)
 
     def test_purged_non_ming_entries_stay_out_of_the_catalog(self):
         from app.catalog import PEOPLE
