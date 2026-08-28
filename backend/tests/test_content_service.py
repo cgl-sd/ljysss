@@ -16,9 +16,8 @@ class ContentServiceTest(unittest.TestCase):
         # 748 为剔除清朝与现代错撞词条后的目录规模；下限放宽到 700 以容纳后续增补。
         self.assertGreaterEqual(len(payload["people"]), 700)
         self.assertLessEqual(len(payload["people"]), 760)
-        # 皇帝不与文臣武将建关系后，全库仅保留家庭、同僚与南明阵营类关系。
+        # 皇帝不与文臣武将建关系；关系网以家庭、同僚与南明阵营类为主，亲属补录可持续增加。
         self.assertGreaterEqual(len(payload["relationships"]), 30)
-        self.assertLessEqual(len(payload["relationships"]), 35)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
     def test_bootstrap_people_expose_structured_sections(self):
@@ -157,6 +156,14 @@ class ContentServiceTest(unittest.TestCase):
                 self.assertLessEqual(int(birth), 1644, f"{row['id']} 生年晚于明亡：{row['years']}")
             if death.isdigit():
                 self.assertLessEqual(int(death), 1700, f"{row['id']} 卒年晚于南明终局：{row['years']}")
+
+    def test_relation_types_stay_within_the_app_vocabulary(self):
+        from app.database import connect
+
+        known = {"君臣", "同僚", "统属", "政争", "师承", "父子", "母子", "配偶", "兄弟姐妹"}
+        with connect() as database:
+            labels = {row[0] for row in database.execute("SELECT DISTINCT relation_type FROM person_relation")}
+        self.assertFalse(labels - known, f"出现 App 端无法映射的关系类型：{labels - known}")
 
     def test_family_sections_describe_member_outcomes(self):
         payload = bootstrap_content()

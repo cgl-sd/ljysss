@@ -73,6 +73,9 @@ enum class RelationshipType(val label: String) {
     RIVAL("政争"),
     MENTOR("师承"),
     PARENT_CHILD("父子"),
+    MOTHER_CHILD("母子"),
+    SPOUSE("配偶"),
+    SIBLING("兄弟姐妹"),
 }
 
 data class PersonRelation(

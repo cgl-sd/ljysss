@@ -449,7 +449,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             PersonCard(
                                 person = person,
                                 children = relations
-                                    .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
+                                    .filter { it.fromName == person.name && it.type in parentChildTypes() }
                                     .map { it.toName },
                                 expanded = false,
                                 onClick = {
@@ -487,7 +487,7 @@ private fun PersonProfile(
     val lifeSection = person.sections.firstOrNull { it.key == "life" }
     val familySection = person.sections.firstOrNull { it.key == "family" }
     val children = relations
-        .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
+        .filter { it.fromName == person.name && it.type in parentChildTypes() }
         .map { it.toName }
     val life = lifeSection?.content?.takeIf { it.isNotBlank() } ?: person.biography
     val family = familySection?.content?.takeIf { it.isNotBlank() }
@@ -1568,6 +1568,9 @@ private fun RelationshipNetwork(relations: List<PersonRelation>) {
     }
 }
 
+/** 父母与子女的亲属行都计入“子女”名单；皇帝的宗室家庭关系也由此呈现。 */
+private fun parentChildTypes() = setOf(RelationshipType.PARENT_CHILD, RelationshipType.MOTHER_CHILD)
+
 private fun relationshipColor(type: RelationshipType): Color = when (type) {
     RelationshipType.RULER_MINISTER -> Vermilion
     RelationshipType.COMMAND -> Indigo
@@ -1575,6 +1578,9 @@ private fun relationshipColor(type: RelationshipType): Color = when (type) {
     RelationshipType.RIVAL -> InkSoft
     RelationshipType.MENTOR -> Celadon
     RelationshipType.PARENT_CHILD -> Vermilion
+    RelationshipType.MOTHER_CHILD -> Vermilion
+    RelationshipType.SPOUSE -> Celadon
+    RelationshipType.SIBLING -> Brass
 }
 
 @Composable
