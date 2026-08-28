@@ -91,6 +91,12 @@ class ContentServiceTest(unittest.TestCase):
         self.assertGreaterEqual(len(imported), 1_000)
         self.assertTrue(all(person["review_status"] for person in imported))
 
+    def test_cbdb_api_enriched_profile_has_factual_life_and_family_sections(self):
+        person = get_person("cbdb-100539")
+        self.assertIn("义乌", person["biography"])
+        self.assertIn("父亲：方汝霖", person["family_summary"])
+        self.assertEqual("已校验", person["verification_status"])
+
 
 if __name__ == "__main__":
     unittest.main()
