@@ -388,7 +388,6 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                         PersonProfile(
                             person = selectedPerson,
                             relations = relations,
-                            reigns = reigns,
                             onBack = ::returnFromProfile,
                         )
                     }
@@ -455,23 +454,13 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
 private fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
-    reigns: List<Reign>,
     onBack: () -> Unit,
 ) {
     val children = relations
         .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
         .map { it.toName }
-    val relatedPeople = relations
-        .filter { it.fromName == person.name || it.toName == person.name }
-        .filterNot { it.type == RelationshipType.PARENT_CHILD && it.fromName == person.name }
-    val relatedEvents = reigns.flatMap { it.events }.filter { person.name in it.participants }
-    val historicalContext = reigns
-        .filter { person.reign.contains(it.title) || person.reign == "明代" }
-        .joinToString("\n") { reign -> "${reign.title}（${reign.yearRange}）：${reign.summary}" }
-    val basicProfile = buildString {
-        append("姓名：${person.name}。分类：${person.category.label}。生卒：${person.years}。")
-        if (person.courtesyName.isNotBlank()) append("字／号：${person.courtesyName}。")
-    }
+    val family = children.joinToString("、")
+        .ifBlank { "家族、配偶与子嗣资料正在整理。" }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -500,27 +489,9 @@ private fun PersonProfile(
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
-            ProfileSection("基本资料", basicProfile)
-            ProfileSection("时代背景", historicalContext.ifBlank { "活动时期暂待校核。" })
-            ProfileSection("仕历与身份", "现有档案记为：${person.title}。具体任职时间、地点与升迁顺序将逐条补入可核查出处。")
-            ProfileSection("生平与经历", person.biography)
-            ProfileSection("家族与子嗣", children.joinToString("、").ifBlank { "当前尚未录入经校核的家族与子嗣资料。" })
-            ProfileSection(
-                "人物关系",
-                relatedPeople.joinToString("\n") { relation ->
-                    val counterpart = if (relation.fromName == person.name) relation.toName else relation.fromName
-                    "${relation.type.label} · $counterpart：${relation.note}"
-                }.ifBlank { "当前尚未录入经校核的人物关系。" },
-            )
-            ProfileSection(
-                "相关事件",
-                relatedEvents.joinToString("\n") { event -> "${event.year ?: ""} ${event.title}" }
-                    .ifBlank { "当前尚未建立可核查的事件关联。" },
-            )
-            ProfileSection(
-                "史料与校验状态",
-                "资料来源：${person.sourceLabel}。当前资料用于人物检索与导览；尚未校核的具体官职、亲属、封号和事迹不会作为确定事实展示。",
-            )
+            ProfileSection("生平（含教育背景）", person.biography)
+            ProfileSection("家族与子嗣", family)
+            ProfileSection("资料状态", person.verificationStatus)
         }
     }
 }
@@ -1579,7 +1550,7 @@ private fun PersonCard(
                             lineHeight = 21.sp,
                         )
                     }
-                    Text("资料：${person.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 20.sp)
+                    Text("资料状态：${person.verificationStatus}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 20.sp)
                 }
             }
         }

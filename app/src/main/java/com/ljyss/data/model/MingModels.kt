@@ -44,7 +44,8 @@ data class HistoricalPerson(
     val biography: String = note,
     /** 史料影印像或生成的绢本示意像均用后端资源键引用。 */
     val portraitKey: String? = null,
-    val sourceLabel: String = "《明史》人物列传（待卷次校核）",
+    /** 对用户只显示“已校验”或“未校验”；具体出处由资料页后续单独呈现。 */
+    val verificationStatus: String = "未校验",
 )
 
 enum class PeopleTab(val label: String) {

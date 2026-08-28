@@ -107,7 +107,7 @@ class RemoteMingRepository private constructor(
                     biography = person.optString("biography", person.getString("summary")),
                     portraitKey = person.optString("portrait_key")
                         .takeUnless { it.isBlank() || it == "null" },
-                    sourceLabel = person.getString("source_title"),
+                    verificationStatus = if (person.optString("review_status").contains("已校验")) "已校验" else "未校验",
                 )
             }
             val relations = root.getJSONArray("relationships").mapObjects { relation ->
