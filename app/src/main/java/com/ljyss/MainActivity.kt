@@ -6,7 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -60,6 +61,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -72,7 +74,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
@@ -579,30 +580,64 @@ private fun WorldReferenceMing(
                 .padding(horizontal = 5.dp)
                 .fillMaxWidth()
                 .height(122.dp),
+            circular = false,
+            pulseColor = Brass,
             onClick = {},
         )
     }
 }
 
 @Composable
-private fun WorldPressTarget(modifier: Modifier, onClick: () -> Unit) {
+private fun WorldPressTarget(
+    modifier: Modifier,
+    circular: Boolean = true,
+    pulseColor: Color = Celadon,
+    onClick: () -> Unit,
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.88f else 1f,
-        animationSpec = tween(durationMillis = 110),
-        label = "worldToolPress",
-    )
+    var tapCount by remember { mutableIntStateOf(0) }
+    val pulse = remember { Animatable(1f) }
+
+    LaunchedEffect(tapCount) {
+        if (tapCount > 0) {
+            pulse.snapTo(0f)
+            pulse.animateTo(1f, animationSpec = tween(420, easing = FastOutSlowInEasing))
+        }
+    }
+
     Box(
         modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
+            .clip(RoundedCornerShape(if (circular) 50 else 10))
+            .background(if (pressed) Ink.copy(alpha = 0.12f) else Color.Transparent)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    tapCount += 1
+                    onClick()
+                },
+            ),
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            if (pulse.value < 1f) {
+                val radius = size.minDimension * (0.32f + 0.56f * pulse.value)
+                val center = androidx.compose.ui.geometry.Offset(size.width / 2, size.height / 2)
+                drawCircle(
+                    color = pulseColor.copy(alpha = (1f - pulse.value) * 0.72f),
+                    radius = radius,
+                    center = center,
+                    style = Stroke(width = 1.5.dp.toPx()),
+                )
+                drawCircle(
+                    color = PaperLight.copy(alpha = (1f - pulse.value) * 0.46f),
+                    radius = radius * 0.7f,
+                    center = center,
+                    style = Stroke(width = 1.dp.toPx()),
+                )
             }
-            .clip(RoundedCornerShape(50))
-            .background(if (pressed) PaperLight.copy(alpha = 0.38f) else Color.Transparent)
-            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
-    )
+        }
+    }
 }
 
 @Composable
