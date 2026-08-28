@@ -456,7 +456,8 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
 @Composable
 private fun WorldScreen(contentPadding: PaddingValues) {
     var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
-    var timelineProgress by rememberSaveable { mutableStateOf(0.0f) }
+    // Align the initial indicator with the baked-in 1368 marker on the static atlas.
+    var timelineProgress by rememberSaveable { mutableStateOf(0.04f) }
 
     WorldReferenceMing(
         modernOverlayEnabled = modernOverlayEnabled,
@@ -554,7 +555,7 @@ private fun WorldReferenceMing(
         Canvas(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 145.dp, start = 12.dp, end = 12.dp)
+                .padding(bottom = 133.dp, start = 12.dp, end = 12.dp)
                 .fillMaxWidth()
                 .height(42.dp)
                 .pointerInput(Unit) {
