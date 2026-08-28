@@ -50,6 +50,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -75,8 +76,6 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -453,16 +452,12 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
 @Composable
 private fun WorldScreen(contentPadding: PaddingValues) {
     var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
-    // Align the initial indicator with the baked-in 1368 marker on the static atlas.
-    var timelineProgress by rememberSaveable { mutableStateOf(0.04f) }
 
     WorldReferenceMing(
         modernOverlayEnabled = modernOverlayEnabled,
         onModernOverlayToggle = {
             modernOverlayEnabled = !modernOverlayEnabled
         },
-        timelineProgress = timelineProgress,
-        onTimelineProgressChange = { timelineProgress = it.coerceIn(0f, 1f) },
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
@@ -471,15 +466,13 @@ private fun WorldScreen(contentPadding: PaddingValues) {
 }
 
 /**
- * The Ming atlas remains one approved static composition. Interactions are transparent
- * hit areas over the original image, so the historical map itself is never redrawn.
+ * The approved Ming atlas remains static. The only control is the bottom-right layers
+ * button, which toggles the preserved comparison overlay.
  */
 @Composable
 private fun WorldReferenceMing(
     modernOverlayEnabled: Boolean,
     onModernOverlayToggle: () -> Unit,
-    timelineProgress: Float,
-    onTimelineProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.background(XuanPaper)) {
@@ -501,12 +494,11 @@ private fun WorldReferenceMing(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = 8.dp)
-                    // The modern map remains one complete comparison layer over the unchanged
-                    // Ming reference image, while the time rail and event card stay visible.
+                    // The comparison layer ends before the source image's intentional lower
+                    // parchment margin, leaving the static Ming map visible beneath it.
                     .drawWithContent {
                         clipRect(
-                            top = 104.dp.toPx(),
-                            bottom = size.height - 212.dp.toPx(),
+                            bottom = size.height - 58.dp.toPx(),
                         ) {
                             this@drawWithContent.drawContent()
                         }
@@ -517,76 +509,26 @@ private fun WorldReferenceMing(
             )
         }
 
-        // Four original atlas tools: map, menu, locate and layers. The first three only
-        // acknowledge a press for now; layers directly toggles the comparison overlay.
-        WorldPressTarget(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 12.dp, top = 18.dp)
-                .size(48.dp),
-            onClick = {},
-        )
-        WorldPressTarget(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(end = 12.dp, top = 18.dp)
-                .size(48.dp),
-            onClick = {},
-        )
-        WorldPressTarget(
+        Surface(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 11.dp, bottom = 258.dp)
-                .size(48.dp),
-            onClick = {},
-        )
-        WorldPressTarget(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 11.dp, bottom = 204.dp)
-                .size(48.dp),
-            onClick = onModernOverlayToggle,
-        )
-
-        // The original rail stays visible; only its red current-time indicator is dynamic.
-        Canvas(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 133.dp, start = 12.dp, end = 12.dp)
-                .fillMaxWidth()
-                .height(42.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset -> onTimelineProgressChange(offset.x / size.width) },
-                        onDrag = { change, _ -> onTimelineProgressChange(change.position.x / size.width) },
-                    )
-                },
+                .padding(end = 16.dp, bottom = 16.dp),
+            shape = RoundedCornerShape(50),
+            color = PaperLight.copy(alpha = 0.94f),
+            border = BorderStroke(1.dp, Brass.copy(alpha = 0.55f)),
         ) {
-            val trackStart = 10.dp.toPx()
-            val trackEnd = size.width - 10.dp.toPx()
-            val indicatorX = trackStart + (trackEnd - trackStart) * timelineProgress
-            drawCircle(color = PaperLight.copy(alpha = 0.9f), radius = 8.dp.toPx(), center = androidx.compose.ui.geometry.Offset(indicatorX, size.height / 2))
-            drawCircle(color = Vermilion, radius = 5.dp.toPx(), center = androidx.compose.ui.geometry.Offset(indicatorX, size.height / 2))
+            IconButton(
+                onClick = onModernOverlayToggle,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Layers,
+                    contentDescription = "切换现代区划图层",
+                    tint = Ink,
+                )
+            }
         }
-
-        // The event card is intentionally a press-only affordance until its detail view exists.
-        WorldPressTarget(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 5.dp)
-                .fillMaxWidth()
-                .height(122.dp),
-            onClick = {},
-        )
     }
-}
-
-@Composable
-private fun WorldPressTarget(modifier: Modifier, onClick: () -> Unit) {
-    Box(
-        modifier = modifier
-            .clickable(interactionSource = null, indication = null, onClick = onClick),
-    )
 }
 
 @Composable
