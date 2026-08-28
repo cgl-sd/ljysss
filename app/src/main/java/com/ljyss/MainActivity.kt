@@ -324,9 +324,10 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
-    var expandedPerson by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
+    val allPeople = remember(repository) { repository.allPeople() }
     val people = repository.people(selectedCategory).filter { person ->
         val keyword = query.trim()
         keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword)
@@ -336,7 +337,13 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
         item { MingMasthead() }
         item { OrnamentalTitle("人事") }
         item {
-            PeopleTabRail(selected = selectedTab, onSelected = { selectedTab = it })
+            PeopleTabRail(
+                selected = selectedTab,
+                onSelected = {
+                    selectedTab = it
+                    selectedPersonName = null
+                },
+            )
         }
         when (selectedTab) {
             PeopleTab.DYNASTY -> {
@@ -347,59 +354,66 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 item {
                     DynastyArchive(
                         reign = selectedReign,
-                        people = repository.allPeople().filter { it.reign.contains(selectedReign.title) },
+                        people = allPeople.filter { it.reign.contains(selectedReign.title) },
                         onPersonSelected = { person ->
                             selectedCategory = person.category
                             query = person.name
-                            expandedPerson = person.name
+                            selectedPersonName = person.name
                             selectedTab = PeopleTab.PEOPLE
                         },
                     )
                 }
             }
             PeopleTab.PEOPLE -> {
-                item {
-                    CategoryRail(
-                        selectedCategory = selectedCategory,
-                        onSelected = {
-                            selectedCategory = it
-                            expandedPerson = null
-                        },
-                    )
-                }
-                item {
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        shape = CutCornerShape(7.dp),
-                        placeholder = {
-                            Text("搜索姓名、官职或年号", color = Brass.copy(alpha = 0.72f), fontFamily = FontFamily.Serif, fontSize = 18.sp)
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Outlined.Search, contentDescription = null, tint = Brass)
-                        },
-                    )
-                }
-                item { PersonChronologyRail(reigns) }
-                item {
-                    SourceNote("现收录 ${repository.allPeople().size} 位人物；勋贵家系的已编子嗣会在人物卡中列出，图像资料后续另行补入。")
-                }
-                if (people.isEmpty()) {
-                    item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
+                val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
+                if (selectedPerson != null) {
+                    item {
+                        PersonProfile(
+                            person = selectedPerson,
+                            relations = relations,
+                            events = reigns.flatMap { it.events },
+                            onBack = { selectedPersonName = null },
+                        )
+                    }
                 } else {
-                    items(people, key = { it.name }) { person ->
-                        PersonCard(
-                            person = person,
-                            children = relations
-                                .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
-                                .map { it.toName },
-                            expanded = expandedPerson == person.name,
-                            onClick = {
-                                expandedPerson = if (expandedPerson == person.name) null else person.name
+                    item {
+                        CategoryRail(
+                            selectedCategory = selectedCategory,
+                            onSelected = { selectedCategory = it },
+                        )
+                    }
+                    item {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = CutCornerShape(7.dp),
+                            placeholder = {
+                                Text("搜索姓名、官职或年号", color = Brass.copy(alpha = 0.72f), fontFamily = FontFamily.Serif, fontSize = 18.sp)
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Search, contentDescription = null, tint = Brass)
                             },
                         )
+                    }
+                    item { PersonChronologyRail(reigns) }
+                    item {
+                        SourceNote("现收录 ${allPeople.size} 位人物；勋贵家系的已编子嗣会在人物卡中列出，图像资料后续另行补入。")
+                    }
+                    if (people.isEmpty()) {
+                        item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
+                    } else {
+                        items(people, key = { it.name }) { person ->
+                            PersonCard(
+                                person = person,
+                                children = relations
+                                    .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
+                                    .map { it.toName },
+                                expanded = false,
+                                onClick = { selectedPersonName = person.name },
+                            )
+                        }
                     }
                 }
             }
@@ -414,6 +428,83 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PersonProfile(
+    person: HistoricalPerson,
+    relations: List<PersonRelation>,
+    events: List<HistoricalEvent>,
+    onBack: () -> Unit,
+) {
+    val children = relations
+        .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
+        .map { it.toName }
+    val relatedPeople = relations
+        .filter { it.fromName == person.name || it.toName == person.name }
+        .filterNot { it.type == RelationshipType.PARENT_CHILD && it.fromName == person.name }
+    val relatedEvents = events.filter { person.name in it.participants }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(10.dp),
+        border = BorderStroke(1.25.dp, LineGold),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.96f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(11.dp),
+        ) {
+            Text(
+                "‹ 返回人物目录",
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .clip(CutCornerShape(5.dp))
+                    .clickable(onClick = onBack)
+                    .padding(horizontal = 5.dp, vertical = 4.dp),
+                color = Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            PersonPortrait(person)
+            Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
+            ProfileSection("生平介绍", person.biography)
+            if (person.courtesyName.isNotBlank()) ProfileSection("字／号", person.courtesyName)
+            if (children.isNotEmpty()) ProfileSection("子嗣（${children.size}）", children.joinToString("、"))
+            if (relatedPeople.isNotEmpty()) {
+                ProfileSection(
+                    "人物关系",
+                    relatedPeople.joinToString("\n") { relation ->
+                        val counterpart = if (relation.fromName == person.name) relation.toName else relation.fromName
+                        "${relation.type.label} · $counterpart：${relation.note}"
+                    },
+                )
+            }
+            if (relatedEvents.isNotEmpty()) {
+                ProfileSection(
+                    "相关事件",
+                    relatedEvents.joinToString("\n") { event -> "${event.year ?: ""} ${event.title}" },
+                )
+            }
+            Text("资料：${person.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 20.sp)
+        }
+    }
+}
+
+@Composable
+private fun ProfileSection(title: String, content: String) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+        Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
     }
 }
 
