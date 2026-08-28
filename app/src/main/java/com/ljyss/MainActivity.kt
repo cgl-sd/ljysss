@@ -329,6 +329,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     var profileOrigin by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var relationView by rememberSaveable { mutableStateOf(RelationView.PERSON) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
@@ -336,6 +337,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     val sortedPeople = remember(repository) {
         allPeople.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
     }
+    val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val childrenByPerson = remember(relations) {
         relations
             .filter { it.type in parentChildTypes() }
@@ -424,7 +426,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                         PersonProfile(
                             person = selectedPerson,
                             relations = relations,
-                            events = reigns.flatMap { it.events },
+                            events = allEvents,
                             onBack = ::closeProfileStep,
                             onOpenPerson = ::openRelatedPerson,
                         )
@@ -471,8 +473,18 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 }
             }
             PeopleTab.RELATIONSHIPS -> {
-                item { RelationshipNetwork(repository.personRelations()) }
-                item { RelationshipLedger(repository.personRelations()) }
+                item {
+                    RelationViewRail(
+                        selected = relationView,
+                        onSelected = { relationView = it },
+                    )
+                }
+                if (relationView == RelationView.PERSON) {
+                    item { RelationshipNetwork(repository.personRelations()) }
+                    item { RelationshipLedger(repository.personRelations()) }
+                } else {
+                    item { EventRelationshipNetwork(allEvents) }
+                }
             }
             PeopleTab.INSTITUTIONS -> {
                 item { InstitutionIntro() }
@@ -1619,6 +1631,172 @@ private fun RelationshipNode(name: String, emphasized: Boolean, modifier: Modifi
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
         )
+    }
+}
+
+/** 关系页的双视图：人物关系网络与事件关系网络。 */
+private enum class RelationView(val label: String) {
+    PERSON("人物关系"),
+    EVENT("事件关系"),
+}
+
+@Composable
+private fun RelationViewRail(selected: RelationView, onSelected: (RelationView) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        RelationView.entries.forEach { view ->
+            val active = view == selected
+            Surface(
+                modifier = Modifier
+                    .clip(CutCornerShape(6.dp))
+                    .clickable { onSelected(view) },
+                shape = CutCornerShape(6.dp),
+                color = if (active) Celadon else PaperLight,
+                border = BorderStroke(1.dp, if (active) Celadon else LineGold),
+            ) {
+                Text(
+                    text = view.label,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                    color = if (active) PaperLight else Ink,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+
+/** 事件为中心的辐射图：辐条一端是参与人物，另一端是共享人物的其他事件。 */
+@Composable
+private fun EventRelationshipNetwork(events: List<HistoricalEvent>) {
+    val graphEvents = remember(events) { events.filter { it.participants.isNotEmpty() } }
+    val defaultFocusId = remember(graphEvents) {
+        graphEvents.maxByOrNull { it.participants.size }?.id.orEmpty()
+    }
+    var selectedFocusId by rememberSaveable { mutableStateOf(defaultFocusId) }
+    val focus = graphEvents.firstOrNull { it.id == selectedFocusId } ?: graphEvents.firstOrNull()
+    val participants = focus?.participants.orEmpty().take(8)
+    val relatedEvents = remember(focus) {
+        focus
+            ?.let { event ->
+                graphEvents
+                    .filter { other -> other.id != event.id && other.participants.any { it in event.participants } }
+                    .sortedByDescending { other -> other.participants.count { it in event.participants } }
+                    .take(8)
+            }
+            .orEmpty()
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(10.dp),
+        border = BorderStroke(1.25.dp, LineGold),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.96f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("事件关系图", color = Ink, fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "以事件为中心：红线连出参与人物，褐线连出与其共享人物的其他事件。选择下方任一事件继续查看。",
+                color = InkSoft,
+                fontFamily = FontFamily.Serif,
+                fontSize = 14.sp,
+                lineHeight = 21.sp,
+            )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                contentPadding = PaddingValues(horizontal = 1.dp),
+            ) {
+                items(graphEvents, key = { it.id }) { event ->
+                    val selected = event.id == focus?.id
+                    Surface(
+                        modifier = Modifier
+                            .clip(CutCornerShape(5.dp))
+                            .clickable { selectedFocusId = event.id },
+                        shape = CutCornerShape(5.dp),
+                        color = if (selected) Celadon else PaperShade,
+                        border = BorderStroke(1.dp, if (selected) Celadon else LineGold),
+                    ) {
+                        Text(
+                            text = "${event.year ?: "年份待考"}·${event.title}",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            color = if (selected) PaperLight else Ink,
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+            val spokeCount = participants.size + relatedEvents.size
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (spokeCount > 6) 360.dp else 280.dp)
+                    .clip(CutCornerShape(8.dp))
+                    .background(XuanPaper),
+            ) {
+                val eventColor = Brass
+                val personColor = Vermilion
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+                    val spokes = participants.map { it to personColor } + relatedEvents.map { it.title to eventColor }
+                    spokes.forEachIndexed { index, (_, color) ->
+                        val angle = -Math.PI / 2 + (Math.PI * 2 * index / spokeCount.coerceAtLeast(1))
+                        drawLine(
+                            color = color.copy(alpha = .72f),
+                            start = center,
+                            end = androidx.compose.ui.geometry.Offset(
+                                x = center.x + size.width * .39f * cos(angle).toFloat(),
+                                y = center.y + size.height * .36f * sin(angle).toFloat(),
+                            ),
+                            strokeWidth = 2.dp.toPx(),
+                            cap = StrokeCap.Round,
+                        )
+                    }
+                }
+                if (focus != null) {
+                    RelationshipNode(
+                        name = "${focus.year ?: ""} ${focus.title}",
+                        emphasized = true,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
+                val spokes = participants.map { it to personColor } + relatedEvents.map { it.title to eventColor }
+                spokes.forEachIndexed { index, (label, _) ->
+                    val angle = -Math.PI / 2 + (Math.PI * 2 * index / spokeCount.coerceAtLeast(1))
+                    RelationshipNode(
+                        name = label,
+                        emphasized = false,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(
+                                x = maxWidth / 2 + maxWidth * .39f * cos(angle).toFloat() - 30.dp,
+                                y = maxHeight / 2 + maxHeight * .36f * sin(angle).toFloat() - 16.dp,
+                            ),
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(modifier = Modifier.size(8.dp), shape = RoundedCornerShape(50), color = Vermilion) {}
+                    Text("参与人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(modifier = Modifier.size(8.dp), shape = RoundedCornerShape(50), color = Brass) {}
+                    Text("关联事件", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+                }
+            }
+            Text(
+                "「${focus?.year ?: "年份待考"} ${focus?.title.orEmpty()}」参与人物 ${participants.size} 位；与其共享人物的事件 ${relatedEvents.size} 件。",
+                color = Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 13.sp,
+            )
+        }
     }
 }
 
