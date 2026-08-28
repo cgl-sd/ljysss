@@ -19,6 +19,8 @@ sys.path.insert(0, str(BACKEND_DIRECTORY))
 
 from app.database import connect, initialize_database  # noqa: E402
 
+PENDING_FAMILY = "相关家族与子嗣资料尚待核验。"
+
 
 def unverified_life(name: str, years: str) -> str:
     return (
@@ -43,8 +45,8 @@ def add_person_templates(db: sqlite3.Connection) -> int:
     for person in people:
         life = unverified_life(person["name"], person["years"])
         db.execute(
-            "UPDATE person SET biography = ?, family_summary = '', verification_status = '未校验' WHERE id = ?",
-            (life, person["id"]),
+            "UPDATE person SET biography = ?, family_summary = ?, verification_status = '未校验' WHERE id = ?",
+            (life, PENDING_FAMILY, person["id"]),
         )
         db.executemany(
             """
@@ -55,7 +57,7 @@ def add_person_templates(db: sqlite3.Connection) -> int:
             """,
             [
                 (person["id"], "life", "生平（含教育背景）", 1, life),
-                (person["id"], "family", "家族与子嗣", 2, "相关家族与子嗣资料尚待核验。"),
+                (person["id"], "family", "家族与子嗣", 2, PENDING_FAMILY),
                 (person["id"], "verification", "资料状态", 3, "未校验"),
             ],
         )
@@ -72,6 +74,36 @@ def add_person_templates(db: sqlite3.Connection) -> int:
             ],
         )
     return len(people)
+
+
+def synchronize_unverified_family_fields(db: sqlite3.Connection) -> int:
+    """Keep the API-facing field and the display section identical for unresolved records."""
+
+    result = db.execute(
+        """
+        UPDATE person
+        SET family_summary = ?
+        WHERE source_id = 'cbdb-20210525'
+          AND verification_status = '未校验'
+          AND family_summary = ''
+        """,
+        (PENDING_FAMILY,),
+    )
+    db.execute(
+        """
+        UPDATE person_section
+        SET content = ?
+        WHERE section_key = 'family'
+          AND person_id IN (
+              SELECT id FROM person
+              WHERE source_id = 'cbdb-20210525'
+                AND verification_status = '未校验'
+                AND family_summary = ?
+          )
+        """,
+        (PENDING_FAMILY, PENDING_FAMILY),
+    )
+    return result.rowcount
 
 
 def add_event_templates(db: sqlite3.Connection) -> int:
@@ -125,8 +157,9 @@ def main() -> int:
     initialize_database()
     with connect() as db:
         people = add_person_templates(db)
+        synchronized = synchronize_unverified_family_fields(db)
         events = add_event_templates(db)
-    print(f"已建立：{people} 个人物档案模板，{events} 个事件档案模板。")
+    print(f"已建立：{people} 个人物档案模板，{events} 个事件档案模板；同步 {synchronized} 条待核验家族资料。")
     return 0
 
 

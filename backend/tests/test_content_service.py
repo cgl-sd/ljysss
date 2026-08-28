@@ -45,6 +45,28 @@ class ContentServiceTest(unittest.TestCase):
         self.assertEqual(people, people_with_life)
         self.assertEqual(events, events_with_background)
 
+    def test_profile_section_values_match_the_api_fields(self):
+        from app.database import connect
+
+        with connect() as database:
+            life_in_sync = database.execute(
+                """
+                SELECT COUNT(*) FROM person AS person
+                JOIN person_section AS section ON section.person_id = person.id AND section.section_key = 'life'
+                WHERE person.biography = section.content
+                """
+            ).fetchone()[0]
+            family_in_sync = database.execute(
+                """
+                SELECT COUNT(*) FROM person AS person
+                JOIN person_section AS section ON section.person_id = person.id AND section.section_key = 'family'
+                WHERE person.family_summary = section.content
+                """
+            ).fetchone()[0]
+            people = database.execute("SELECT COUNT(*) FROM person").fetchone()[0]
+        self.assertEqual(people, life_in_sync)
+        self.assertEqual(people, family_in_sync)
+
     def test_person_research_audit_is_private_and_uses_recoverable_states(self):
         from app.database import connect
 
