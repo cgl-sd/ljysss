@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from .catalog import EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATIONS, SOURCE
+from .catalog import CBDB_SOURCE, EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATIONS, SOURCE
 
 DATA_DIRECTORY = Path(__file__).resolve().parent.parent / "data"
 DATABASE_PATH = DATA_DIRECTORY / "ming_history.sqlite3"
@@ -111,7 +111,7 @@ def initialize_database() -> None:
 
     with connect() as connection:
         connection.executescript(SCHEMA)
-        connection.execute(
+        connection.executemany(
             """
             INSERT INTO source(id, title, citation, url, review_status) VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
@@ -120,7 +120,10 @@ def initialize_database() -> None:
                 url = excluded.url,
                 review_status = excluded.review_status
             """,
-            tuple(SOURCE[key] for key in ("id", "title", "citation", "url", "review_status")),
+            [
+                tuple(source[key] for key in ("id", "title", "citation", "url", "review_status"))
+                for source in (SOURCE, CBDB_SOURCE)
+            ],
         )
         connection.executemany(
             """

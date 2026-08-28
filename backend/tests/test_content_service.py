@@ -13,7 +13,7 @@ class ContentServiceTest(unittest.TestCase):
         payload = bootstrap_content()
         self.assertEqual(17, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
-        self.assertGreaterEqual(len(payload["people"]), 144)
+        self.assertGreaterEqual(len(payload["people"]), 1_100)
         self.assertGreaterEqual(len(payload["relationships"]), 63)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
 
@@ -31,6 +31,12 @@ class ContentServiceTest(unittest.TestCase):
             if relationship["from_name"] == "徐达" and relationship["relation_type"] == "父子"
         }
         self.assertEqual({"徐辉祖", "徐添福", "徐膺绪", "徐增寿"}, children)
+
+    def test_cbdb_import_keeps_its_own_provenance(self):
+        payload = bootstrap_content()
+        imported = [person for person in payload["people"] if person["source_id"] == "cbdb-20210525"]
+        self.assertGreaterEqual(len(imported), 1_000)
+        self.assertTrue(all(person["review_status"] for person in imported))
 
 
 if __name__ == "__main__":

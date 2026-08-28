@@ -27,6 +27,7 @@ enum class PersonCategory(val label: String) {
     MINISTERS("名臣"),
     GENERALS("名将"),
     NOBLES("勋贵"),
+    RELATED_PEOPLE("相关人物"),
     LITERATI("文人"),
     EUNUCHS("宦官"),
 }

@@ -12,6 +12,16 @@ SOURCE = {
     "review_status": "待卷次校核",
 }
 
+# 仅保存可公开展示的索引字段；CBDB 原始库不随本项目分发。人物长传、官职和亲属
+# 关系仍须回到原始资料和专题研究逐条校核后再补入。
+CBDB_SOURCE = {
+    "id": "cbdb-20210525",
+    "title": "中国历代人物传记资料库（CBDB）· 20210525 SQLite 版",
+    "citation": "China Biographical Database Project (CBDB), 20210525 SQLite release; 明代人物索引按 CC BY-NC-SA 4.0 导入，具体条目待本项目校核。",
+    "url": "https://doi.org/10.7910/DVN/PAGGQS",
+    "review_status": "CBDB 索引导入，待本项目卷次校核",
+}
+
 
 def rows(text: str, fields: tuple[str, ...]) -> list[dict[str, str]]:
     return [
