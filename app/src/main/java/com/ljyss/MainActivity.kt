@@ -33,6 +33,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -327,6 +328,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     var profileOrigin by rememberSaveable { mutableStateOf<String?>(null) }
+    var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
@@ -339,13 +341,33 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
         val origin = profileOrigin
         selectedPersonName = null
         profileOrigin = null
+        personStack = emptyList()
         query = ""
         if (origin == "dynasty") selectedTab = PeopleTab.DYNASTY
     }
 
+    // 人物详情内跳转另一人物时保留来路，返回键与页内返回逐层回退，最后才退出详情。
+    fun openRelatedPerson(targetName: String) {
+        val current = selectedPersonName
+        if (current != null && current != targetName && allPeople.any { it.name == targetName }) {
+            personStack = personStack + current
+            selectedPersonName = targetName
+        }
+    }
+
+    fun closeProfileStep() {
+        val previous = personStack.lastOrNull()
+        if (previous != null) {
+            personStack = personStack.dropLast(1)
+            selectedPersonName = previous
+        } else {
+            returnFromProfile()
+        }
+    }
+
     // 人物履历打开后，系统返回键与页面内返回键保持同一行为，并恢复进入详情前的栏目。
     BackHandler(enabled = selectedPersonName != null) {
-        returnFromProfile()
+        closeProfileStep()
     }
 
     MingList(contentPadding) {
@@ -376,6 +398,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             query = person.name
                             selectedPersonName = person.name
                             profileOrigin = "dynasty"
+                            personStack = emptyList()
                             selectedTab = PeopleTab.PEOPLE
                         },
                     )
@@ -389,7 +412,8 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                             person = selectedPerson,
                             relations = relations,
                             events = reigns.flatMap { it.events },
-                            onBack = ::returnFromProfile,
+                            onBack = ::closeProfileStep,
+                            onOpenPerson = ::openRelatedPerson,
                         )
                     }
                 } else {
@@ -431,6 +455,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                                 onClick = {
                                     selectedPersonName = person.name
                                     profileOrigin = "people"
+                                    personStack = emptyList()
                                 },
                             )
                         }
@@ -457,10 +482,10 @@ private fun PersonProfile(
     relations: List<PersonRelation>,
     events: List<HistoricalEvent>,
     onBack: () -> Unit,
+    onOpenPerson: (String) -> Unit,
 ) {
     val lifeSection = person.sections.firstOrNull { it.key == "life" }
     val familySection = person.sections.firstOrNull { it.key == "family" }
-    val verificationSection = person.sections.firstOrNull { it.key == "verification" }
     val children = relations
         .filter { it.fromName == person.name && it.type == RelationshipType.PARENT_CHILD }
         .map { it.toName }
@@ -470,14 +495,11 @@ private fun PersonProfile(
             .filter { it.isNotBlank() }
             .joinToString("\n")
             .ifBlank { "家族、配偶与子嗣资料正在整理。" }
-    val verification = verificationSection?.content?.takeIf { it.isNotBlank() }
-        ?: person.verificationStatus
     // 关系与事件按人物交叉索引；没有记录时给出指向「关系」页的引导，避免空栏目。
     val personRelations = relations
         .filter { it.fromName == person.name || it.toName == person.name }
         .map { relation ->
-            val other = if (relation.fromName == person.name) relation.toName else relation.fromName
-            "「${relation.type.label}」${other}${relation.note.takeIf { it.isNotBlank() }?.let { "——$it" } ?: ""}"
+            relation to (if (relation.fromName == person.name) relation.toName else relation.fromName)
         }
     val relatedEvents = events
         .filter { event -> event.participants.any { it == person.name } }
@@ -513,15 +535,12 @@ private fun PersonProfile(
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
             ProfileSection("生平", readableParagraphs(life))
             ProfileSection("家族与子嗣", readableParagraphs(family))
-            ProfileSection(
-                "人物关系",
-                personRelations.ifEmpty { listOf("暂无已编关系，可到「关系」页查看全量人物网络。") },
-            )
+            RelationSection(personRelations, onOpenPerson)
             ProfileSection(
                 "相关事件",
                 relatedEvents.ifEmpty { listOf("暂无已编的关联事件记录。") },
             )
-            ProfileSection("资料状态", listOf(verification))
+            VerificationSection(person.verificationStatus)
         }
     }
 }
@@ -545,6 +564,106 @@ private fun ProfileSection(title: String, paragraphs: List<String>) {
                     textAlign = TextAlign.Justify,
                 )
             }
+        }
+    }
+}
+
+/** 人物详情里的关系条目：点击任意一条即跳转到对方的人物详情。 */
+@Composable
+private fun RelationSection(relations: List<Pair<PersonRelation, String>>, onOpenPerson: (String) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text("人物关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+        if (relations.isEmpty()) {
+            Text(
+                "暂无已编关系，可到「关系」页查看全量人物网络。",
+                color = InkSoft,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                lineHeight = 26.sp,
+            )
+            return@Column
+        }
+        Text(
+            "轻触条目，可跳转到对应人物",
+            color = Brass,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 11.sp,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            relations.forEach { (relation, otherName) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CutCornerShape(5.dp))
+                        .clickable { onOpenPerson(otherName) }
+                        .padding(horizontal = 4.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "「${relation.type.label}」$otherName",
+                            color = Ink,
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        if (relation.note.isNotBlank()) {
+                            Text(
+                                relation.note,
+                                color = InkSoft,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 13.sp,
+                                lineHeight = 20.sp,
+                            )
+                        }
+                    }
+                    Text(
+                        "›",
+                        color = Brass,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 资料状态只呈现是否校验本身，用无衬线字体与正文的宋体区分。 */
+@Composable
+private fun VerificationSection(status: String) {
+    val verified = status.contains("已校验")
+    val tint = if (verified) Celadon else Brass
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text("资料状态", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+        Row(
+            modifier = Modifier.padding(top = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(CircleShape)
+                    .background(tint),
+            )
+            Text(
+                if (verified) "已校验" else "未校验",
+                color = tint,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 2.sp,
+            )
         }
     }
 }
