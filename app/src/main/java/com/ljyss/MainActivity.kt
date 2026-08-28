@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -32,6 +34,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -68,6 +72,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
@@ -75,6 +80,8 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -449,16 +456,15 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
 @Composable
 private fun WorldScreen(contentPadding: PaddingValues) {
     var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
-    var layerMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    var timelineProgress by rememberSaveable { mutableStateOf(0.0f) }
 
     WorldReferenceMing(
         modernOverlayEnabled = modernOverlayEnabled,
-        layerMenuExpanded = layerMenuExpanded,
-        onLayerMenuToggle = { layerMenuExpanded = !layerMenuExpanded },
         onModernOverlayToggle = {
             modernOverlayEnabled = !modernOverlayEnabled
-            layerMenuExpanded = false
         },
+        timelineProgress = timelineProgress,
+        onTimelineProgressChange = { timelineProgress = it.coerceIn(0f, 1f) },
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
@@ -467,15 +473,15 @@ private fun WorldScreen(contentPadding: PaddingValues) {
 }
 
 /**
- * The Ming atlas remains one approved, non-interactive composition. The only dynamic
- * element is the deliberate modern comparison layer opened from the atlas's layer control.
+ * The Ming atlas remains one approved static composition. Interactions are transparent
+ * hit areas over the original image, so the historical map itself is never redrawn.
  */
 @Composable
 private fun WorldReferenceMing(
     modernOverlayEnabled: Boolean,
-    layerMenuExpanded: Boolean,
-    onLayerMenuToggle: () -> Unit,
     onModernOverlayToggle: () -> Unit,
+    timelineProgress: Float,
+    onTimelineProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.background(XuanPaper)) {
@@ -513,57 +519,89 @@ private fun WorldReferenceMing(
             )
         }
 
-        if (layerMenuExpanded) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 64.dp, bottom = 202.dp)
-                    .width(164.dp),
-                shape = CutCornerShape(7.dp),
-                color = PaperLight.copy(alpha = 0.97f),
-                border = BorderStroke(1.dp, Brass.copy(alpha = 0.82f)),
-            ) {
-                Column(
-                    modifier = Modifier.padding(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(7.dp),
-                ) {
-                    Text("图层", color = Ink, fontFamily = FontFamily.Serif, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(CutCornerShape(4.dp))
-                            .clickable(onClick = onModernOverlayToggle),
-                        shape = CutCornerShape(4.dp),
-                        color = if (modernOverlayEnabled) Celadon.copy(alpha = 0.14f) else Color.Transparent,
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(7.dp),
-                        ) {
-                            Text(if (modernOverlayEnabled) "✓" else "○", color = Celadon, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text(
-                                if (modernOverlayEnabled) "隐藏现代区划" else "叠加现代区划",
-                                color = Ink,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 13.sp,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // This is the only interactive region in the historic atlas: its layer control.
-        Box(
+        // Four original atlas tools: map, menu, locate and layers. The first three only
+        // acknowledge a press for now; layers directly toggles the comparison overlay.
+        WorldPressTarget(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 12.dp, top = 18.dp)
+                .size(48.dp),
+            onClick = {},
+        )
+        WorldPressTarget(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 12.dp, top = 18.dp)
+                .size(48.dp),
+            onClick = {},
+        )
+        WorldPressTarget(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 11.dp, bottom = 258.dp)
+                .size(48.dp),
+            onClick = {},
+        )
+        WorldPressTarget(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 11.dp, bottom = 204.dp)
-                .size(48.dp)
-                .clip(RoundedCornerShape(50))
-                .clickable(onClick = onLayerMenuToggle),
+                .size(48.dp),
+            onClick = onModernOverlayToggle,
+        )
+
+        // The original rail stays visible; only its red current-time indicator is dynamic.
+        Canvas(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 145.dp, start = 12.dp, end = 12.dp)
+                .fillMaxWidth()
+                .height(42.dp)
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset -> onTimelineProgressChange(offset.x / size.width) },
+                        onDrag = { change, _ -> onTimelineProgressChange(change.position.x / size.width) },
+                    )
+                },
+        ) {
+            val trackStart = 10.dp.toPx()
+            val trackEnd = size.width - 10.dp.toPx()
+            val indicatorX = trackStart + (trackEnd - trackStart) * timelineProgress
+            drawCircle(color = PaperLight.copy(alpha = 0.9f), radius = 8.dp.toPx(), center = androidx.compose.ui.geometry.Offset(indicatorX, size.height / 2))
+            drawCircle(color = Vermilion, radius = 5.dp.toPx(), center = androidx.compose.ui.geometry.Offset(indicatorX, size.height / 2))
+        }
+
+        // The event card is intentionally a press-only affordance until its detail view exists.
+        WorldPressTarget(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 5.dp)
+                .fillMaxWidth()
+                .height(122.dp),
+            onClick = {},
         )
     }
+}
+
+@Composable
+private fun WorldPressTarget(modifier: Modifier, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.88f else 1f,
+        animationSpec = tween(durationMillis = 110),
+        label = "worldToolPress",
+    )
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(RoundedCornerShape(50))
+            .background(if (pressed) PaperLight.copy(alpha = 0.38f) else Color.Transparent)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
+    )
 }
 
 @Composable
