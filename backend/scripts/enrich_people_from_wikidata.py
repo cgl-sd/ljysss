@@ -181,15 +181,35 @@ def profile_text(person: sqlite3.Row, entity: dict, lookup: dict[str, dict]) -> 
 def main() -> int:
     parser = argparse.ArgumentParser(description="从 Wikidata 精确匹配建立人物生平与家族资料")
     parser.add_argument("--all", action="store_true", help="处理所有人物；默认只处理首批核心人物")
+    parser.add_argument(
+        "--source-id",
+        help="只处理指定来源的人物；例如 cbdb-20210525。与 --all 不能同时使用。",
+    )
+    parser.add_argument(
+        "--unverified-only",
+        action="store_true",
+        help="只复核当前仍标记为“未校验”的人物。",
+    )
     parser.add_argument("--limit", type=int, default=0, help="限制处理条数，0 表示不限制")
     parser.add_argument("--offset", type=int, default=0, help="跳过前若干条，用于分批持久化")
     parser.add_argument("--sleep", type=float, default=1.5, help="每次检索之间的等待秒数")
     args = parser.parse_args()
 
     initialize_database()
+    if args.all and args.source_id:
+        parser.error("--all 与 --source-id 不能同时使用")
+    conditions: list[str] = []
+    parameters: list[str] = []
+    if args.source_id:
+        conditions.append("source_id = ?")
+        parameters.append(args.source_id)
+    elif not args.all:
+        conditions.append("source_id <> 'cbdb-20210525'")
+    if args.unverified_only:
+        conditions.append("verification_status = '未校验'")
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     with connect() as db:
-        where = "" if args.all else "WHERE source_id <> 'cbdb-20210525'"
-        people = db.execute(f"SELECT * FROM person {where} ORDER BY id").fetchall()
+        people = db.execute(f"SELECT * FROM person {where} ORDER BY id", parameters).fetchall()
     people = people[args.offset :]
     if args.limit:
         people = people[: args.limit]
