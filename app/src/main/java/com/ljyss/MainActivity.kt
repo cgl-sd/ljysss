@@ -388,6 +388,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                         PersonProfile(
                             person = selectedPerson,
                             relations = relations,
+                            events = reigns.flatMap { it.events },
                             onBack = ::returnFromProfile,
                         )
                     }
@@ -454,6 +455,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
 private fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
+    events: List<HistoricalEvent>,
     onBack: () -> Unit,
 ) {
     val lifeSection = person.sections.firstOrNull { it.key == "life" }
@@ -470,6 +472,17 @@ private fun PersonProfile(
             .ifBlank { "家族、配偶与子嗣资料正在整理。" }
     val verification = verificationSection?.content?.takeIf { it.isNotBlank() }
         ?: person.verificationStatus
+    // 关系与事件按人物交叉索引；没有记录时给出指向「关系」页的引导，避免空栏目。
+    val personRelations = relations
+        .filter { it.fromName == person.name || it.toName == person.name }
+        .map { relation ->
+            val other = if (relation.fromName == person.name) relation.toName else relation.fromName
+            "「${relation.type.label}」${other}${relation.note.takeIf { it.isNotBlank() }?.let { "——$it" } ?: ""}"
+        }
+    val relatedEvents = events
+        .filter { event -> event.participants.any { it == person.name } }
+        .sortedBy { it.year ?: Int.MAX_VALUE }
+        .map { event -> "${event.year?.toString() ?: "年份待考"} · ${event.title}\n${event.description}" }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -498,8 +511,16 @@ private fun PersonProfile(
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
-            ProfileSection("生平（含教育背景）", readableParagraphs(life))
+            ProfileSection("生平", readableParagraphs(life))
             ProfileSection("家族与子嗣", readableParagraphs(family))
+            ProfileSection(
+                "人物关系",
+                personRelations.ifEmpty { listOf("暂无已编关系，可到「关系」页查看全量人物网络。") },
+            )
+            ProfileSection(
+                "相关事件",
+                relatedEvents.ifEmpty { listOf("暂无已编的关联事件记录。") },
+            )
             ProfileSection("资料状态", listOf(verification))
         }
     }
