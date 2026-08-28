@@ -157,6 +157,15 @@ CREATE TABLE IF NOT EXISTS special_item (
     position INTEGER NOT NULL DEFAULT 0,
     source_id TEXT NOT NULL REFERENCES source(id)
 );
+
+-- 《明史》传文索引：build_mingshi_corpus.py 建立的人物→卷次/选段映射。
+CREATE TABLE IF NOT EXISTS person_mingshi (
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    juan INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    excerpt TEXT NOT NULL,
+    PRIMARY KEY(person_id, juan)
+);
 """
 
 
