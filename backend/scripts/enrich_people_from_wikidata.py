@@ -194,13 +194,21 @@ def main() -> int:
     lookup = {**entity_map, **entities(sorted(related_ids))}
 
     with connect() as db:
-        person_by_id = {person["id"]: person for person in people}
-        for person_id, entity_id in matches.items():
-            person = person_by_id[person_id]
-            entity = entity_map[entity_id]
-            life, family = profile_text(person, entity, lookup)
-            has_wikipedia = "zhwiki" in entity.get("sitelinks", {})
-            verification = "已校验" if has_wikipedia else "未校验"
+        for person in people:
+            person_id = person["id"]
+            entity_id = matches.get(person_id)
+            entity = entity_map.get(entity_id, {})
+            if entity_id:
+                life, family = profile_text(person, entity, lookup)
+                verification = "已校验" if "zhwiki" in entity.get("sitelinks", {}) else "未校验"
+            else:
+                life = re.sub(
+                    r"本条已建立人物、年号与资料来源的关联；具体仕历、卷次和原文引文仍待编辑校核。",
+                    "",
+                    person["biography"],
+                ).strip()
+                family = ""
+                verification = "未校验"
             db.execute(
                 "UPDATE person SET biography = ?, family_summary = ?, verification_status = ? WHERE id = ?",
                 (life, family, verification, person_id),
@@ -225,10 +233,11 @@ def main() -> int:
                     title = excluded.title, url = excluded.url, locator = excluded.locator, note = excluded.note
                 """,
                 [
-                    ("person", person_id, "life", 0, "维基数据人物条目", f"https://www.wikidata.org/wiki/{entity_id}", entity_id, "结构化资料交叉检索"),
                     ("person", person_id, "life", 1, "中文维基百科检索", f"https://zh.wikipedia.org/wiki/{quote(person['name'])}", person["name"], "用于人工复核"),
                     ("person", person_id, "life", 2, "百度百科检索", f"https://baike.baidu.com/search/word?word={quote(person['name'])}", person["name"], "用于人工复核"),
-                ],
+                ] + ([
+                    ("person", person_id, "life", 0, "维基数据人物条目", f"https://www.wikidata.org/wiki/{entity_id}", entity_id, "结构化资料交叉检索"),
+                ] if entity_id else []),
             )
     print(f"完成：{len(matches)}/{len(people)} 位人物获得精确维基数据匹配。", flush=True)
     return 0
