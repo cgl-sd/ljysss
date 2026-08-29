@@ -20,7 +20,6 @@
 {"event_id": "yongle-zhenghe", "person_id": "zhenghe", "role": "参与"}
 {"event_id": "yongle-encyclopedia", "person_id": "zhudi", "role": "参与"}
 {"event_id": "yongle-encyclopedia", "person_id": "jiexin", "role": "参与"}
-{"event_id": "yongle-encyclopedia", "person_id": "yaoguangxiao", "role": "参与"}
 {"event_id": "yongle-north", "person_id": "zhudi", "role": "参与"}
 {"event_id": "yongle-capital", "person_id": "zhudi", "role": "参与"}
 {"event_id": "hongxi-accession", "person_id": "zhugaochi", "role": "参与"}
@@ -104,7 +103,6 @@
 {"event_id": "wiki-仁宣之治", "person_id": "zhuzhanji", "role": "参与"}
 {"event_id": "wiki-仁宣之治", "person_id": "xiayuanji", "role": "参与"}
 {"event_id": "wiki-仁宣之治", "person_id": "yangshiqi", "role": "参与"}
-{"event_id": "wiki-嘉定三屠", "person_id": "lichengdong", "role": "参与"}
 {"event_id": "wiki-夺门之变", "person_id": "zhuqizhen", "role": "参与"}
 {"event_id": "wiki-夺门之变", "person_id": "zhuqiyu", "role": "参与"}
 {"event_id": "wiki-靖难之役", "person_id": "zhuyuanzhang", "role": "参与"}
@@ -122,7 +120,6 @@
 {"event_id": "wiki-俺答封贡", "person_id": "fangfengshi", "role": "参与"}
 {"event_id": "wiki-俺答封贡", "person_id": "gaogong", "role": "参与"}
 {"event_id": "wiki-郭桓案", "person_id": "zhuyuanzhang", "role": "参与"}
-{"event_id": "wiki-郭桓案", "person_id": "taizu", "role": "参与"}
 {"event_id": "wiki-嘉靖倭乱", "person_id": "qijiguang", "role": "参与"}
 {"event_id": "wiki-嘉靖倭乱", "person_id": "yudayou", "role": "参与"}
 {"event_id": "wiki-嘉靖倭乱", "person_id": "huzongxian", "role": "参与"}

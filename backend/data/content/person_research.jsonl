@@ -3,8 +3,6 @@
 {"checked_at": "2026-08-28T14:09:59+00:00", "entity_id": "Q15938085", "note": "Q15938085", "person_id": "biangong", "provider": "wikipedia", "status": "matched"}
 {"checked_at": "2026-08-28T14:09:59+00:00", "entity_id": "Q28408812", "note": "Q28408812", "person_id": "bimaokang", "provider": "wikipedia", "status": "matched"}
 {"checked_at": "2026-08-28T13:24:56+00:00", "entity_id": "Q11126283", "note": "Q11126283", "person_id": "biziyan", "provider": "wikipedia", "status": "matched"}
-{"checked_at": "2026-08-28T14:19:42+00:00", "entity_id": "", "note": "词条 卜从善", "person_id": "bocongshan", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 卜万", "person_id": "bowan", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 蔡国用", "person_id": "caiguoyong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 蔡国珍", "person_id": "caiguozhen", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 蔡迁", "person_id": "caiqian", "provider": "baike", "status": "matched"}
@@ -44,7 +42,6 @@
 {"checked_at": "2026-08-28T15:02:47+00:00", "entity_id": "", "note": "词条 陈演", "person_id": "chenyan", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陈镒", "person_id": "chenyi", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陈以勤", "person_id": "chenyiqin", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陈于朝", "person_id": "chenyuchao", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陈于廷", "person_id": "chenyuting", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陈子龙", "person_id": "chenzilong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陈子壮", "person_id": "chenzizhuang", "provider": "baike", "status": "matched"}
@@ -170,7 +167,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 金朝兴", "person_id": "jinchaoxing", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 景清", "person_id": "jingqing", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 金濂", "person_id": "jinlian", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 金声桓", "person_id": "jinshenghuan", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 金铉", "person_id": "jinxuan", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 金幼孜", "person_id": "jinyouzi", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 康海", "person_id": "kanghai", "provider": "baike", "status": "matched"}
@@ -193,13 +189,11 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 廖永忠", "person_id": "liaoyongzhong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李邦华", "person_id": "libanghua", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李秉", "person_id": "libing", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李成栋", "person_id": "lichengdong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T12:07:10+00:00", "entity_id": "Q708287", "note": "Q708287", "person_id": "lichengliang", "provider": "wikidata", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李春芳", "person_id": "lichunfang", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李春烨", "person_id": "lichunye", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李戴", "person_id": "lidai", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李芳英", "person_id": "lifangying", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李广", "person_id": "liguang", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李建泰", "person_id": "lijiantai", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李介", "person_id": "lijie", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 李精白", "person_id": "lijingbai", "provider": "baike", "status": "matched"}
@@ -266,7 +260,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 陆仲亨", "person_id": "luzhongheng", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 吕本", "person_id": "lvben", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 吕原", "person_id": "lvyuan", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 马得功", "person_id": "madegong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 麻贵", "person_id": "magui", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T12:07:10+00:00", "entity_id": "Q1068941", "note": "Q1068941", "person_id": "mahuanghou", "provider": "wikidata", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 马孔英", "person_id": "makongying", "provider": "baike", "status": "matched"}
@@ -276,7 +269,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 毛纪", "person_id": "maoji", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 茅坤", "person_id": "maokun", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 毛文龙", "person_id": "maowenlong", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 毛骧", "person_id": "maoxiang", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 马世奇", "person_id": "mashiqi", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 马文升", "person_id": "mawensheng", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 马宣", "person_id": "maxuan", "provider": "baike", "status": "matched"}
@@ -303,7 +295,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 潘季驯", "person_id": "panjixun", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 潘士闻", "person_id": "panshiwen", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 潘宗颜", "person_id": "panzongyan", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 彭聚", "person_id": "pengju", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 彭韶", "person_id": "pengshao", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 彭时", "person_id": "pengshi", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 钱龙锡", "person_id": "qianlongxi", "provider": "baike", "status": "matched"}
@@ -314,7 +305,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 祁秉忠", "person_id": "qibingzhong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T11:30:11+00:00", "entity_id": "Q18653416", "note": "Q18653416", "person_id": "qijiguang", "provider": "wikidata", "status": "matched"}
 {"checked_at": "2026-08-28T15:02:47+00:00", "entity_id": "", "note": "词条 戚金", "person_id": "qijin", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 秦邦屏", "person_id": "qinbangping", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 秦纮", "person_id": "qinhong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 秦良玉", "person_id": "qinliangyu", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 亓诗教", "person_id": "qishijiao", "provider": "baike", "status": "matched"}
@@ -472,7 +462,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 熊绣", "person_id": "xiongxiu", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 席书", "person_id": "xishu", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 轩𫐐", "person_id": "xuanni", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 许存仁", "person_id": "xucunren", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T11:30:11+00:00", "entity_id": "Q113324549", "note": "Q113324549", "person_id": "xuda", "provider": "wikidata", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 徐大化", "person_id": "xudahua", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 许定国", "person_id": "xudingguo", "provider": "baike", "status": "matched"}
@@ -500,7 +489,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 许直", "person_id": "xuzhi", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T15:02:47+00:00", "entity_id": "", "note": "词条 杨镐", "person_id": "yanggao", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 杨国柱", "person_id": "yangguozhu", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 杨寰", "person_id": "yanghuan", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 杨基", "person_id": "yangji", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 杨景辰", "person_id": "yangjingchen", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 杨廉", "person_id": "yanglian", "provider": "baike", "status": "matched"}
@@ -529,7 +517,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 尤世功", "person_id": "youshigong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T12:07:10+00:00", "entity_id": "Q715553", "note": "Q715553", "person_id": "yuanchonghuan", "provider": "wikidata", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 袁贵妃", "person_id": "yuanguifei", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 袁洪", "person_id": "yuanhong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 袁宏道", "person_id": "yuanhongdao", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 袁化中", "person_id": "yuanhuazhong", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 袁鲸", "person_id": "yuanjing", "provider": "baike", "status": "matched"}
@@ -617,7 +604,6 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 周宗建", "person_id": "zhouzongjian", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 庄得", "person_id": "zhuangde", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 朱柏", "person_id": "zhubai", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 朱本铉", "person_id": "zhubenxuan", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 朱标", "person_id": "zhubiao", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 朱常淓", "person_id": "zhuchangfang", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 朱常浩", "person_id": "zhuchanghao", "provider": "baike", "status": "matched"}
@@ -727,6 +713,5 @@
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 宗臣", "person_id": "zongchen", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 邹元标", "person_id": "zouyuanbiao", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T15:02:47+00:00", "entity_id": "", "note": "词条 祖大寿", "person_id": "zudashou", "provider": "baike", "status": "matched"}
-{"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 祖可法", "person_id": "zukefa", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 左良玉", "person_id": "zuoliangyu", "provider": "baike", "status": "matched"}
 {"checked_at": "2026-08-28T14:46:52+00:00", "entity_id": "", "note": "词条 左懋第", "person_id": "zuomaodi", "provider": "baike", "status": "matched"}

@@ -2,7 +2,6 @@
 {"addr_chn": "历城", "birthyear": 1476, "cbdb_id": 34634, "deathyear": 1532, "index_year": 1476, "person_id": "biangong"}
 {"addr_chn": "歙县", "birthyear": null, "cbdb_id": 131067, "deathyear": null, "index_year": 1568, "person_id": "bimaokang"}
 {"addr_chn": "淄川", "birthyear": 1569, "cbdb_id": 34745, "deathyear": 1638, "index_year": 1569, "person_id": "biziyan"}
-{"addr_chn": null, "birthyear": null, "cbdb_id": 66560, "deathyear": null, "index_year": null, "person_id": "bowan"}
 {"addr_chn": "金谿", "birthyear": null, "cbdb_id": 132593, "deathyear": null, "index_year": null, "person_id": "caiguoyong"}
 {"addr_chn": "奉新", "birthyear": 1528, "cbdb_id": 125339, "deathyear": 1611, "index_year": 1528, "person_id": "caiguozhen"}
 {"addr_chn": null, "birthyear": null, "cbdb_id": 66296, "deathyear": 1370, "index_year": 1307, "person_id": "caiqian"}
@@ -127,7 +126,6 @@
 {"addr_chn": "巢县", "birthyear": 1331, "cbdb_id": 66396, "deathyear": 1382, "index_year": 1331, "person_id": "jinchaoxing"}
 {"addr_chn": null, "birthyear": 1862, "cbdb_id": 64208, "deathyear": 1909, "index_year": 1862, "person_id": "jingqing"}
 {"addr_chn": "山阳", "birthyear": 1392, "cbdb_id": 67132, "deathyear": 1454, "index_year": 1392, "person_id": "jinlian"}
-{"addr_chn": "辽东都指挥使司", "birthyear": null, "cbdb_id": 57084, "deathyear": 1649, "index_year": 1586, "person_id": "jinshenghuan"}
 {"addr_chn": "卫辉路", "birthyear": null, "cbdb_id": 104405, "deathyear": null, "index_year": null, "person_id": "jinxuan"}
 {"addr_chn": "武功", "birthyear": 1475, "cbdb_id": 34645, "deathyear": 1540, "index_year": 1475, "person_id": "kanghai"}
 {"addr_chn": "蕲州", "birthyear": 1313, "cbdb_id": 66277, "deathyear": 1370, "index_year": 1313, "person_id": "kangmaocai"}
@@ -205,7 +203,6 @@
 {"addr_chn": "吉水", "birthyear": 0, "cbdb_id": 13222, "deathyear": 0, "index_year": 937, "person_id": "maocheng"}
 {"addr_chn": "掖县", "birthyear": 1463, "cbdb_id": 68079, "deathyear": 1545, "index_year": 1463, "person_id": "maoji"}
 {"addr_chn": "归安", "birthyear": 1512, "cbdb_id": 118816, "deathyear": 1601, "index_year": 1512, "person_id": "maokun"}
-{"addr_chn": null, "birthyear": null, "cbdb_id": 126977, "deathyear": null, "index_year": null, "person_id": "maoxiang"}
 {"addr_chn": "钧州", "birthyear": 1426, "cbdb_id": 33862, "deathyear": 1510, "index_year": 1426, "person_id": "mawensheng"}
 {"addr_chn": null, "birthyear": null, "cbdb_id": 66558, "deathyear": 1399, "index_year": 1336, "person_id": "maxuan"}
 {"addr_chn": "临朐", "birthyear": 1395, "cbdb_id": 33867, "deathyear": 1447, "index_year": 1395, "person_id": "mayu"}
@@ -362,7 +359,6 @@
 {"addr_chn": "宁远卫", "birthyear": 1441, "cbdb_id": 67997, "deathyear": 1515, "index_year": 1441, "person_id": "xiongxiu"}
 {"addr_chn": "遂宁", "birthyear": 1461, "cbdb_id": 68201, "deathyear": 1527, "index_year": 1461, "person_id": "xishu"}
 {"addr_chn": "鹿邑", "birthyear": null, "cbdb_id": 66894, "deathyear": 1464, "index_year": 1401, "person_id": "xuanni"}
-{"addr_chn": "曲沃", "birthyear": null, "cbdb_id": 329943, "deathyear": null, "index_year": 1504, "person_id": "xucunren"}
 {"addr_chn": "濠州", "birthyear": 1332, "cbdb_id": 66290, "deathyear": 1385, "index_year": 1332, "person_id": "xuda"}
 {"addr_chn": "会稽", "birthyear": null, "cbdb_id": 129871, "deathyear": null, "index_year": 1553, "person_id": "xudahua"}
 {"addr_chn": "太康", "birthyear": null, "cbdb_id": 58647, "deathyear": 1646, "index_year": 1583, "person_id": "xudingguo"}
@@ -405,7 +401,6 @@
 {"addr_chn": "昆山", "birthyear": 1420, "cbdb_id": 35164, "deathyear": 1474, "index_year": 1420, "person_id": "yesheng2"}
 {"addr_chn": "定州", "birthyear": 1522, "cbdb_id": 68217, "deathyear": 1582, "index_year": 1522, "person_id": "yinshidan"}
 {"addr_chn": "歙县", "birthyear": 1513, "cbdb_id": 125076, "deathyear": 1592, "index_year": 1513, "person_id": "yinzhengmao"}
-{"addr_chn": "鄞县", "birthyear": 1245, "cbdb_id": 10367, "deathyear": 1298, "index_year": 1245, "person_id": "yuanhong"}
 {"addr_chn": "公安", "birthyear": 1568, "cbdb_id": 35222, "deathyear": 1610, "index_year": 1568, "person_id": "yuanhongdao"}
 {"addr_chn": null, "birthyear": null, "cbdb_id": 129636, "deathyear": null, "index_year": null, "person_id": "yuanhuazhong"}
 {"addr_chn": null, "birthyear": null, "cbdb_id": 359629, "deathyear": null, "index_year": 1589, "person_id": "yuanjing"}

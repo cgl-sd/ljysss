@@ -78,7 +78,6 @@
 {"from_person_id": "zhuyoujian", "id": 48, "note": "方正化为崇祯末司礼监太监。", "reign": "崇祯", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "fangzhenghua"}
 {"from_person_id": "zhuyoujian", "id": 2089, "note": "", "reign": "崇祯", "relation_type": "兄弟姐妹", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyouxiao"}
 {"from_person_id": "zhuyoutang", "id": 45, "note": "高凤在弘治末、正德初任司礼监太监。", "reign": "弘治", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "gaofeng"}
-{"from_person_id": "zhuyoutang", "id": 44, "note": "李广是弘治朝内廷人物。", "reign": "弘治", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "liguang"}
 {"from_person_id": "zhuyoutang", "id": 2083, "note": "", "reign": "正德", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuhouzhao"}
 {"from_person_id": "zhuyuanzhang", "id": 4206, "note": "", "reign": "洪武", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhubiao"}
 {"from_person_id": "zhuyuanzhang", "id": 2094, "note": "", "reign": "永乐", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhudi"}
@@ -88,7 +87,6 @@
 {"from_person_id": "zhuzaihou", "id": 2085, "note": "", "reign": "万历", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyijun"}
 {"from_person_id": "zhuzhanji", "id": 2099, "note": "", "reign": "景泰", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuqiyu"}
 {"from_person_id": "zhuzhanji", "id": 2098, "note": "", "reign": "正统、天顺", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuqizhen"}
-{"from_person_id": "zudashou", "id": 2105, "note": "", "reign": "明代", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zukefa"}
 {"from_person_id": "zhuyipai", "to_person_id": "zhuyihai", "relation_type": "兄弟姐妹", "reign": "崇祯", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
 {"from_person_id": "zhushuang", "to_person_id": "zhuyuanzhang", "relation_type": "父子", "reign": "洪武", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
 {"from_person_id": "zhusu", "to_person_id": "zhuyuanzhang", "relation_type": "父子", "reign": "洪武", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
