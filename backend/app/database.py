@@ -158,6 +158,23 @@ CREATE TABLE IF NOT EXISTS special_item (
     source_id TEXT NOT NULL REFERENCES source(id)
 );
 
+-- 维基百科条目全文（hf-mirror 数据包提取，t2s 规范化）。
+CREATE TABLE IF NOT EXISTS person_wiki (
+    person_id TEXT PRIMARY KEY REFERENCES person(id) ON DELETE CASCADE,
+    wiki_title TEXT NOT NULL,
+    full_text TEXT NOT NULL
+);
+
+-- CBDB 人物映射（姓名消歧后的权威 id 与生卒籍贯）。
+CREATE TABLE IF NOT EXISTS person_cbdb (
+    person_id TEXT PRIMARY KEY REFERENCES person(id) ON DELETE CASCADE,
+    cbdb_id INTEGER NOT NULL,
+    index_year INTEGER,
+    birthyear INTEGER,
+    deathyear INTEGER,
+    addr_chn TEXT
+);
+
 -- 《明史》传文索引：build_mingshi_corpus.py 建立的人物→卷次/选段映射。
 CREATE TABLE IF NOT EXISTS person_mingshi (
     person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,

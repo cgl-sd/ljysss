@@ -92,6 +92,23 @@ def alias_forms(person) -> list[str]:
     return list(dict.fromkeys(f for f in forms if f))
 
 
+CONV_MARKER = re.compile(r"-\{([^}]*)\}-")
+
+
+t2s = OpenCC("t2s")
+
+
+def clean_wiki_text(text: str) -> str:
+    """繁转简、剥离繁简转换标记与残余标记，规整空行。"""
+    text = CONV_MARKER.sub(lambda m: m.group(1).split("|")[-1], text)
+    text = t2s.convert(text)
+    text = re.sub(r"\[(\d+|註?\s*\d+)\]", "", text)
+    text = text.replace("（）", "").replace("()", "")
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def main() -> int:
     initialize_database()
     with connect() as db:
@@ -124,8 +141,9 @@ def main() -> int:
             person_id = person["id"]
             if person_id not in texts:
                 continue
-            wiki_title, text = texts[person_id]
-            trimmed = text.strip()
+            wiki_title, raw_text = texts[person_id]
+            text = clean_wiki_text(raw_text)
+            trimmed = text
             if len(trimmed) > LIFE_LIMIT:
                 trimmed = trimmed[:LIFE_LIMIT].rsplit("。", 1)[0] + "。"
             current = life_now.get(person_id, "")
@@ -142,6 +160,40 @@ def main() -> int:
                 (person_id, content),
             )
             db.execute("UPDATE person SET verification_status = '已校验' WHERE id = ?", (person_id,))
+            db.execute(
+                """
+                INSERT INTO person_wiki(person_id, wiki_title, full_text)
+                VALUES (?, ?, ?)
+                ON CONFLICT(person_id) DO UPDATE SET
+                    wiki_title = excluded.wiki_title, full_text = excluded.full_text
+                """,
+                (person_id, wiki_title, text),
+            )
+            cbdb_path = Path("/tmp/cbdb_20260822.sqlite3")
+            if cbdb_path.exists():
+                import sqlite3 as _s3
+                cb = _s3.connect(f"file:{cbdb_path}?mode=ro", uri=True)
+                cbrow = cb.execute(
+                    "SELECT c_personid, c_index_year, c_birthyear, c_deathyear FROM BIOG_MAIN WHERE c_personid IN "
+                    "(SELECT c_personid FROM BIOG_MAIN WHERE c_name_chn = ?)",
+                    (wiki_title,),
+                ).fetchone()
+                if cbrow:
+                    addr = cb.execute(
+                        "SELECT ac.c_name_chn FROM BIOG_ADDR_DATA ba JOIN ADDR_CODES ac ON ac.c_addr_id = ba.c_addr_id "
+                        "WHERE ba.c_personid = ? AND ba.c_addr_type = 1",
+                        (cbrow[0],),
+                    ).fetchone()
+                    db.execute(
+                        """
+                        INSERT INTO person_cbdb(person_id, cbdb_id, index_year, birthyear, deathyear, addr_chn)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(person_id) DO UPDATE SET
+                            cbdb_id = excluded.cbdb_id, index_year = excluded.index_year,
+                            birthyear = excluded.birthyear, deathyear = excluded.deathyear, addr_chn = excluded.addr_chn
+                        """,
+                        (person_id, cbrow[0], cbrow[1], cbrow[2], cbrow[3], addr[0] if addr else None),
+                    )
             db.execute(
                 """
                 INSERT INTO content_reference(content_type, content_id, section_key, position, title, url, locator, note)

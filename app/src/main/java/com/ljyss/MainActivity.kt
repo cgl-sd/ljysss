@@ -548,7 +548,7 @@ private fun PersonProfile(
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
-            ProfileSection("生平", readableParagraphs(life))
+            LifeSection(life)
             ProfileSection("家族与子嗣", readableParagraphs(family))
             RelationSection(personRelations, onOpenPerson)
             ProfileSection(
@@ -556,6 +556,96 @@ private fun PersonProfile(
                 relatedEvents.ifEmpty { listOf("暂无已编的关联事件记录。") },
             )
             VerificationSection(person.verificationStatus)
+        }
+    }
+}
+
+/** 生平栏目：维基长文按小标题分块，超长默认截断，可展开全文；《明史》原文块单独标色。 */
+private data class LifeBlock(val isHeader: Boolean, val isClassicalMarker: Boolean, val text: String)
+
+private fun parseLifeBlocks(content: String): List<LifeBlock> {
+    val blocks = mutableListOf<LifeBlock>()
+    for (raw in content.split("\n")) {
+        val line = raw.trim()
+        when {
+            line.isEmpty() -> continue
+            line.startsWith("〔《明史》原文") -> blocks.add(LifeBlock(true, true, line))
+            line.length <= 18 && !line.endsWith("。") && !line.endsWith("！") && !line.endsWith("？") &&
+                !line.endsWith("；") && !line.contains("：") && !line.endsWith("」") ->
+                blocks.add(LifeBlock(true, false, line))
+            else -> blocks.add(LifeBlock(false, false, line))
+        }
+    }
+    return blocks
+}
+
+@Composable
+private fun LifeSection(content: String) {
+    val blocks = remember(content) { parseLifeBlocks(content) }
+    var expanded by remember(content) { mutableStateOf(false) }
+    val limit = 1500
+    val total = content.length
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("生平", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+        var used = 0
+        var truncated = false
+        for (block in blocks) {
+            if (!expanded && used > limit) {
+                truncated = true
+                break
+            }
+            when {
+                block.isClassicalMarker -> Text(
+                    block.text,
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = Brass,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                block.isHeader -> Text(
+                    block.text,
+                    modifier = Modifier.padding(top = 7.dp),
+                    color = Ink,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                else -> Text(
+                    block.text,
+                    color = InkSoft,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    lineHeight = 26.sp,
+                    textAlign = TextAlign.Justify,
+                )
+            }
+            used += block.text.length
+        }
+        if (truncated) {
+            Text(
+                "展开全文（共 $total 字）",
+                modifier = Modifier
+                    .clip(CutCornerShape(5.dp))
+                    .clickable { expanded = true }
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
+                color = Celadon,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+            )
+        } else if (total > limit) {
+            Text(
+                "收起",
+                modifier = Modifier
+                    .clip(CutCornerShape(5.dp))
+                    .clickable { expanded = false }
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
+                color = Brass,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 13.sp,
+            )
         }
     }
 }
