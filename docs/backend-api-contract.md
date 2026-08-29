@@ -42,6 +42,8 @@ PostgreSQL + PostGIS + 对象存储
 
 ## 当前 App 的接入方式
 
-`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构、典章和来源（gzip 压缩传输）。当前目录有 17 年号、51 个事件、人物 2633 位（精选 748 + 全量收录 1885）、关系 72、机构 12、典章 137。
+`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构、典章和来源（gzip 压缩传输）。当前目录有 17 年号、76 个事件、人物 2200 位（六分类：朝臣 1260、将帅 336、文苑 196、封爵 195、内廷 190、帝王 23）、关系 91、机构 12、典章 137。
+
+界面代码按功能分包在 `com.ljyss.ui.*`，纪年换算、农历月序、生平文本与人物年序等无 Android 依赖的规则在 `com.ljyss.domain`，由 `app/src/test` 的 JVM 用例覆盖。
 
 正式发布的下一步是将本地 SQLite 迁移至 PostgreSQL + PostGIS，给 API 配置 HTTPS 地址，并以 Room 落地缓存、增量同步和离线专题包；地图栅格参考图也再替换为带有效时间范围的可查询 GeoJSON 图层。

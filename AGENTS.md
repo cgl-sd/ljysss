@@ -2,7 +2,7 @@
 
 ## 目录结构
 
-- `app/`：Android 客户端（Kotlin + Gradle）。界面代码在 `app/src/main/java/com/…`，图片资源（明代地图、木刻导航图标、绢本画像等）在 `app/src/main/res/`。
+- `app/`：Android 客户端（Kotlin + Gradle）。界面按功能分包在 `app/src/main/java/com/ljyss/`：`MainActivity.kt` 只保留 Activity、底部导航与页面装配；`ui/timeline`（岁月）、`ui/people`（人物页·详情·朝代档案·人物卡）、`ui/relationship`（人物与事件两张关系网络）、`ui/world`（天下）、`ui/profile`（我的）、`ui/components`（四页共用的版面件与朱印）、`ui/theme`（配色字体）；`domain/` 放无 Android 依赖的纯规则（纪年换算、农历月序、生平文本、人物年序），可跑 JVM 单测；`data/` 为仓库接口与实现。依赖方向：屏 → 功能区 → `ui/components` → `domain` → `data.model`。图片资源（明代地图、木刻导航图标、绢本画像等）在 `app/src/main/res/`。
 - `backend/`：内容服务（FastAPI + SQLite）。`app/` 为服务代码，`data/ming_history.sqlite3` 为内容库，`scripts/` 为人物资料导入脚本，`tests/` 为后端测试。
 - `docs/`：项目文档（接口契约、界面核对记录等）。
 - `tmp/`：测试截图与 QA 工作产物（已 gitignore，禁止提交）。

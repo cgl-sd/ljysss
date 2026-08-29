@@ -2,7 +2,7 @@
 
 明朝历史阅读应用:Android 客户端 + 本地内容服务。
 
-- `app/` — Android 客户端(Kotlin + Jetpack Compose):岁月(事件时间线)、人物(2633 位,六分类)、天下(舆图/机构/典章)、我的
+- `app/` — Android 客户端(Kotlin + Jetpack Compose):岁月(事件时间线)、人物(2200 位,六分类)、天下(舆图/机构/典章)、我的。界面按功能分包于 `app/src/main/java/com/ljyss/{ui,domain}/`,`MainActivity.kt` 只留装配与底部导航
 - `backend/` — 内容服务(FastAPI + SQLite):`app/` 服务代码,`data/ming_history.sqlite3` 内容库,`scripts/` 数据管线,`sources/` 原始权威数据包
 - `docs/` — 接口契约与界面核对记录
 - `sources/`(见 `backend/sources/`)— 原始权威数据包,详见下文
