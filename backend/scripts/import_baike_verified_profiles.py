@@ -64,7 +64,6 @@ def main() -> int:
                 [
                     (person_id, "life", "生平（含教育背景）", 0, profile["life"]),
                     (person_id, "family", "家族与子嗣", 1, profile["family"]),
-                    (person_id, "verification", "资料状态", 2, "已校验"),
                 ],
             )
             db.executemany(

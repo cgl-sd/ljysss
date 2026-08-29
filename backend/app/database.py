@@ -108,7 +108,8 @@ CREATE INDEX IF NOT EXISTS person_by_category ON person(category);
 -- 对外页面只显示统一栏目；出处在本表和 content_reference 中保存，供编辑校核。
 CREATE TABLE IF NOT EXISTS person_section (
     person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
-    section_key TEXT NOT NULL,
+    -- 只有这四栏会出现在人物详情上；内部标记（如资料状态）不得作为栏目存这里
+    section_key TEXT NOT NULL CHECK(section_key IN ('life', 'family', 'relations', 'events')),
     title TEXT NOT NULL,
     position INTEGER NOT NULL,
     content TEXT NOT NULL,
@@ -117,7 +118,7 @@ CREATE TABLE IF NOT EXISTS person_section (
 
 CREATE TABLE IF NOT EXISTS event_section (
     event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
-    section_key TEXT NOT NULL,
+    section_key TEXT NOT NULL CHECK(section_key IN ('background', 'course', 'people', 'result', 'impact')),
     title TEXT NOT NULL,
     position INTEGER NOT NULL,
     content TEXT NOT NULL,

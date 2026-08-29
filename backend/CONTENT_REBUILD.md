@@ -9,9 +9,9 @@
 
 1. `life`：生平（含教育背景；按早年、教育、仕途或军旅、晚年组织）
 2. `family`：家族与子嗣（父母、配偶、子女与承袭关系）
-3. `verification`：资料状态（只显示“已校验”或“未校验”）
-
-人物关系和相关事件不混入详情正文，后续以可点击按钮进入独立页面。
+栏位只有 `life`／`family`／`relations`／`events` 四种，由 `person_section` 的
+CHECK 约束固定；「已校验／未校验」只是 `person.verification_status` 内部字段，
+不作为栏目存储或显示。
 
 ## 事件栏目
 

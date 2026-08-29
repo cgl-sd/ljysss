@@ -58,19 +58,6 @@ def add_person_templates(db: sqlite3.Connection) -> int:
             [
                 (person["id"], "life", "生平（含教育背景）", 1, life),
                 (person["id"], "family", "家族与子嗣", 2, PENDING_FAMILY),
-                (person["id"], "verification", "资料状态", 3, "未校验"),
-            ],
-        )
-        db.executemany(
-            """
-            INSERT INTO content_reference(content_type, content_id, section_key, position, title, url, locator, note)
-            VALUES ('person', ?, 'verification', ?, ?, ?, '', ?)
-            ON CONFLICT(content_type, content_id, section_key, position) DO UPDATE SET
-                title = excluded.title, url = excluded.url, note = excluded.note
-            """,
-            [
-                (person["id"], 1, "中文维基百科检索", f"https://zh.wikipedia.org/wiki/{quote(person['name'])}", "等待精确条目匹配"),
-                (person["id"], 2, "百度百科检索", f"https://baike.baidu.com/search/word?word={quote(person['name'])}", "等待精确条目匹配"),
             ],
         )
     return len(people)
@@ -136,18 +123,6 @@ def add_event_templates(db: sqlite3.Connection) -> int:
                 (event["id"], "result", "结果", 4, event["consequence"]),
                 (event["id"], "impact", "影响", 5, impact),
                 (event["id"], "verification", "资料状态", 6, "未校验"),
-            ],
-        )
-        db.executemany(
-            """
-            INSERT INTO content_reference(content_type, content_id, section_key, position, title, url, locator, note)
-            VALUES ('event', ?, 'verification', ?, ?, ?, '', ?)
-            ON CONFLICT(content_type, content_id, section_key, position) DO UPDATE SET
-                title = excluded.title, url = excluded.url, note = excluded.note
-            """,
-            [
-                (event["id"], 1, "中文维基百科检索", f"https://zh.wikipedia.org/w/index.php?search={quote(event['title'])}", "等待精确条目匹配"),
-                (event["id"], 2, "百度百科检索", f"https://baike.baidu.com/search/word?word={quote(event['title'])}", "等待精确条目匹配"),
             ],
         )
     return len(events)

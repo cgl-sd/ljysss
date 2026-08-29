@@ -51,7 +51,7 @@ data class HistoricalPerson(
     val sections: List<PersonSection> = emptyList(),
 )
 
-/** 人物详情结构化栏目（life／family／verification），按服务端 position 排序。 */
+/** 人物详情结构化栏目：life／family／relations／events，按服务端 position 排序。 */
 data class PersonSection(
     val key: String,
     val title: String,

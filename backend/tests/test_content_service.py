@@ -28,7 +28,7 @@ class ContentServiceTest(unittest.TestCase):
         from app.main import get_event_sections
 
         sections = {section["section_key"] for section in get_event_sections("hongwu-founding")}
-        self.assertEqual({"background", "course", "people", "result", "impact", "verification"}, sections)
+        self.assertEqual({"background", "course", "people", "result", "impact"}, sections)
 
     def test_every_person_and_event_has_a_uniform_profile_template(self):
         from app.database import connect
