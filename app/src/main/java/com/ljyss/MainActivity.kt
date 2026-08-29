@@ -617,11 +617,15 @@ private fun PersonProfile(
             LifeSection(life)
             // 没有实料的栏目不占位：家族占位文案、空关系、空事件均整栏隐藏。
             if (family.isNotBlank() && !family.contains("史料未见详载")) {
-                ProfileSection("家族与子嗣", readableParagraphs(family))
+                ProfileSection("家族", readableParagraphs(family))
             }
             // 帝王条目不显示人物关系（宗室家庭资料在家族与子嗣栏呈现）。
-            if (person.category != PersonCategory.EMPERORS && personRelations.isNotEmpty()) {
-                RelationSection(personRelations, onOpenPerson)
+            // 人物关系栏不含父子/母子（归家族栏）；帝王条目整栏不显示。
+            val shownRelations = personRelations.filter {
+                it.relation_type !in parentChildTypes()
+            }
+            if (person.category != PersonCategory.EMPERORS && shownRelations.isNotEmpty()) {
+                RelationSection(shownRelations, onOpenPerson)
             }
             if (relatedEvents.isNotEmpty()) {
                 ProfileSection("相关事件", relatedEvents)
