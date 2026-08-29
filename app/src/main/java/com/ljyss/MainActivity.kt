@@ -113,6 +113,11 @@ import com.ljyss.domain.startYear
 import com.ljyss.domain.yearLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.ljyss.ui.components.MingList
+import com.ljyss.ui.components.MingMasthead
+import com.ljyss.ui.components.OrnamentalTitle
+import com.ljyss.ui.components.Seal
+import com.ljyss.ui.components.SourceNote
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
 import com.ljyss.ui.theme.Indigo
@@ -1109,74 +1114,6 @@ private fun ProfileScreen(contentPadding: PaddingValues) {
         item {
             SourceNote("历史资料以来源为先。未标卷次与出处的内容只作为导览，不作为定论。")
         }
-    }
-}
-
-@Composable
-private fun MingList(
-    contentPadding: PaddingValues,
-    content: LazyListScope.() -> Unit,
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(XuanPaper),
-        contentPadding = PaddingValues(
-            start = 18.dp,
-            top = 44.dp,
-            end = 18.dp,
-            bottom = contentPadding.calculateBottomPadding() + 20.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-        content = content,
-    )
-}
-
-@Composable
-private fun MingMasthead() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ding_map_emblem),
-            contentDescription = "两京一十三省的鼎形图标",
-            modifier = Modifier.size(38.dp),
-            contentScale = ContentScale.Fit,
-        )
-        Spacer(Modifier.width(9.dp))
-        Text(
-            text = "两京一十三省",
-            color = Ink,
-            fontFamily = FontFamily.Serif,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-        )
-        Spacer(Modifier.width(9.dp))
-        Seal("集录")
-    }
-}
-
-@Composable
-private fun OrnamentalTitle(title: String) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HorizontalDivider(modifier = Modifier.width(72.dp), color = Brass.copy(alpha = 0.7f))
-            Text(
-                text = "  $title  ",
-                color = Ink,
-                fontFamily = FontFamily.Serif,
-                fontSize = 29.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            HorizontalDivider(modifier = Modifier.width(72.dp), color = Brass.copy(alpha = 0.7f))
-        }
-        Text("◇", color = Vermilion, fontSize = 15.sp)
     }
 }
 
@@ -2367,39 +2304,6 @@ private fun ProfileCard(title: String, description: String, icon: ImageVector, a
                 Text(action, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             }
         }
-    }
-}
-
-@Composable
-private fun SourceNote(text: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(7.dp),
-        color = PaperShade,
-        border = BorderStroke(1.dp, LineGold),
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(14.dp),
-            color = InkSoft,
-            fontFamily = FontFamily.Serif,
-            fontSize = 15.sp,
-            lineHeight = 23.sp,
-        )
-    }
-}
-
-@Composable
-private fun Seal(text: String) {
-    Surface(shape = CutCornerShape(4.dp), color = Vermilion) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-            color = PaperLight,
-            fontFamily = FontFamily.Serif,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-        )
     }
 }
 
