@@ -125,6 +125,7 @@ class RemoteMingRepository private constructor(
                                 key = section.getString("section_key"),
                                 title = section.getString("title"),
                                 content = section.getString("content"),
+                                position = section.optInt("position", 0),
                             )
                         }
                     }

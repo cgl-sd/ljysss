@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -21,6 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,26 +51,16 @@ import com.ljyss.ui.theme.Vermilion
 internal fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
-    events: List<HistoricalEvent>,
     onBack: () -> Unit,
     onOpenPerson: (String) -> Unit,
 ) {
-    val lifeSection = person.sections.firstOrNull { it.key == "life" }
-    val familySection = person.sections.firstOrNull { it.key == "family" }
-    val children = relations
-        .filter { it.fromName == person.name && it.type in parentChildTypes() }
-        .map { it.toName }
-    val life = lifeSection?.content?.takeIf { it.isNotBlank() } ?: person.biography
-    val family = familySection?.content?.takeIf { it.isNotBlank() }
-        ?: listOf(person.familySummary, children.joinToString("、"))
-            .filter { it.isNotBlank() }
-            .joinToString("\n")
-            .ifBlank { "家族、配偶与子嗣资料正在整理。" }
-    // 相关事件按人物交叉索引；没有记录时整栏隐藏。
-    val relatedEvents = events
-        .filter { event -> event.participants.any { it == person.name } }
-        .sortedBy { it.year ?: Int.MAX_VALUE }
-        .map { event -> "${event.year?.toString() ?: "年份待考"} · ${event.title}\n${event.description}" }
+    // 四栏一律是库里预生成的文章，按 position 顺序渲染；空栏不显示。
+    val sections = person.sections.sortedBy { it.position }
+    // 关系文章中出现的对方姓名保持可点击，跳转规则与旧的条目列表一致。
+    val relationNames = relations
+        .filter { (it.fromName == person.name || it.toName == person.name) && it.type !in parentChildTypes() }
+        .map { if (it.fromName == person.name) it.toName else it.fromName }
+        .distinct()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -93,27 +89,16 @@ internal fun PersonProfile(
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
-            LifeSection(life)
-            // 没有实料的栏目不占位：家族占位文案、空关系、空事件均整栏隐藏。
-            if (family.isNotBlank() && !family.contains("史料未见详载")) {
-                ProfileSection("家族", readableParagraphs(family))
-            }
-            // 人物关系栏只收本人为其中一端的记录，且不含父子/母子（归家族栏）；
-            // 帝王条目整栏不显示，宗室家庭资料在家族栏呈现。
-            val shownRelations = relations.filter {
-                (it.fromName == person.name || it.toName == person.name) &&
-                    it.type !in parentChildTypes()
-            }
-            if (person.category != PersonCategory.EMPERORS && shownRelations.isNotEmpty()) {
-                RelationSection(
-                    shownRelations.map { relation ->
-                        relation to (if (relation.fromName == person.name) relation.toName else relation.fromName)
-                    },
-                    onOpenPerson,
-                )
-            }
-            if (relatedEvents.isNotEmpty()) {
-                ProfileSection("相关事件", relatedEvents)
+            sections.forEach { section ->
+                val body = section.content
+                if (body.isBlank() || body.contains("史料未见详载")) return@forEach
+                when (section.key) {
+                    "life" -> LifeSection(body)
+                    "relations" -> if (person.category != PersonCategory.EMPERORS) {
+                        ArticleSection(section.title, body, relationNames, onOpenPerson)
+                    }
+                    else -> ProfileSection(section.title, readableParagraphs(body))
+                }
             }
         }
     }
@@ -214,68 +199,52 @@ private fun ProfileSection(title: String, paragraphs: List<String>) {
     }
 }
 
-/** 人物详情里的关系条目：点击任意一条即跳转到对方的人物详情。 */
+/** 可点击人名的栏目文章：样式与 ProfileSection 一致，文中人名以朱色标出并可跳转。 */
 @Composable
-private fun RelationSection(relations: List<Pair<PersonRelation, String>>, onOpenPerson: (String) -> Unit) {
+private fun ArticleSection(
+    title: String,
+    content: String,
+    linkableNames: List<String>,
+    onOpenPerson: (String) -> Unit,
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text("人物关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-        if (relations.isEmpty()) {
-            Text(
-                "暂无已编关系，可到「关系」页查看全量人物网络。",
-                color = InkSoft,
-                fontFamily = FontFamily.Serif,
-                fontSize = 15.sp,
-                lineHeight = 26.sp,
-            )
-            return@Column
-        }
-        Text(
-            "轻触条目，可跳转到对应人物",
-            color = Brass,
-            fontFamily = FontFamily.SansSerif,
-            fontSize = 11.sp,
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            relations.forEach { (relation, otherName) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(CutCornerShape(5.dp))
-                        .clickable { onOpenPerson(otherName) }
-                        .padding(horizontal = 4.dp, vertical = 7.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "「${relation.type.label}」$otherName",
-                            color = Ink,
-                            fontFamily = FontFamily.Serif,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
-                        )
-                        if (relation.note.isNotBlank()) {
-                            Text(
-                                relation.note,
-                                color = InkSoft,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 13.sp,
-                                lineHeight = 20.sp,
-                            )
-                        }
-                    }
-                    Text(
-                        "›",
-                        color = Brass,
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            readableParagraphs(content).forEach { paragraph ->
+                val annotated = remember(paragraph, linkableNames) { annotateNames(paragraph, linkableNames) }
+                ClickableText(
+                    text = annotated,
+                    onClick = { offset ->
+                        annotated.getStringAnnotations("person", offset, offset)
+                            .firstOrNull()
+                            ?.let { onOpenPerson(it.item) }
+                    },
+                    style = TextStyle(
+                        color = InkSoft,
                         fontFamily = FontFamily.Serif,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
+                        fontSize = 15.sp,
+                        lineHeight = 26.sp,
+                        textAlign = TextAlign.Justify,
+                    ),
+                )
             }
         }
     }
 }
+
+private fun annotateNames(text: String, names: List<String>): AnnotatedString =
+    buildAnnotatedString {
+        withStyle(SpanStyle(color = InkSoft)) { append(text) }
+        names.filter { it.isNotBlank() }.sortedByDescending { it.length }.forEach { name ->
+            var start = text.indexOf(name)
+            while (start >= 0) {
+                addStyle(SpanStyle(color = Vermilion), start, start + name.length)
+                addStringAnnotation("person", name, start, start + name.length)
+                start = text.indexOf(name, start + name.length)
+            }
+        }
+    }

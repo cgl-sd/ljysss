@@ -203,7 +203,7 @@ internal fun PeopleScreen(
                         PersonProfile(
                             person = profileDetail ?: selectedPerson,
                             relations = relations,
-                            events = allEvents,
+
                             onBack = ::closeProfileStep,
                             onOpenPerson = ::openRelatedPerson,
                         )

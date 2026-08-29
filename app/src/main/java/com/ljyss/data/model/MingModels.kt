@@ -56,6 +56,8 @@ data class PersonSection(
     val key: String,
     val title: String,
     val content: String,
+    /** 库内给定的栏目顺序：生平 0、家族 1、人物关系 2、相关事件 3。 */
+    val position: Int = 0,
 )
 
 enum class PeopleTab(val label: String) {
