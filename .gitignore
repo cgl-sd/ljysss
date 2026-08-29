@@ -11,3 +11,4 @@ local.properties
 /backend/.venv/
 /tmp/
 /backend/data/mingshi/
+/backend/data/wikitext/

@@ -140,6 +140,38 @@ def main() -> int:
                     if target and target["name"][0] == surname:
                         plan(a["id"], target["id"], "父子", f"《明史》卷{juan}子嗣名录")
 
+    # 家族栏目增强：从各人传段挖 父X / 娶某氏 / 妻某氏 信号，替换诚实占位。
+    mined_family: dict[str, list[str]] = {}
+    for juan_file2 in sorted(corpus.glob("卷*.txt")):
+        juan2 = int(juan_file2.stem[1:])
+        text2 = juan_file2.read_text(encoding="utf-8")
+        heads2: list[tuple[str, int]] = [(m.group(1), m.start()) for m in BIO_HEAD_PATTERN.finditer(text2)]
+        resolved2: list[tuple[object, int]] = []
+        for head_name, pos in heads2:
+            for person in name_to_ids.get(head_name, []):
+                resolved2.append((person, pos))
+        surnames2 = {p["name"][0] for p, _ in resolved2}
+        for head_name, pos in heads2:
+            if any(p["name"] == head_name for p, _ in resolved2):
+                continue
+            candidates = [p for p in given_to_ids.get(head_name, []) if p["name"][0] in surnames2]
+            if len(candidates) == 1:
+                resolved2.append((candidates[0], pos))
+        resolved2.sort(key=lambda item: item[1])
+        for index in range(len(resolved2)):
+            a, pos = resolved2[index]
+            end = resolved2[index + 1][1] if index + 1 < len(resolved2) else len(text2)
+            seg = text2[pos:end]
+            surname = a["name"][0]
+            lines = []
+            for m in re.finditer(r"父([\u4e00-\u9fa5]{2,4})[，。]", seg):
+                if m.group(1)[0] == surname and m.group(1) != a["name"]:
+                    lines.append(f"父亲：{m.group(1)}（《明史》卷{juan2}）。")
+            for m in re.finditer(r"(?:娶|妻)([\u4e00-\u9fa5]{1,2})氏", seg):
+                lines.append(f"配偶：{m.group(1)}氏（《明史》卷{juan2}）。")
+            if lines:
+                mined_family.setdefault(a["id"], []).extend(dict.fromkeys(lines))
+
     rows = [
         (from_id, to_id, relation_type, reign_by_id.get(to_id, "明代"), note, source_id)
         for (from_id, to_id, relation_type), note in planned.items()
@@ -153,7 +185,27 @@ def main() -> int:
             rows,
         )
         total = db.execute("SELECT COUNT(*) FROM person_relation").fetchone()[0]
-    print(f"《明史》挖掘新增关系 {len(rows)} 条，全库现 {total} 条。", flush=True)
+        family_enriched = 0
+        for person_id, lines in mined_family.items():
+            row = db.execute(
+                """
+                SELECT 1 FROM person_section
+                WHERE person_id = ? AND section_key = 'family' AND content LIKE '%史料未见详载%'
+                """,
+                (person_id,),
+            ).fetchone()
+            if not row:
+                continue
+            content = "\n".join(dict.fromkeys(lines)) + "\n以上自《明史》传文检出；其余亲属未详。"
+            db.execute(
+                """
+                UPDATE person_section SET content = ? WHERE person_id = ? AND section_key = 'family'
+                """,
+                (content, person_id),
+            )
+            db.execute("UPDATE person SET family_summary = ? WHERE id = ?", (content, person_id))
+            family_enriched += 1
+    print(f"《明史》挖掘新增关系 {len(rows)} 条，全库现 {total} 条；家族栏目增强 {family_enriched} 位。", flush=True)
     for row in rows[:20]:
         print(f"  {person_by_id[row[0]]['name']} —{row[2]}— {person_by_id[row[1]]['name']} | {row[4]}")
     return 0

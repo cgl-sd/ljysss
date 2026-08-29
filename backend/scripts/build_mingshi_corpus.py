@@ -32,7 +32,7 @@ WIKISOURCE_API = "https://zh.wikisource.org/w/api.php"
 USER_AGENT = "LiangjingYishisanshengResearch/1.0 (historical educational app)"
 TOTAL_JUANS = 332
 CORPUS_DIRECTORY = BACKEND_DIRECTORY / "data" / "mingshi"
-EXCERPT_LIMIT = 2000
+EXCERPT_LIMIT = 2800
 BIO_HEAD_PATTERN = re.compile(r"^([\u4e00-\u9fa5·]{2,4})，")
 TEMPLE_NAMES = (
     "太祖", "惠帝", "成祖", "仁宗", "宣宗", "英宗", "景帝", "宪宗",
@@ -131,6 +131,11 @@ def cmd_index(args) -> None:
     name_to_people: dict[str, list] = {}
     for person in people:
         name_to_people.setdefault(person["name"], []).append(person)
+    given_to_people: dict[str, list] = {}
+    for person in people:
+        for given in (person["name"][1:], person["name"][2:]):
+            if len(given) >= 2:
+                given_to_people.setdefault(given, []).append(person)
 
     matches: dict[str, list[dict]] = {}
     juan_count = 0
@@ -143,24 +148,102 @@ def cmd_index(args) -> None:
         kind = "本纪" if juan <= 24 else "列传"
         if kind == "列传":
             heads = split_biographies(paragraphs)
+            full_matched = {person["name"] for name, _ in heads for person in name_to_people.get(name, [])}
+            surnames_in_juan = {name[0] for name, _ in heads}
             for order, (name, para_index) in enumerate(heads):
+                stop = heads[order + 1][1] if order + 1 < len(heads) else len(paragraphs)
                 for person in name_to_people.get(name, []):
-                    stop = heads[order + 1][1] if order + 1 < len(heads) else len(paragraphs)
                     matches.setdefault(person["id"], []).append(
                         {"juan": juan, "kind": kind, "excerpt": excerpt_of(paragraphs, para_index, stop)}
                     )
+                # 单名附传：起句用名（“辉祖，”），需同卷存在同姓传主佐证，且全局唯一
+                candidates = given_to_people.get(name, [])
+                if len(candidates) == 1 and candidates[0]["name"][0] in surnames_in_juan and candidates[0]["name"] not in full_matched:
+                    matches.setdefault(candidates[0]["id"], []).append(
+                        {"juan": juan, "kind": kind, "excerpt": excerpt_of(paragraphs, para_index, stop)}
+                    )
         else:
+            # 本纪归属：以卷首句所冠庙号为准（如“太祖开天行道……”“成祖启弘……”），
+            # 只在帝王（title 以“明”开头的本朝君主）中匹配，避免被功臣头衔“明太祖封”劫持。
+            first_para = paragraphs[0] if paragraphs else ""
             head_text = "\n".join(paragraphs[:6])
+            emperors = [p for p in people if p["title"].startswith("明")]
+            chosen = None
             for temple in TEMPLE_NAMES:
-                if temple in head_text:
-                    for person in people:
-                        if temple in person["title"]:
-                            matches.setdefault(person["id"], []).append(
-                                {"juan": juan, "kind": kind, "excerpt": excerpt_of(paragraphs, 0, min(8, len(paragraphs)))}
-                            )
-                            break
+                if first_para.startswith(temple) or temple in first_para[:16]:
+                    chosen = temple
                     break
+            if chosen is None:
+                for temple in TEMPLE_NAMES:
+                    if temple in head_text:
+                        chosen = temple
+                        break
+            if chosen:
+                for person in emperors:
+                    if chosen in person["title"]:
+                        matches.setdefault(person["id"], []).append(
+                            {"juan": juan, "kind": kind, "excerpt": excerpt_of(paragraphs, 0, min(10, len(paragraphs)))}
+                        )
+                        break
     print(f"语料 {juan_count} 卷；命中人物 {len(matches)} 位。", flush=True)
+
+    # 附传提取：无选段而父/兄弟已有传文者，在父卷原文中按“名，”起句定位。
+    with connect() as db:
+        thin_people = {
+            row["id"]: row
+            for row in db.execute(
+                """
+                SELECT p.id, p.name FROM person p
+                LEFT JOIN person_section ps ON ps.person_id = p.id AND ps.section_key = 'life'
+                WHERE ps.content IS NULL OR (ps.content NOT LIKE '%《明史》原文%' AND length(ps.content) < 500)
+                """
+            )
+        }
+        kin = db.execute(
+            """
+            SELECT pr.from_person_id, pr.to_person_id, pr.relation_type FROM person_relation pr
+            JOIN person_mingshi pm ON pm.person_id IN (pr.from_person_id, pr.to_person_id)
+            WHERE pr.relation_type IN ('父子', '兄弟姐妹')
+            """
+        ).fetchall()
+        mingshi_juan = {row["person_id"]: row["juan"] for row in db.execute("SELECT person_id, juan FROM person_mingshi")}
+        person_names = {row["id"]: row["name"] for row in db.execute("SELECT id, name FROM person")}
+    attach_found = 0
+    for row in kin:
+        a, b, rel = row["from_person_id"], row["to_person_id"], row["relation_type"]
+        target = b if a in thin_people else (a if b in thin_people else None)
+        anchor_person = a if target == b else b
+        if target not in thin_people or anchor_person not in mingshi_juan:
+            continue
+        person = thin_people[target]
+        given = person["name"][1:]
+        if len(given) < 1 or person["id"] in matches:
+            continue
+        juan = mingshi_juan[anchor_person]
+        target_path = CORPUS_DIRECTORY / f"卷{juan:03d}.txt"
+        if not target_path.exists():
+            continue
+        paragraphs = [p for p in target_path.read_text(encoding="utf-8").split("\n") if p.strip()]
+        # 定位父/兄传主的首段，再在其后的段落中找以“名”开头的附传
+        anchor_head = 0
+        for order, para in enumerate(paragraphs):
+            if para.startswith(anchor_person_name + "，") or para.startswith(anchor_person_name):
+                anchor_head = order
+                break
+        for order in range(anchor_head + 1, len(paragraphs)):
+            para = paragraphs[order]
+            if para.startswith(given) and not split_biographies([para]):
+                stop = len(paragraphs)
+                for later in range(order + 1, len(paragraphs)):
+                    if split_biographies([paragraphs[later]]):
+                        stop = later
+                        break
+                matches.setdefault(person["id"], []).append(
+                    {"juan": juan, "kind": "列传", "excerpt": excerpt_of(paragraphs, order, stop)}
+                )
+                attach_found += 1
+                break
+    print(f"附传提取 {attach_found} 位。", flush=True)
 
     appended = 0
     with connect() as db:
