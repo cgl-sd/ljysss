@@ -166,7 +166,7 @@ def main() -> int:
                 if relation_type == "兄弟姐妹" and fb and cbb and abs(fb - cbb) > 20:
                     return
                 planned.add(key)
-                edges.append((from_id, to_id, relation_type, reign_by_id.get(to_id, "明代"), "哈佛 CBDB 亲属记录", source_id))
+                edges.append((from_id, to_id, relation_type, reign_by_id.get(to_id, "明代"), "", source_id))
 
             reign_by_id = {p["id"]: p["reign"] or "明代" for p in people}
             for k in kinships:
