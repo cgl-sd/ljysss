@@ -625,7 +625,12 @@ private fun PersonProfile(
                 it.type !in parentChildTypes()
             }
             if (person.category != PersonCategory.EMPERORS && shownRelations.isNotEmpty()) {
-                RelationSection(shownRelations, onOpenPerson)
+                RelationSection(
+                    shownRelations.map { relation ->
+                        relation to (if (relation.fromName == person.name) relation.toName else relation.fromName)
+                    },
+                    onOpenPerson,
+                )
             }
             if (relatedEvents.isNotEmpty()) {
                 ProfileSection("相关事件", relatedEvents)
