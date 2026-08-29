@@ -185,7 +185,8 @@ def supplement() -> list[tuple[int, int, str]]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--src", type=Path, default=OUT / "ming_histroy.txt")
-    parser.add_argument("--supplement", action="store_true", help="缺卷与表部从维基文库补")
+    parser.add_argument("--supplement", action=argparse.BooleanOptionalAction, default=True,
+                        help="缺卷与表部从维基文库补（默认开启；关闭会把已补的 17 卷清空）")
     args = parser.parse_args()
     info = build(args.src)
     stats = info["统计"]
@@ -195,3 +196,6 @@ if __name__ == "__main__":
         print("\n从维基文库补卷（表格按行转文字）：")
         for juan, size, note in supplement():
             print(f"  卷{juan:>3}: {size:>7,} 字  {note}")
+        leftover = [int(k) for k, v in json.loads((OUT / "manifest.json").read_text(encoding="utf-8"))["卷"].items()
+                    if v["字数"] < 400]
+        print(f"\n补卷后仍单薄的卷: {sorted(leftover) or '无'}")
