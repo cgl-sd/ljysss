@@ -16,3 +16,5 @@ local.properties
 # 内容库二进制由 backend/data/content/*.jsonl 重建，不进版本库
 /backend/data/ming_history.sqlite3
 /backend/data/ming_history.sqlite3.bak
+# 名录匹配与合并的中间产物，可由脚本重算，不进版本库
+/backend/data/staging/

@@ -144,12 +144,40 @@ class ContentServiceTest(unittest.TestCase):
         }
         catalog_ids = {person["id"] for person in PEOPLE}
         self.assertFalse(purged_ids & catalog_ids, "被清理的词条重新出现在编目目录中")
+
+        # id 现由姓名生成，同名的明代会合法复用同一串 id（陆光祖、唐龙、徐恪均为
+        # 《明史》传主），所以真正的不变量不是“id 不得再出现”，而是“每个人必须有明代依据”。
         with connect() as database:
             marks = ",".join("?" * len(purged_ids))
-            leftover = database.execute(
-                f"SELECT COUNT(*) FROM person WHERE id IN ({marks})", sorted(purged_ids)
+            unanchored = database.execute(
+                f"""
+                SELECT p.id FROM person p
+                WHERE p.id IN ({marks})
+                  AND NOT EXISTS (
+                      SELECT 1 FROM content_reference r
+                      WHERE r.content_type = 'person' AND r.content_id = p.id
+                        AND r.locator LIKE '明史卷%')
+                """,
+                sorted(purged_ids),
+            ).fetchall()
+        self.assertEqual([], [row[0] for row in unanchored],
+                         "被清理过的词条以无明史锚点的形式回来了")
+
+        with connect() as database:
+            without_anchor = database.execute(
+                """
+                SELECT COUNT(*) FROM person p
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM content_reference r
+                    WHERE r.content_type = 'person' AND r.content_id = p.id
+                      AND r.locator LIKE '明史卷%')
+                  AND NOT EXISTS (
+                    SELECT 1 FROM person_mingshi m WHERE m.person_id = p.id)
+                """
             ).fetchone()[0]
-        self.assertEqual(0, leftover)
+            total = database.execute("SELECT COUNT(*) FROM person").fetchone()[0]
+        self.assertLess(without_anchor / total, 0.35,
+                        "超过三分之一的条目没有任何《明史》锚点，明代归属无从校核")
 
     def test_every_parseable_person_chronology_stays_within_ming_bounds(self):
         import re

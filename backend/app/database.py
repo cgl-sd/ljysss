@@ -456,12 +456,17 @@ def import_content() -> list[tuple[str, int]]:
                 raise SystemExit(f"缺少 {path}；请先在内容完整的机器上执行 export。")
             records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
             if records:
-                columns = sorted({key for record in records for key in record})
-                connection.executemany(
-                    f"INSERT INTO {table}({', '.join(columns)}) "
-                    f"VALUES ({', '.join(':' + name for name in columns)})",
-                    [{column: record.get(column) for column in columns} for record in records],
-                )
+                # 按各条记录自己的列插入：未提供的列走 schema 默认值，
+                # 取全表列并集再补 None 会撞上 NOT NULL DEFAULT 的约束。
+                grouped: dict[tuple[str, ...], list[dict]] = {}
+                for record in records:
+                    grouped.setdefault(tuple(sorted(record)), []).append(record)
+                for columns, group in grouped.items():
+                    connection.executemany(
+                        f"INSERT INTO {table}({', '.join(columns)}) "
+                        f"VALUES ({', '.join(':' + name for name in columns)})",
+                        [{column: record[column] for column in columns} for record in group],
+                    )
             connection.commit()
             counts.append((table, len(records)))
     return counts
