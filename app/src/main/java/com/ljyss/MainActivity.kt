@@ -303,7 +303,6 @@ private fun TimelineScreen(
     val reigns = remember(repository) { repository.reigns() }
     var selectedTitle by rememberSaveable { mutableStateOf(reigns.first().title) }
     var selectedYear by rememberSaveable { mutableIntStateOf(reigns.first().startYear()) }
-    var showSources by rememberSaveable { mutableStateOf(false) }
     var expandedEventId by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedReign = reigns.first { it.title == selectedTitle }
 
@@ -332,8 +331,6 @@ private fun TimelineScreen(
             TimelineArchive(
                 reign = selectedReign,
                 selectedYear = selectedYear,
-                showSources = showSources,
-                onSourceClick = { showSources = !showSources },
                 expandedEventId = expandedEventId,
                 onOpenPerson = onOpenPerson,
                 onEventClick = { eventId ->
@@ -619,12 +616,14 @@ private fun PersonProfile(
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
             LifeSection(life)
             ProfileSection("家族与子嗣", readableParagraphs(family))
-            RelationSection(personRelations, onOpenPerson)
+            // 帝王条目不显示人物关系（宗室家庭资料在家族与子嗣栏呈现）。
+            if (person.category != PersonCategory.EMPERORS) {
+                RelationSection(personRelations, onOpenPerson)
+            }
             ProfileSection(
                 "相关事件",
                 relatedEvents.ifEmpty { listOf("暂无已编的关联事件记录。") },
             )
-            VerificationSection(person.verificationStatus)
         }
     }
 }
@@ -634,10 +633,12 @@ private data class LifeBlock(val isHeader: Boolean, val isClassicalMarker: Boole
 
 private fun parseLifeBlocks(content: String): List<LifeBlock> {
     val blocks = mutableListOf<LifeBlock>()
-    for (raw in content.split("\n")) {
+    for ((index, raw) in content.split("\n").withIndex()) {
         val line = raw.trim()
         when {
             line.isEmpty() -> continue
+            // 栏目大标题已是“生平”，跳过条目内首个同名小标题，避免重复。
+            line == "生平" && blocks.isEmpty() -> continue
             line.startsWith("〔《明史》原文") -> blocks.add(LifeBlock(true, true, line))
             line.length <= 18 && !line.endsWith("。") && !line.endsWith("！") && !line.endsWith("？") &&
                 !line.endsWith("；") && !line.contains("：") && !line.endsWith("」") ->
@@ -804,40 +805,6 @@ private fun RelationSection(relations: List<Pair<PersonRelation, String>>, onOpe
                     )
                 }
             }
-        }
-    }
-}
-
-/** 资料状态只呈现是否校验本身，用无衬线字体与正文的宋体区分。 */
-@Composable
-private fun VerificationSection(status: String) {
-    val verified = status.contains("已校验")
-    val tint = if (verified) Celadon else Brass
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text("资料状态", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-        Row(
-            modifier = Modifier.padding(top = 2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(7.dp)
-                    .clip(CircleShape)
-                    .background(tint),
-            )
-            Text(
-                if (verified) "已校验" else "未校验",
-                color = tint,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 2.sp,
-            )
         }
     }
 }
@@ -1392,8 +1359,6 @@ private fun ReignYearRail(reign: Reign, selectedYear: Int, onSelected: (Int) -> 
 private fun TimelineArchive(
     reign: Reign,
     selectedYear: Int,
-    showSources: Boolean,
-    onSourceClick: () -> Unit,
     expandedEventId: String?,
     onEventClick: (String) -> Unit,
     onOpenPerson: (String) -> Unit,
@@ -1457,12 +1422,6 @@ private fun TimelineArchive(
                     }
                 }
                 Spacer(Modifier.weight(1f))
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    SourceButton(expanded = showSources, onClick = onSourceClick)
-                }
-                if (showSources) {
-                    SourceNote("首批事件来自《明实录》资料索引；正式资料由后端返回卷次、版本、引文位置与置信度。")
-                }
             }
         }
     }
@@ -1625,34 +1584,6 @@ private fun EventRow(
                     fontSize = 13.sp,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun SourceButton(expanded: Boolean, onClick: () -> Unit) {
-    Surface(
-        modifier = Modifier
-            .widthIn(min = 176.dp)
-            .clip(CutCornerShape(7.dp))
-            .clickable(onClick = onClick),
-        shape = CutCornerShape(7.dp),
-        color = PaperLight,
-        border = BorderStroke(1.dp, Brass),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Outlined.BookmarkBorder, null, tint = InkSoft, modifier = Modifier.size(20.dp))
-            Text(
-                text = if (expanded) "收起史料来源" else "史料来源",
-                color = Ink,
-                fontFamily = FontFamily.Serif,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-            )
         }
     }
 }
