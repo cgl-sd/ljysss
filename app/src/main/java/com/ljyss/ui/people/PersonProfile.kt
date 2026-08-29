@@ -94,10 +94,12 @@ internal fun PersonProfile(
                 if (body.isBlank() || body.contains("史料未见详载")) return@forEach
                 when (section.key) {
                     "life" -> LifeSection(body)
+                    "family" -> ProfileSection(section.title, readableParagraphs(body))
                     "relations" -> if (person.category != PersonCategory.EMPERORS) {
                         ArticleSection(section.title, body, relationNames, onOpenPerson)
                     }
-                    else -> ProfileSection(section.title, readableParagraphs(body))
+                    "events" -> ProfileSection(section.title, readableParagraphs(body))
+                    // 其余键属于内部标记（如资料状态），不作为栏目呈现。
                 }
             }
         }
