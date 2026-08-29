@@ -25,7 +25,7 @@ from app.database import connect, initialize_database  # noqa: E402
 
 s2t = OpenCC("s2t")
 t2s = OpenCC("t2s")
-PACKS = [Path("/tmp/wikihf") / f"train-0000{i}.parquet" for i in range(6)]
+PACKS = [Path(__file__).resolve().parents[1] / 'sources' / 'wikipedia_zh' / f"train-0000{i}.parquet" for i in range(6)]
 INVENTORY = Path("/tmp/ming_inventory.json")
 LIFE_LIMIT = 6000
 

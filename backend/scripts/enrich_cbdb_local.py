@@ -22,7 +22,7 @@ from opencc import OpenCC  # noqa: E402
 
 from app.database import connect, initialize_database  # noqa: E402
 
-CBDB_PATH = Path("/tmp/cbdb_20260822.sqlite3")
+CBDB_PATH = Path(__file__).resolve().parents[1] / 'sources' / 'cbdb' / 'cbdb_20260822.sqlite3'
 t2s = OpenCC("t2s")
 s2t = OpenCC("s2t")
 

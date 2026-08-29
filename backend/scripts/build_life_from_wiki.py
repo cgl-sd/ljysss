@@ -22,7 +22,7 @@ from opencc import OpenCC  # noqa: E402
 
 from app.database import connect, initialize_database  # noqa: E402
 
-PACK_DIR = Path("/tmp/wikihf")
+PACK_DIR = Path(__file__).resolve().parents[1] / 'sources' / 'wikipedia_zh'
 PACKS = [PACK_DIR / f"train-0000{i}.parquet" for i in range(6)]
 LIFE_LIMIT = 8000
 s2t = OpenCC("s2t")
@@ -169,7 +169,7 @@ def main() -> int:
                 """,
                 (person_id, wiki_title, text),
             )
-            cbdb_path = Path("/tmp/cbdb_20260822.sqlite3")
+            cbdb_path = Path(__file__).resolve().parents[1] / 'sources' / 'cbdb' / 'cbdb_20260822.sqlite3'
             if cbdb_path.exists():
                 import sqlite3 as _s3
                 cb = _s3.connect(f"file:{cbdb_path}?mode=ro", uri=True)

@@ -3,7 +3,7 @@
 
 数据源：
 - /tmp/wikihf/*.parquet（维基百科 20231101.zh 全量 1.4M 条，含全文）
-- data/mingshi/《明史》332 卷（传主名单骨架）
+- sources/mingshi/《明史》332 卷（传主名单骨架）
 
 输出：/tmp/ming_inventory.json（分类清单，供收录脚本使用）
 """
@@ -19,8 +19,8 @@ from opencc import OpenCC
 
 s2t = OpenCC("s2t")
 BACKEND = Path(__file__).resolve().parents[1]
-CORPUS = BACKEND / "data" / "mingshi"
-PACKS = [Path("/tmp/wikihf") / f"train-0000{i}.parquet" for i in range(6)]
+CORPUS = BACKEND.parent / 'sources' / 'mingshi'
+PACKS = [Path(__file__).resolve().parents[1] / 'sources' / 'wikipedia_zh' / f"train-0000{i}.parquet" for i in range(6)]
 
 BIO_HEAD = re.compile(r"^([\u4e00-\u9fa5·]{2,4})，")
 DATE_CHARS = set("一二三四五六七八九十初春夏秋冬朔晦乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥")
