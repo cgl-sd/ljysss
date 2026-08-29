@@ -13,9 +13,8 @@ class ContentServiceTest(unittest.TestCase):
         payload = bootstrap_content()
         self.assertEqual(17, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
-        # 748 为剔除清朝与现代错撞词条后的目录规模；下限放宽到 700 以容纳后续增补。
+        # 748 位精选 + 全量收录的明朝相关人物（明史传主 ∩ 维基），下限 700、上限放开。
         self.assertGreaterEqual(len(payload["people"]), 700)
-        self.assertLessEqual(len(payload["people"]), 760)
         # 皇帝不与文臣武将建关系；关系网以家庭、同僚与南明阵营类为主，亲属补录可持续增加。
         self.assertGreaterEqual(len(payload["relationships"]), 30)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
