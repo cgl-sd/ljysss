@@ -3,7 +3,7 @@
 ## 目录结构
 
 - `app/`：Android 客户端（Kotlin + Gradle）。界面按功能分包在 `app/src/main/java/com/ljyss/`：`MainActivity.kt` 只保留 Activity、底部导航与页面装配；`ui/timeline`（岁月）、`ui/people`（人物页·详情·朝代档案·人物卡）、`ui/relationship`（人物与事件两张关系网络）、`ui/world`（天下）、`ui/profile`（我的）、`ui/components`（四页共用的版面件与朱印）、`ui/theme`（配色字体）；`domain/` 放无 Android 依赖的纯规则（纪年换算、农历月序、生平文本、人物年序），可跑 JVM 单测；`data/` 为仓库接口与实现。依赖方向：屏 → 功能区 → `ui/components` → `domain` → `data.model`。图片资源（明代地图、木刻导航图标、绢本画像等）在 `app/src/main/res/`。
-- `backend/`：内容服务（FastAPI + SQLite）。`app/` 为服务代码，`data/ming_history.sqlite3` 为内容库，`scripts/` 为人物资料导入脚本，`tests/` 为后端测试。
+- `backend/`：内容服务（FastAPI + SQLite）。`app/` 为服务代码，`data/content/*.jsonl` 为内容真相（按表切分、一行一条，进版本库），`data/ming_history.sqlite3` 为本地运行产物（已 gitignore，由 `scripts/content_store.py import` 或服务启动时自动从文本重建），`scripts/` 为人物资料导入脚本，`tests/` 为后端测试。
 - `docs/`：项目文档（接口契约、界面核对记录等）。
 - `tmp/`：测试截图与 QA 工作产物（已 gitignore，禁止提交）。
 - 根目录保留 Gradle 工程文件（`*.gradle.kts`、`gradle/`、`gradlew*`、`settings.gradle.kts` 等）。
@@ -25,4 +25,5 @@
 - 岁月事件展开须含事件介绍、相关人物（可点击跳转人物详情）、影响与出处；事件参与人物的判据为人名或帝号别名出现于事件首段、且事件年份落在其生卒期内；“史料来源”按钮不保留。
 - 天下页由舆图、机构、典章三个栏目组成：机构自人物页迁入；典章收录宫殿、器物与制度名物（尚方宝剑、王命旗牌、丹书铁券等）的科普卡片；页面顶部保留鼎形图标与“天下”题字。
 - 原始权威数据包（维基百科 parquet、CBDB SQLite、《明史》语料）永久存放于 `backend/sources/`，已加 macOS `uchg` 防删保护，禁止删除；更新时先 `chflags -R nouchg` 解锁，替换后重新加锁。来源登记见根 `README.md`。
+- 三个原始来源之外，内容的版本库真相是 `backend/data/content/*.jsonl`（按表一行一条）。跑完导入脚本或人工校订后须执行 `backend/scripts/content_store.py export` 把 SQLite 的变化写回文本再提交；`ming_history.sqlite3` 是本地运行产物，不提交、也不手工编辑。启动回写受 `catalog.py` 名录指纹（`PRAGMA user_version`）门控：名录未变则完全跳过，因此直接改库里的种子字段不会被下次启动冲掉，但也不会被反向同步进文本。
 - 数据准确性审计规则与修正清单记录于 `docs/data-audit.md`；关系边与事件参与人物的新增/修改须通过 `audit_data_accuracy.py` 同类校验（生卒年合理性 + 首段出现判据）。

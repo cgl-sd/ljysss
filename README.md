@@ -35,8 +35,11 @@ ctext.org API 需付费认证。
 | `classify_and_link.py` | 人物六分类归类、事件参与人物匹配 |
 | `purge_non_ming_people.py` 等 | 数据质量闸门(剔除清朝/现代/跨时代同名词条) |
 
-整理结果:`ming_history.sqlite3`(22MB,见 backend/data),下游为 App 的
-`/v1/bootstrap` 数据源。
+整理结果落在 `ming_history.sqlite3`,但版本库保存的是它的文本形态
+`backend/data/content/*.jsonl`(按表一行一条,可 diff 可 review);SQLite 本身是本地产物,
+已 gitignore。克隆后无需手工恢复:内容服务启动时发现库缺失会自动从文本重建,也可显式执行
+`scripts/content_store.py import`(文本→库)或 `export`(库→文本,改完内容后提交前跑)。
+下游为 App 的 `/v1/bootstrap` 数据源。
 
 ## 开发
 
