@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """从维基文库抓取《明史》全文并建立人物传文索引。
 
-- --fetch：逐卷抓取明史/卷1..卷332，经 opencc 转为简体，存 sources/mingshi/。
+- --fetch：逐卷抓取明史/卷1..卷332，经 opencc 转为简体，存 sources/mingshi_full/（定形与缺卷补齐由 build_mingshi_full.py 负责）。
 - --index：把 748 位人物匹配到列传（“某某，字……”起句）与本纪（庙号），
   选段写入 person_mingshi 表，并在“生平”栏目末尾追加〔《明史》原文〕块。
 
@@ -32,7 +32,7 @@ from app.database import connect, initialize_database  # noqa: E402
 WIKISOURCE_API = "https://zh.wikisource.org/w/api.php"
 USER_AGENT = "LiangjingYishisanshengResearch/1.0 (historical educational app)"
 TOTAL_JUANS = 332
-CORPUS_DIRECTORY = BACKEND_DIRECTORY / "sources" / "mingshi"
+CORPUS_DIRECTORY = BACKEND_DIRECTORY / "sources" / "mingshi_full"
 EXCERPT_LIMIT = 2800
 BIO_HEAD_PATTERN = re.compile(r"^([\u4e00-\u9fa5·]{2,4})，")
 TEMPLE_NAMES = (

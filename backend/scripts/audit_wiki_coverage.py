@@ -21,7 +21,7 @@ import pyarrow.parquet as pq
 from opencc import OpenCC
 
 BACKEND = Path(__file__).resolve().parents[1]
-MINGSHI = BACKEND / "sources" / "mingshi"
+MINGSHI = BACKEND / "sources" / "mingshi_full"
 PACKS = [BACKEND / "sources" / "wikipedia_zh" / f"train-0000{i}.parquet" for i in range(6)]
 STORE = BACKEND / "data" / "ming_history.sqlite3"
 

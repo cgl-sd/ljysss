@@ -50,7 +50,7 @@ def main() -> int:
     reign_by_id = {p["id"]: p["reign"] or "明代" for p in people}
     person_by_id = {p["id"]: p for p in people}
 
-    corpus = Path(BACKEND_DIRECTORY) / "sources" / "mingshi"
+    corpus = Path(BACKEND_DIRECTORY) / "sources" / "mingshi_full"
     years_by_id = {p["id"]: p["years"] for p in people}
     planned: dict[tuple[str, str, str], str] = {}
 
