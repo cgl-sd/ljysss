@@ -70,33 +70,43 @@ def cut_duplicate_tail(lines: list[str], header_at: list[int]) -> tuple[list[str
     return lines, None
 
 
+def is_catalogue(line: str) -> bool:
+    """志部与列传卷首的名目行：以空格分隔的一串短词，不是连续正文。"""
+
+    parts = [p for p in re.split(r"[\s　]+", line) if p]
+    return len(parts) >= 3 and sum(1 for p in parts if 2 <= len(p) <= 12) >= len(parts) - 1
+
+
 def paragraphs(block: list[str]) -> list[str]:
     """原文件每行之间都夹着空行，空行不能当段落边界——改按句末标点断段。
 
     源文本是按固定宽度硬换行的，一句常被劈成两行，所以只在「行末是句末标点」时
     收束一段；行末是别的字就继续连下一行。◎/○ 小节标题各自独立成段。
+    名目行必须原样保留空格，否则「吏部 户部 礼部」会粘成无法切分的长串。
     这只改变换行位置，不增删任何字。
     """
 
     out: list[str] = []
     buffer: list[str] = []
+
+    def flush() -> None:
+        if buffer:
+            out.append("".join(buffer))
+            buffer.clear()
+
     for raw in block:
         line = re.sub(r"</?div[^>]*>", "", raw.strip()).strip()
         if not line or line == DIVIDER.strip("-"):
             continue
         line = unescape_all(line)
-        if line.startswith(("◎", "○")):
-            if buffer:
-                out.append("".join(buffer))
-                buffer = []
-            out.append(line)
+        if line.startswith(("◎", "○")) or is_catalogue(line):
+            flush()
+            out.append(" ".join(p for p in re.split(r"[\s　]+", line) if p))
             continue
         buffer.append(line)
         if line.endswith(("。", "！", "？", "：")):
-            out.append("".join(buffer))
-            buffer = []
-    if buffer:
-        out.append("".join(buffer))
+            flush()
+    flush()
     return [p for p in out if p != "（略）"]
 
 
