@@ -13,3 +13,6 @@ local.properties
 /backend/data/mingshi/
 /backend/data/wikitext/
 /backend/sources/
+# 内容库二进制由 backend/data/content/*.jsonl 重建，不进版本库
+/backend/data/ming_history.sqlite3
+/backend/data/ming_history.sqlite3.bak

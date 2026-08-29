@@ -1,0 +1,19 @@
+{"description": "御史台改为都察院，监察体系进一步定型。", "institution_id": "censorate", "position": 0, "title": "改置都察院", "year": "1382"}
+{"description": "皇族分封制度逐步建立。", "institution_id": "clan-court", "position": 0, "title": "宗藩封建", "year": "洪武朝"}
+{"description": "削藩、靖难及其后续重塑中央与诸藩的关系。", "institution_id": "clan-court", "position": 1, "title": "宗藩关系调整", "year": "建文、永乐间"}
+{"description": "刑部、都察院、大理寺分别承担审判、监察和复核等职责。", "institution_id": "dali-temple", "position": 0, "title": "三法司分掌", "year": "洪武朝"}
+{"description": "永乐朝设置东厂，内廷侦缉机构成为后世理解明代政治的重要线索。", "institution_id": "eastern-western-factories", "position": 0, "title": "设东厂", "year": "1420"}
+{"description": "成化朝命汪直提督西厂，权限与争议均扩大。", "institution_id": "eastern-western-factories", "position": 1, "title": "设西厂", "year": "1477"}
+{"description": "西厂短期撤罢，显示内廷侦缉体系的设置并非一成不变。", "institution_id": "eastern-western-factories", "position": 2, "title": "西厂撤罢", "year": "1478"}
+{"description": "批红机制与外廷票拟相互衔接。", "institution_id": "eunuch-agencies", "position": 0, "title": "内廷文书职能增强", "year": "永乐以后"}
+{"description": "以卫所编制组织军户与地方军政。", "institution_id": "five-military-commissions", "position": 0, "title": "卫所定制", "year": "洪武朝"}
+{"description": "卫所战力变化后，募兵、家丁与边镇军队的作用增加。", "institution_id": "five-military-commissions", "position": 1, "title": "募兵并行", "year": "中晚明"}
+{"description": "丞相制度废止，六部直接对皇帝负责。", "institution_id": "grand-secretariat", "position": 0, "title": "废中书省", "year": "1380"}
+{"description": "内阁在文书与决策流程中的作用逐渐加强。", "institution_id": "grand-secretariat", "position": 1, "title": "阁臣参预机务", "year": "永乐朝"}
+{"description": "以亲军都尉府改置，形成皇帝直属侍卫机构。", "institution_id": "jinyiwei", "position": 0, "title": "设锦衣卫", "year": "1382"}
+{"description": "行中书省改为承宣布政使司，形成省级治理框架。", "institution_id": "provincial-administration", "position": 0, "title": "承宣布政使司定制", "year": "洪武九年 · 1376"}
+{"description": "面对边防、漕运与灾荒等跨域问题，督抚差遣的重要性上升。", "institution_id": "provincial-administration", "position": 1, "title": "督抚强化", "year": "中晚明"}
+{"description": "以分科给事中参与封驳、稽察与谏诤。", "institution_id": "six-bureaus", "position": 0, "title": "六科定制", "year": "洪武朝"}
+{"description": "六科与都察院御史常被并称为科道，言路与党争问题更受关注。", "institution_id": "six-bureaus", "position": 1, "title": "科道并称", "year": "中晚明"}
+{"description": "中书省废除后，六部改为直接向皇帝奏事。", "institution_id": "six-ministries", "position": 0, "title": "直达皇帝", "year": "1380"}
+{"description": "建立奏章收受、登记和转达的中枢文书通道。", "institution_id": "transmission-office", "position": 0, "title": "通政司定制", "year": "洪武朝"}

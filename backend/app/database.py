@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import sqlite3
 from pathlib import Path
 
@@ -9,6 +11,39 @@ from .catalog import EVENTS, INSTITUTIONS, PEOPLE, PORTRAIT_KEYS, REIGNS, RELATI
 
 DATA_DIRECTORY = Path(__file__).resolve().parent.parent / "data"
 DATABASE_PATH = DATA_DIRECTORY / "ming_history.sqlite3"
+# 二进制库适合运行期读写、不适合进版本库；内容真相按表存成一行一条的 JSONL。
+CONTENT_DIRECTORY = DATA_DIRECTORY / "content"
+
+# 插入顺序即外键依赖顺序，导出与导入共用。
+CONTENT_TABLES = [
+    "source",
+    "reign",
+    "person",
+    "event",
+    "event_section",
+    "person_section",
+    "content_reference",
+    "person_research",
+    "person_relation",
+    "institution",
+    "institution_promotion",
+    "institution_reform",
+    "special_item",
+    "person_mingshi",
+    "person_wiki",
+    "person_cbdb",
+]
+
+# 行序决定文本的 diff 稳定性：按主键或业务键排序，不依赖 SQLite 的物理顺序。
+CONTENT_ORDER = {
+    "person_relation": ("from_person_id", "to_person_id", "relation_type", "reign"),
+    "person_section": ("person_id", "position"),
+    "event_section": ("event_id", "position"),
+    "content_reference": ("content_type", "content_id", "section_key", "position"),
+    "person_research": ("person_id", "provider"),
+    "institution_promotion": ("institution_id", "position"),
+    "institution_reform": ("institution_id", "position"),
+}
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -197,151 +232,175 @@ def connect() -> sqlite3.Connection:
 def initialize_database() -> None:
     """Create the normalized content store and safely synchronize the editorial catalog."""
 
+    if not DATABASE_PATH.exists() and all(
+        (CONTENT_DIRECTORY / f"{table}.jsonl").exists() for table in CONTENT_TABLES
+    ):
+        import_content()
     with connect() as connection:
         connection.executescript(SCHEMA)
         _migrate_person_columns(connection)
+        if connection.execute("PRAGMA user_version").fetchone()[0] == _catalog_digest():
+            return
+        _synchronize_catalog(connection)
+        connection.execute(f"PRAGMA user_version = {_catalog_digest()}")
+
+
+def _catalog_digest() -> int:
+    """种子名录指纹；catalog.py 改动后，下一次启动会重新回写一次。
+
+    未改动时跳过回写：SQLite 即使写入相同的值也会脏化数据库文件，
+    而 person_relation 的 AUTOINCREMENT 每次插入尝试还要预占 rowid。
+    """
+
+    payload = repr((SOURCE, REIGNS, PEOPLE, EVENTS, RELATIONS, INSTITUTIONS, SPECIAL_ITEMS, PORTRAIT_KEYS))
+    return int.from_bytes(hashlib.sha256(payload.encode("utf-8")).digest()[:4], "big") & 0x7FFFFFFF
+
+
+def _synchronize_catalog(connection: sqlite3.Connection) -> None:
+    """Replay the packaged catalog over the content store."""
+
+    source_id = SOURCE["id"]
+    connection.executemany(
+        """
+        INSERT INTO source(id, title, citation, url, review_status) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            title = excluded.title,
+            citation = excluded.citation,
+            url = excluded.url,
+            review_status = excluded.review_status
+        """,
+        [
+            tuple(source[key] for key in ("id", "title", "citation", "url", "review_status"))
+            for source in (SOURCE,)
+        ],
+    )
+    connection.executemany(
+        """
+        INSERT INTO reign(id, title, start_year, end_year, summary)
+        VALUES (:id, :title, :start_year, :end_year, :summary)
+        ON CONFLICT(id) DO UPDATE SET
+            title = excluded.title,
+            start_year = excluded.start_year,
+            end_year = excluded.end_year,
+            summary = excluded.summary
+        """,
+        REIGNS,
+    )
+
+    # 编目库已不含 CBDB 索引导入条目；清理历史库中残留的 CBDB 数据及其关联审计记录。
+    connection.execute("DELETE FROM person_research WHERE person_id LIKE 'cbdb-%'")
+    connection.execute("DELETE FROM person_section WHERE person_id LIKE 'cbdb-%'")
+    connection.execute("DELETE FROM content_reference WHERE content_type = 'person' AND content_id LIKE 'cbdb-%'")
+    connection.execute("DELETE FROM person WHERE source_id = 'cbdb-20210525'")
+    connection.executemany(
+        """
+        INSERT INTO person(id, name, title, reign, years, category, courtesy_name, summary, biography, family_summary, source_id)
+        VALUES (:id, :name, :title, :reign, :years, :category, :courtesy_name, :summary, :biography, :family_summary, :source_id)
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            title = excluded.title,
+            reign = excluded.reign,
+            years = excluded.years,
+            category = excluded.category,
+            courtesy_name = excluded.courtesy_name,
+            summary = excluded.summary,
+            biography = CASE
+                WHEN EXISTS (
+                    SELECT 1 FROM person_section
+                    WHERE person_id = person.id AND section_key = 'life'
+                ) THEN person.biography
+                ELSE excluded.biography
+            END,
+            source_id = excluded.source_id
+        """,
+        [{**person, "family_summary": "", "source_id": source_id} for person in PEOPLE],
+    )
+    connection.executemany(
+        """
+        INSERT INTO event(id, reign_id, year, month, title, summary, detail, place, participants, consequence, source_id)
+        VALUES (:id, :reign_id, :year, :month, :title, :summary, :detail, :place, :participants, :consequence, :source_id)
+        ON CONFLICT(id) DO UPDATE SET
+            reign_id = excluded.reign_id,
+            year = excluded.year,
+            month = excluded.month,
+            title = excluded.title,
+            summary = excluded.summary,
+            detail = excluded.detail,
+            place = excluded.place,
+            participants = excluded.participants,
+            consequence = excluded.consequence,
+            source_id = excluded.source_id
+        """,
+        [{**event, "source_id": source_id} for event in EVENTS],
+    )
+    connection.executemany(
+        """
+        INSERT INTO person_relation(from_person_id, to_person_id, relation_type, reign, note, source_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(from_person_id, to_person_id, relation_type, reign) DO UPDATE SET
+            note = excluded.note,
+            source_id = excluded.source_id
+        """,
+        [(*relation, source_id) for relation in RELATIONS],
+    )
+
+    for institution in INSTITUTIONS:
+        connection.execute(
+            """
+            INSERT INTO institution(id, name, category, active_reigns, function, source_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                category = excluded.category,
+                active_reigns = excluded.active_reigns,
+                function = excluded.function,
+                source_id = excluded.source_id
+            """,
+            (
+                institution["id"],
+                institution["name"],
+                institution["category"],
+                institution["active_reigns"],
+                institution["function"],
+                source_id,
+            ),
+        )
         connection.executemany(
             """
-            INSERT INTO source(id, title, citation, url, review_status) VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
+            INSERT INTO institution_promotion(institution_id, position, label) VALUES (?, ?, ?)
+            ON CONFLICT(institution_id, position) DO UPDATE SET label = excluded.label
+            """,
+            [(institution["id"], position, label) for position, label in enumerate(institution["promotion_path"])],
+        )
+        connection.executemany(
+            """
+            INSERT INTO institution_reform(institution_id, position, year, title, description)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(institution_id, position) DO UPDATE SET
+                year = excluded.year,
                 title = excluded.title,
-                citation = excluded.citation,
-                url = excluded.url,
-                review_status = excluded.review_status
+                description = excluded.description
             """,
             [
-                tuple(source[key] for key in ("id", "title", "citation", "url", "review_status"))
-                for source in (SOURCE,)
+                (institution["id"], position, year, title, description)
+                for position, (year, title, description) in enumerate(institution["reforms"])
             ],
         )
-        connection.executemany(
-            """
-            INSERT INTO reign(id, title, start_year, end_year, summary)
-            VALUES (:id, :title, :start_year, :end_year, :summary)
-            ON CONFLICT(id) DO UPDATE SET
-                title = excluded.title,
-                start_year = excluded.start_year,
-                end_year = excluded.end_year,
-                summary = excluded.summary
-            """,
-            REIGNS,
-        )
-
-        source_id = SOURCE["id"]
-        # 编目库已不含 CBDB 索引导入条目；清理历史库中残留的 CBDB 数据及其关联审计记录。
-        connection.execute("DELETE FROM person_research WHERE person_id LIKE 'cbdb-%'")
-        connection.execute("DELETE FROM person_section WHERE person_id LIKE 'cbdb-%'")
-        connection.execute("DELETE FROM content_reference WHERE content_type = 'person' AND content_id LIKE 'cbdb-%'")
-        connection.execute("DELETE FROM person WHERE source_id = 'cbdb-20210525'")
-        connection.executemany(
-            """
-            INSERT INTO person(id, name, title, reign, years, category, courtesy_name, summary, biography, family_summary, source_id)
-            VALUES (:id, :name, :title, :reign, :years, :category, :courtesy_name, :summary, :biography, :family_summary, :source_id)
-            ON CONFLICT(id) DO UPDATE SET
-                name = excluded.name,
-                title = excluded.title,
-                reign = excluded.reign,
-                years = excluded.years,
-                category = excluded.category,
-                courtesy_name = excluded.courtesy_name,
-                summary = excluded.summary,
-                biography = CASE
-                    WHEN EXISTS (
-                        SELECT 1 FROM person_section
-                        WHERE person_id = person.id AND section_key = 'life'
-                    ) THEN person.biography
-                    ELSE excluded.biography
-                END,
-                source_id = excluded.source_id
-            """,
-            [{**person, "family_summary": "", "source_id": source_id} for person in PEOPLE],
-        )
-        connection.executemany(
-            """
-            INSERT INTO event(id, reign_id, year, month, title, summary, detail, place, participants, consequence, source_id)
-            VALUES (:id, :reign_id, :year, :month, :title, :summary, :detail, :place, :participants, :consequence, :source_id)
-            ON CONFLICT(id) DO UPDATE SET
-                reign_id = excluded.reign_id,
-                year = excluded.year,
-                month = excluded.month,
-                title = excluded.title,
-                summary = excluded.summary,
-                detail = excluded.detail,
-                place = excluded.place,
-                participants = excluded.participants,
-                consequence = excluded.consequence,
-                source_id = excluded.source_id
-            """,
-            [{**event, "source_id": source_id} for event in EVENTS],
-        )
-        connection.executemany(
-            """
-            INSERT INTO person_relation(from_person_id, to_person_id, relation_type, reign, note, source_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT(from_person_id, to_person_id, relation_type, reign) DO UPDATE SET
-                note = excluded.note,
-                source_id = excluded.source_id
-            """,
-            [(*relation, source_id) for relation in RELATIONS],
-        )
-
-        for institution in INSTITUTIONS:
-            connection.execute(
-                """
-                INSERT INTO institution(id, name, category, active_reigns, function, source_id)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET
-                    name = excluded.name,
-                    category = excluded.category,
-                    active_reigns = excluded.active_reigns,
-                    function = excluded.function,
-                    source_id = excluded.source_id
-                """,
-                (
-                    institution["id"],
-                    institution["name"],
-                    institution["category"],
-                    institution["active_reigns"],
-                    institution["function"],
-                    source_id,
-                ),
-            )
-            connection.executemany(
-                """
-                INSERT INTO institution_promotion(institution_id, position, label) VALUES (?, ?, ?)
-                ON CONFLICT(institution_id, position) DO UPDATE SET label = excluded.label
-                """,
-                [(institution["id"], position, label) for position, label in enumerate(institution["promotion_path"])],
-            )
-            connection.executemany(
-                """
-                INSERT INTO institution_reform(institution_id, position, year, title, description)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(institution_id, position) DO UPDATE SET
-                    year = excluded.year,
-                    title = excluded.title,
-                    description = excluded.description
-                """,
-                [
-                    (institution["id"], position, year, title, description)
-                    for position, (year, title, description) in enumerate(institution["reforms"])
-                ],
-            )
-        connection.executemany(
-            """
-            INSERT INTO special_item(id, name, category, era, description, position, source_id)
-            VALUES (:id, :name, :category, :era, :description, :position, :source_id)
-            ON CONFLICT(id) DO UPDATE SET
-                name = excluded.name,
-                category = excluded.category,
-                era = excluded.era,
-                description = excluded.description,
-                position = excluded.position,
-                source_id = excluded.source_id
-            """,
-            [{**item, "position": position, "source_id": source_id} for position, item in enumerate(SPECIAL_ITEMS)],
-        )
-        _apply_asset_metadata(connection)
+    connection.executemany(
+        """
+        INSERT INTO special_item(id, name, category, era, description, position, source_id)
+        VALUES (:id, :name, :category, :era, :description, :position, :source_id)
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            category = excluded.category,
+            era = excluded.era,
+            description = excluded.description,
+            position = excluded.position,
+            source_id = excluded.source_id
+        """,
+        [{**item, "position": position, "source_id": source_id} for position, item in enumerate(SPECIAL_ITEMS)],
+    )
+    _apply_asset_metadata(connection)
 
 
 def _migrate_person_columns(connection: sqlite3.Connection) -> None:
@@ -361,3 +420,48 @@ def _apply_asset_metadata(connection: sqlite3.Connection) -> None:
         "UPDATE person SET portrait_key = ? WHERE id = ?",
         [(key, person_id) for person_id, key in PORTRAIT_KEYS.items()],
     )
+
+
+def export_content() -> list[tuple[str, int]]:
+    """把内容库逐表导出为 JSONL，返回各表行数供调用方报告。"""
+
+    CONTENT_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    counts: list[tuple[str, int]] = []
+    with connect() as connection:
+        for table in CONTENT_TABLES:
+            order = CONTENT_ORDER.get(table)
+            rows = connection.execute(
+                f"SELECT * FROM {table}" + (f" ORDER BY {', '.join(order)}" if order else "")
+            ).fetchall()
+            payload = "".join(
+                json.dumps(dict(row), ensure_ascii=False, sort_keys=True) + "\n" for row in rows
+            )
+            (CONTENT_DIRECTORY / f"{table}.jsonl").write_text(payload, encoding="utf-8")
+            counts.append((table, len(rows)))
+    return counts
+
+
+def import_content() -> list[tuple[str, int]]:
+    """从 JSONL 重建内容库；旧库先备份为 .bak，避免文本不全时丢内容。"""
+
+    DATA_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    if DATABASE_PATH.exists():
+        DATABASE_PATH.replace(DATABASE_PATH.with_name("ming_history.sqlite3.bak"))
+    counts: list[tuple[str, int]] = []
+    with connect() as connection:
+        connection.executescript(SCHEMA)
+        for table in CONTENT_TABLES:
+            path = CONTENT_DIRECTORY / f"{table}.jsonl"
+            if not path.exists():
+                raise SystemExit(f"缺少 {path}；请先在内容完整的机器上执行 export。")
+            records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+            if records:
+                columns = sorted({key for record in records for key in record})
+                connection.executemany(
+                    f"INSERT INTO {table}({', '.join(columns)}) "
+                    f"VALUES ({', '.join(':' + name for name in columns)})",
+                    [{column: record.get(column) for column in columns} for record in records],
+                )
+            connection.commit()
+            counts.append((table, len(records)))
+    return counts
