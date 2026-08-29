@@ -30,7 +30,6 @@ enum class PersonCategory(val label: String, val subtitle: String) {
     MINISTERS("朝臣", "辅政文臣"),
     GENERALS("将帅", "武将与督师"),
     LITERATI("文苑", "文人与学者"),
-    OTHERS("其他", "明史与维基新增收录"),
 }
 
 data class HistoricalPerson(
