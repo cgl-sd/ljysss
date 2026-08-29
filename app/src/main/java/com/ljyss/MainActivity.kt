@@ -102,6 +102,15 @@ import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.Reign
 import com.ljyss.data.model.SpecialItem
+import com.ljyss.domain.endYear
+import com.ljyss.domain.lunarMonthOrder
+import com.ljyss.domain.parseLifeBlocks
+import com.ljyss.domain.parentChildTypes
+import com.ljyss.domain.personBirthYear
+import com.ljyss.domain.personChronologyRank
+import com.ljyss.domain.readableParagraphs
+import com.ljyss.domain.startYear
+import com.ljyss.domain.yearLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.ljyss.ui.theme.Brass
@@ -338,23 +347,6 @@ private fun TimelineScreen(
                 },
             )
         }
-    }
-}
-
-private fun Reign.startYear(): Int = yearRange.substringBefore("—").toInt()
-
-private fun Reign.endYear(): Int = yearRange.substringAfter("—", yearRange).toInt()
-
-private fun Reign.yearLabel(year: Int): String =
-    "$title${chineseYearNumber(year - startYear() + 1)}年 · $year"
-
-private fun chineseYearNumber(value: Int): String {
-    val digits = listOf("零", "一", "二", "三", "四", "五", "六", "七", "八", "九")
-    return when {
-        value < 10 -> if (value == 1) "元" else digits[value]
-        value < 20 -> if (value == 10) "十" else "十${digits[value % 10]}"
-        value % 10 == 0 -> "${digits[value / 10]}十"
-        else -> "${digits[value / 10]}十${digits[value % 10]}"
     }
 }
 
@@ -640,26 +632,6 @@ private fun PersonProfile(
 }
 
 /** 生平栏目：维基长文按小标题分块，超长默认截断，可展开全文；《明史》原文块单独标色。 */
-private data class LifeBlock(val isHeader: Boolean, val isClassicalMarker: Boolean, val text: String)
-
-private fun parseLifeBlocks(content: String): List<LifeBlock> {
-    val blocks = mutableListOf<LifeBlock>()
-    for ((index, raw) in content.split("\n").withIndex()) {
-        val line = raw.trim()
-        when {
-            line.isEmpty() -> continue
-            // 栏目大标题已是“生平”，条目内同名小标题一律跳过，避免重复。
-            line == "生平" -> continue
-            line.startsWith("〔《明史》原文") -> blocks.add(LifeBlock(true, true, line))
-            line.length <= 18 && !line.endsWith("。") && !line.endsWith("！") && !line.endsWith("？") &&
-                !line.endsWith("；") && !line.contains("：") && !line.endsWith("」") ->
-                blocks.add(LifeBlock(true, false, line))
-            else -> blocks.add(LifeBlock(false, false, line))
-        }
-    }
-    return blocks
-}
-
 @Composable
 private fun LifeSection(content: String) {
     val blocks = remember(content) { parseLifeBlocks(content) }
@@ -820,35 +792,6 @@ private fun RelationSection(relations: List<Pair<PersonRelation, String>>, onOpe
     }
 }
 
-/** 把长正文切成适合手机阅读的短段落：优先保留已有换行，再按句读边界二次分段。 */
-private fun readableParagraphs(text: String): List<String> {
-    val blocks = text.replace("\r", "").trim()
-        .split(Regex("\\n+"))
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
-    if (blocks.isEmpty()) return emptyList()
-    val paragraphs = mutableListOf<String>()
-    for (block in blocks) {
-        if (block.length <= 140) {
-            paragraphs += block
-            continue
-        }
-        val sentences = block.split(Regex("(?<=[。！？；])"))
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-        var buffer = ""
-        for (sentence in sentences) {
-            buffer += sentence
-            if (buffer.length >= 130) {
-                paragraphs += buffer
-                buffer = ""
-            }
-        }
-        if (buffer.isNotEmpty()) paragraphs += buffer
-    }
-    return paragraphs
-}
-
 @Composable
 private fun DynastyArchive(
     reign: Reign,
@@ -940,19 +883,6 @@ private fun ArchiveGroup(
         }
     }
 }
-
-private fun personBirthYear(person: HistoricalPerson): Int =
-    person.years.substringBefore("—").trim().toIntOrNull() ?: Int.MAX_VALUE
-
-private val personEraOrder = listOf(
-    "洪武", "建文", "永乐", "洪熙", "宣德", "正统", "景泰", "天顺", "成化",
-    "弘治", "正德", "嘉靖", "隆庆", "万历", "泰昌", "天启", "崇祯",
-)
-
-private fun personChronologyRank(person: HistoricalPerson): Int =
-    personEraOrder.indexOfFirst { era -> person.reign.contains(era) }.let { index ->
-        if (index >= 0) index else Int.MAX_VALUE
-    }
 
 @Composable
 private fun PersonChronologyRail(reigns: List<Reign>) {
@@ -1459,22 +1389,6 @@ private fun EmptyYearState(reign: Reign, selectedYear: Int) {
     }
 }
 
-private fun lunarMonthOrder(month: String): Int = when (month) {
-    "正月" -> 1
-    "二月" -> 2
-    "三月" -> 3
-    "四月" -> 4
-    "五月" -> 5
-    "六月" -> 6
-    "七月" -> 7
-    "八月" -> 8
-    "九月" -> 9
-    "十月" -> 10
-    "冬月", "十一月" -> 11
-    "腊月", "十二月" -> 12
-    else -> 13
-}
-
 @Composable
 private fun MonthLine(activeMonths: List<String>) {
     Row(modifier = Modifier.fillMaxWidth()) {
@@ -1792,9 +1706,6 @@ private fun RelationshipNetwork(relations: List<PersonRelation>) {
         }
     }
 }
-
-/** 父母与子女的亲属行都计入“子女”名单；皇帝的宗室家庭关系也由此呈现。 */
-private fun parentChildTypes() = setOf(RelationshipType.PARENT_CHILD, RelationshipType.MOTHER_CHILD)
 
 private fun relationshipColor(type: RelationshipType): Color = when (type) {
     RelationshipType.RULER_MINISTER -> Vermilion
