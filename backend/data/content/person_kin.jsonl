@@ -12,6 +12,9 @@
 {"person_id": "baiang", "kin_person_id": null, "kin_name": "白珂", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "baiang", "kin_person_id": null, "kin_name": "白思恭", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "baiang", "kin_person_id": null, "kin_name": "王氏(白昂继母)", "relation": "继母", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "baojie", "kin_person_id": "yangshi", "kin_name": "杨氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "baojie", "kin_person_id": null, "kin_name": "包志", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "baoyanhui", "kin_person_id": null, "kin_name": "薄铭", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "biangong", "kin_person_id": null, "kin_name": "柴氏(边贡妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "biangong", "kin_person_id": null, "kin_name": "边节", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "biangong", "kin_person_id": null, "kin_name": "边赋", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -41,17 +44,12 @@
 {"person_id": "caonai", "kin_person_id": null, "kin_name": "曹祉咸", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "caonai", "kin_person_id": null, "kin_name": "曹廷训", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "caoxiong", "kin_person_id": null, "kin_name": "以从女", "relation": "妻", "note": "", "source": "《明史》本传"}
-{"person_id": "caoyi", "kin_person_id": null, "kin_name": "曹匡治", "relation": "七世孙;仍孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "caoyi", "kin_person_id": null, "kin_name": "曹文炳", "relation": "五世孙;来孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "caoyi", "kin_person_id": null, "kin_name": "曹允成", "relation": "六世孙;昆孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "caoyi", "kin_person_id": null, "kin_name": "曹花一", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "caoyi", "kin_person_id": null, "kin_name": "曹胜", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "cenghengying", "kin_person_id": null, "kin_name": "子为孝子", "relation": "兄", "note": "", "source": "《明史》本传"}
 {"person_id": "cenghui", "kin_person_id": null, "kin_name": "子俱出狱", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "cenglu", "kin_person_id": null, "kin_name": "老乞归", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "cengtongheng", "kin_person_id": null, "kin_name": "存仁", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "cengying", "kin_person_id": null, "kin_name": "忧归", "relation": "母", "note": "", "source": "《明史》本传"}
-{"person_id": "chaiche", "kin_person_id": null, "kin_name": "忧夺情", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "chaduo", "kin_person_id": null, "kin_name": "查景明", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "changmao", "kin_person_id": null, "kin_name": "男三人", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "changyuchun", "kin_person_id": null, "kin_name": "常绍", "relation": "五世孙;来孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "changyuchun", "kin_person_id": null, "kin_name": "常玄振", "relation": "八世孙;云孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -67,15 +65,11 @@
 {"person_id": "chenbangyan", "kin_person_id": null, "kin_name": "陈收", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenchaofu", "kin_person_id": null, "kin_name": "陈自舜", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chendaoheng", "kin_person_id": null, "kin_name": "御葛裳", "relation": "妻", "note": "", "source": "《明史》本传"}
+{"person_id": "chendi", "kin_person_id": null, "kin_name": "管缢死", "relation": "妻", "note": "", "source": "《明史》本传"}
 {"person_id": "chengbenli", "kin_person_id": null, "kin_name": "质近厚", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "chengbenli", "kin_person_id": null, "kin_name": "忧去官", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "chengbenli", "kin_person_id": null, "kin_name": "德刚", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "chengde", "kin_person_id": null, "kin_name": "刘在京", "relation": "妻", "note": "", "source": "《明史》本传"}
-{"person_id": "chengui", "kin_person_id": null, "kin_name": "子钟嗣", "relation": "兄", "note": "", "source": "《明史》本传"}
-{"person_id": "chengui", "kin_person_id": null, "kin_name": "俊嗣官", "relation": "子", "note": "", "source": "《明史》本传"}
-{"person_id": "chengui", "kin_person_id": null, "kin_name": "昂嗣", "relation": "子", "note": "", "source": "《明史》本传"}
-{"person_id": "chengui", "kin_person_id": null, "kin_name": "桓嗣", "relation": "子", "note": "", "source": "《明史》本传"}
-{"person_id": "chengui", "kin_person_id": null, "kin_name": "泾嗣", "relation": "弟", "note": "", "source": "《明史》本传"}
 {"person_id": "chenheng", "kin_person_id": null, "kin_name": "陈豫", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenhuai", "kin_person_id": null, "kin_name": "陈甄", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenji", "kin_person_id": null, "kin_name": "戒之", "relation": "母", "note": "", "source": "《明史》本传"}
@@ -88,7 +82,6 @@
 {"person_id": "chenjiuchou", "kin_person_id": null, "kin_name": "孙氏(陈九畴母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenjiuchou", "kin_person_id": null, "kin_name": "陈纲", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenjiuchou", "kin_person_id": null, "kin_name": "陈珪", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "chenju", "kin_person_id": null, "kin_name": "自为序", "relation": "妃", "note": "", "source": "《明史》本传"}
 {"person_id": "chenliangmo", "kin_person_id": null, "kin_name": "陈久枢", "relation": "儿子未婚妻之伯叔父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenlongzheng", "kin_person_id": null, "kin_name": "于王", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "chenlongzheng", "kin_person_id": null, "kin_name": "陈于王", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -99,6 +92,7 @@
 {"person_id": "chenrenxi", "kin_person_id": null, "kin_name": "允坚", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "chenshi", "kin_person_id": null, "kin_name": "请死", "relation": "女", "note": "", "source": "《明史》本传"}
 {"person_id": "chenshi", "kin_person_id": null, "kin_name": "母谋改聘", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "chenwen", "kin_person_id": null, "kin_name": "忧未赴", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "chenwenhui", "kin_person_id": null, "kin_name": "陈君献", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenxianzhang", "kin_person_id": null, "kin_name": "有念", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "chenxuan", "kin_person_id": null, "kin_name": "陈炳", "relation": "从父;伯叔父", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -119,9 +113,13 @@
 {"person_id": "chenyiqin", "kin_person_id": null, "kin_name": "丧除", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "chenyiqin", "kin_person_id": null, "kin_name": "陈大策", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "chenyiqin", "kin_person_id": null, "kin_name": "陈信", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "chenyouliang", "kin_person_id": null, "kin_name": "普才", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "chenyounian", "kin_person_id": null, "kin_name": "孙袭者", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "chenyounian", "kin_person_id": null, "kin_name": "克宅", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "chenyu", "kin_person_id": null, "kin_name": "孙因家焉", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "chenyuting", "kin_person_id": null, "kin_name": "丧归", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "chenzhi", "kin_person_id": null, "kin_name": "埙嗣", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "chenzhi", "kin_person_id": null, "kin_name": "韶嗣", "relation": "弟", "note": "", "source": "《明史》本传"}
 {"person_id": "chenzhuang", "kin_person_id": null, "kin_name": "母殁", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "chenzilong", "kin_person_id": null, "kin_name": "龙争", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "chongdegongzhu", "kin_person_id": null, "kin_name": "杨安妃", "relation": "母", "note": "", "source": "《明史》本传"}
@@ -149,6 +147,8 @@
 {"person_id": "dailiang", "kin_person_id": null, "kin_name": "职马禄丁", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "daminggongzhu", "kin_person_id": null, "kin_name": "庄年七岁", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "daotong", "kin_person_id": null, "kin_name": "子泣谢去", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "dengjiceng", "kin_person_id": null, "kin_name": "周氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "dengjiceng", "kin_person_id": null, "kin_name": "邓国鼎", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "dengtingzan", "kin_person_id": null, "kin_name": "邓夔", "relation": "养子(非嗣子)", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "dengtingzan", "kin_person_id": null, "kin_name": "潘氏(邓廷瓒妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "dengtingzan", "kin_person_id": null, "kin_name": "陈氏(邓廷瓒嫡母)", "relation": "嫡母", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -213,10 +213,13 @@
 {"person_id": "fangxiaoru", "kin_person_id": null, "kin_name": "克勤", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "fangxiaoru", "kin_person_id": null, "kin_name": "方克勤", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "fangxiaoru", "kin_person_id": null, "kin_name": "方中宪", "relation": "长子; 第一子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "fangying", "kin_person_id": null, "kin_name": "亲阵亡后", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "fanjingwen", "kin_person_id": null, "kin_name": "范景姒", "relation": "妹", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "fanjingwen", "kin_person_id": null, "kin_name": "范玄超", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "fanjingwen", "kin_person_id": null, "kin_name": "永年", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "fanjingwen", "kin_person_id": null, "kin_name": "范永年", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "fanzong", "kin_person_id": null, "kin_name": "熊氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "fanzong", "kin_person_id": null, "kin_name": "范祯", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "feihong", "kin_person_id": null, "kin_name": "弟也", "relation": "兄", "note": "", "source": "《明史》本传"}
 {"person_id": "feihong", "kin_person_id": null, "kin_name": "费宪", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "feihong", "kin_person_id": null, "kin_name": "孙德兴", "relation": "岳父", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -280,6 +283,7 @@
 {"person_id": "gengjiuchou", "kin_person_id": null, "kin_name": "丧去官", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "gengruqi", "kin_person_id": null, "kin_name": "章光", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "gengtinglu", "kin_person_id": null, "kin_name": "杨被执", "relation": "妻", "note": "", "source": "《明史》本传"}
+{"person_id": "gengyu", "kin_person_id": null, "kin_name": "亲死后", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "gengzaicheng", "kin_person_id": null, "kin_name": "耿琰", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "gengzaicheng", "kin_person_id": null, "kin_name": "耿濂", "relation": "姪孙;从孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "gengzaicheng", "kin_person_id": null, "kin_name": "耿天莹", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -466,6 +470,7 @@
 {"person_id": "huangguan", "kin_person_id": null, "kin_name": "黄宗旦", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "huangguan", "kin_person_id": null, "kin_name": "黄宗望", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "huangguan", "kin_person_id": null, "kin_name": "赘许", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "huanghong", "kin_person_id": null, "kin_name": "绍文奔赴", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "huanghui", "kin_person_id": null, "kin_name": "子元", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "huangkezuan", "kin_person_id": null, "kin_name": "黄克复", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "huangkezuan", "kin_person_id": null, "kin_name": "黄克明", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -489,6 +494,7 @@
 {"person_id": "huangwan", "kin_person_id": null, "kin_name": "黄承文", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "huangwan", "kin_person_id": null, "kin_name": "黄贡俌", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "huangwan", "kin_person_id": null, "kin_name": "黄贡补", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "huangzhaodao", "kin_person_id": null, "kin_name": "老遮道留", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "huangzicheng", "kin_person_id": null, "kin_name": "澄恸哭", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "huangzongzai", "kin_person_id": null, "kin_name": "黄儒凯", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "huangzongzai", "kin_person_id": null, "kin_name": "黄文凯", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -518,6 +524,8 @@
 {"person_id": "hufu", "kin_person_id": null, "kin_name": "胡士良", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "hugongchen", "kin_person_id": null, "kin_name": "忧去", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "hugongchen", "kin_person_id": null, "kin_name": "艰归", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "huguang", "kin_person_id": null, "kin_name": "祺走谒帅", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "huguang", "kin_person_id": null, "kin_name": "子祺", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "huhan", "kin_person_id": null, "kin_name": "友龙", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "hurong", "kin_person_id": null, "kin_name": "为皇后", "relation": "妃", "note": "", "source": "《明史》本传"}
 {"person_id": "hushining", "kin_person_id": null, "kin_name": "胡世康", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -551,6 +559,8 @@
 {"person_id": "jianggui", "kin_person_id": null, "kin_name": "蒋子文", "relation": "直系祖先", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "jianggui", "kin_person_id": null, "kin_name": "蒋八公", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "jianghuan", "kin_person_id": null, "kin_name": "蒋孝", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "jianglong", "kin_person_id": null, "kin_name": "滑氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "jianglong", "kin_person_id": "jiangang", "kin_name": "姜昂", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "jiangmian", "kin_person_id": null, "kin_name": "蒋升", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "jiangmian", "kin_person_id": null, "kin_name": "蒋昪", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "jiangmian", "kin_person_id": null, "kin_name": "蒋昱", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -597,6 +607,7 @@
 {"person_id": "jinlian", "kin_person_id": null, "kin_name": "金良辅", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "jinlian", "kin_person_id": null, "kin_name": "金德", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "jinxuan", "kin_person_id": null, "kin_name": "显名", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "jinzhong", "kin_person_id": null, "kin_name": "戍通州亡", "relation": "兄", "note": "", "source": "《明史》本传"}
 {"person_id": "jishufei", "kin_person_id": null, "kin_name": "贵妃周氏", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "kanghai", "kin_person_id": null, "kin_name": "康泽", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "kanghai", "kin_person_id": null, "kin_name": "康浤", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -646,6 +657,7 @@
 {"person_id": "liangyouyu", "kin_person_id": null, "kin_name": "张氏(梁有誉母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liangyouyu", "kin_person_id": null, "kin_name": "梁世骠", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liangyouyu", "kin_person_id": null, "kin_name": "梁韶", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "liangzhen", "kin_person_id": null, "kin_name": "少却", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "lianzining", "kin_person_id": null, "kin_name": "练绮", "relation": "七世孙;仍孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lianzining", "kin_person_id": null, "kin_name": "练大亨", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lianzining", "kin_person_id": null, "kin_name": "伯尚", "relation": "父", "note": "", "source": "《明史》本传"}
@@ -675,6 +687,8 @@
 {"person_id": "lichengliang", "kin_person_id": null, "kin_name": "李尊祖", "relation": "曾孙; 重孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lichengliang", "kin_person_id": null, "kin_name": "李遵祖", "relation": "曾孙; 重孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lichengliang", "kin_person_id": null, "kin_name": "李春美", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lichengyun", "kin_person_id": "liushi-2", "kin_name": "刘氏", "relation": "妻", "note": "", "source": "《明史》本传"}
+{"person_id": "lichengyun", "kin_person_id": null, "kin_name": "李延", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "lichunfang", "kin_person_id": null, "kin_name": "徐氏(李春芳妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lichunfang", "kin_person_id": null, "kin_name": "李茂年", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lichunfang", "kin_person_id": null, "kin_name": "李茂德", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -788,8 +802,15 @@
 {"person_id": "lishanchang", "kin_person_id": null, "kin_name": "朱氏(临安公主)", "relation": "子妇;儿媳", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lishanchang", "kin_person_id": null, "kin_name": "李存义", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lishanchang", "kin_person_id": null, "kin_name": "李城瑾", "relation": "玄孙;四世孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lishi", "kin_person_id": null, "kin_name": "张氏(李时妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lishi", "kin_person_id": null, "kin_name": "李鏸", "relation": "孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lishi", "kin_person_id": null, "kin_name": "李荣", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lishi", "kin_person_id": null, "kin_name": "边氏(李时母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lishi", "kin_person_id": null, "kin_name": "李楘", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lishi", "kin_person_id": null, "kin_name": "李溥", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lishizhen", "kin_person_id": null, "kin_name": "建中", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "litaihou", "kin_person_id": null, "kin_name": "杜康妃", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "litang", "kin_person_id": null, "kin_name": "钧嗣", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "liubing", "kin_person_id": null, "kin_name": "满子代", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liuchongqing", "kin_person_id": null, "kin_name": "徐氏(刘重庆妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuchongqing", "kin_person_id": null, "kin_name": "刘连城", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -805,10 +826,11 @@
 {"person_id": "liuchongqing", "kin_person_id": null, "kin_name": "刘翰儒", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuchongqing", "kin_person_id": null, "kin_name": "刘继科", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuchongqing", "kin_person_id": null, "kin_name": "毛氏(刘重庆继妻)", "relation": "第二任妻", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "liuchun-2", "kin_person_id": null, "kin_name": "彭年", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "liudaxia", "kin_person_id": null, "kin_name": "仁宅", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liudingzhi", "kin_person_id": null, "kin_name": "出布", "relation": "女", "note": "", "source": "《明史》本传"}
 {"person_id": "liudingzhi", "kin_person_id": null, "kin_name": "授之书", "relation": "父", "note": "", "source": "《明史》本传"}
-{"person_id": "liuduo", "kin_person_id": null, "kin_name": "刘镇", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "liugang", "kin_person_id": null, "kin_name": "应辰", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liuhongxun", "kin_person_id": null, "kin_name": "一相", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liuhongxun", "kin_person_id": null, "kin_name": "丧归", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liujian", "kin_person_id": null, "kin_name": "刘胤", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -828,6 +850,9 @@
 {"person_id": "liujing", "kin_person_id": null, "kin_name": "刘基", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liulian", "kin_person_id": null, "kin_name": "刘诜", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuliangzuo", "kin_person_id": null, "kin_name": "刘泽涵", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "liumin", "kin_person_id": null, "kin_name": "妇事", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "liupu", "kin_person_id": null, "kin_name": "士宾", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "liuren", "kin_person_id": "liujing", "kin_name": "刘璟", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liurong", "kin_person_id": null, "kin_name": "安嗣", "relation": "弟", "note": "", "source": "《明史》本传"}
 {"person_id": "liurui", "kin_person_id": null, "kin_name": "时斅", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liusanwu", "kin_person_id": null, "kin_name": "刘焘孙", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -859,6 +884,7 @@
 {"person_id": "liuzeqing", "kin_person_id": null, "kin_name": "刘之干", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuzeqing", "kin_person_id": null, "kin_name": "刘之桧", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuzhibo", "kin_person_id": null, "kin_name": "弟讦父兄", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "liuzhongfu", "kin_person_id": null, "kin_name": "丧夺情", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liuzongzhou", "kin_person_id": null, "kin_name": "刘竟中", "relation": "从弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuzongzhou", "kin_person_id": null, "kin_name": "章颕", "relation": "外祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liuzongzhou", "kin_person_id": null, "kin_name": "章颖", "relation": "外祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -872,8 +898,21 @@
 {"person_id": "liwenzhong", "kin_person_id": "lizengzhi", "kin_name": "李增枝", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liwenzhong", "kin_person_id": null, "kin_name": "李芳英", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liwenzhong", "kin_person_id": null, "kin_name": "朱氏(曹国公主)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李氏(孔宏绪妻)", "relation": "二女", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "程敏政", "relation": "女婿", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "张氏(李贤妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李让", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李谦", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李义卿", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李玠", "relation": "次子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "叶氏(李贤母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李升", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李威", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李氏(程敏政妻)", "relation": "长女", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lixian", "kin_person_id": null, "kin_name": "李璋", "relation": "长子; 第一子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lixuanshi", "kin_person_id": null, "kin_name": "贤妃刘氏", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "liyi-4", "kin_person_id": null, "kin_name": "谦早卒", "relation": "弟", "note": "", "source": "《明史》本传"}
+{"person_id": "liyu", "kin_person_id": null, "kin_name": "忧归", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "liyue", "kin_person_id": null, "kin_name": "李铠", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liyue", "kin_person_id": null, "kin_name": "李锦", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "liyue", "kin_person_id": null, "kin_name": "林氏(李钺妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -916,6 +955,7 @@
 {"person_id": "lvben", "kin_person_id": null, "kin_name": "杨氏(李本母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lvben", "kin_person_id": null, "kin_name": "李改", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lvben", "kin_person_id": null, "kin_name": "李懋", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "lvnan", "kin_person_id": null, "kin_name": "吕溥", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "lvweiqi", "kin_person_id": null, "kin_name": "孔学", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "lvyuan", "kin_person_id": null, "kin_name": "吕本", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "lvyuan", "kin_person_id": null, "kin_name": "徐氏(吕原妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1070,6 +1110,7 @@
 {"person_id": "pengshi", "kin_person_id": null, "kin_name": "彭务威", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "pengshi", "kin_person_id": null, "kin_name": "彭颓", "relation": "继子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "pengxu", "kin_person_id": null, "kin_name": "忧归", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "pengzungu", "kin_person_id": null, "kin_name": "亲彭岱", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "puhong", "kin_person_id": null, "kin_name": "无然", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "puhong", "kin_person_id": null, "kin_name": "丧除", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "qianning", "kin_person_id": null, "kin_name": "永安幼", "relation": "子", "note": "", "source": "《明史》本传"}
@@ -1172,9 +1213,13 @@
 {"person_id": "shengyihong", "kin_person_id": null, "kin_name": "忧归", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "shengyin", "kin_person_id": null, "kin_name": "令进药", "relation": "妃", "note": "", "source": "《明史》本传"}
 {"person_id": "shengyin", "kin_person_id": null, "kin_name": "孙传其业", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "shengyingqi", "kin_person_id": null, "kin_name": "婿陆灿", "relation": "女", "note": "", "source": "《明史》本传"}
+{"person_id": "shengyingqi", "kin_person_id": null, "kin_name": "盛瓘", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "shengyong-2", "kin_person_id": null, "kin_name": "忧去", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "shenjingkai", "kin_person_id": null, "kin_name": "允培", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "shenjingkai", "kin_person_id": null, "kin_name": "子木", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "shenli", "kin_person_id": null, "kin_name": "宋氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "shenli", "kin_person_id": null, "kin_name": "沈杜", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "shenshixing", "kin_person_id": null, "kin_name": "申恭", "relation": "七世祖;太曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "shenshixing", "kin_person_id": null, "kin_name": "申敏三", "relation": "九世祖;太高曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "shenshixing", "kin_person_id": null, "kin_name": "申士虔", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1262,6 +1307,7 @@
 {"person_id": "sunjiao", "kin_person_id": null, "kin_name": "钱氏(孙交母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "sunjiao", "kin_person_id": null, "kin_name": "孙忠", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "sunjiao", "kin_person_id": null, "kin_name": "孙盛", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "sunqing", "kin_person_id": "chenshi", "kin_name": "陈氏", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "sunshi", "kin_person_id": null, "kin_name": "救母", "relation": "兄", "note": "", "source": "《明史》本传"}
 {"person_id": "sunshi", "kin_person_id": null, "kin_name": "仰天大哭", "relation": "女", "note": "", "source": "《明史》本传"}
 {"person_id": "sunshi", "kin_person_id": null, "kin_name": "年十四", "relation": "女", "note": "", "source": "《明史》本传"}
@@ -1311,7 +1357,10 @@
 {"person_id": "tanyuan", "kin_person_id": null, "kin_name": "谭胜", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "taowangling", "kin_person_id": null, "kin_name": "承学", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "taoxie", "kin_person_id": null, "kin_name": "忧归", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "taoyan", "kin_person_id": null, "kin_name": "陶铨", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "tengding", "kin_person_id": null, "kin_name": "滕福嗣爵", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "tiandayi", "kin_person_id": null, "kin_name": "丧除", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "tianduo", "kin_person_id": null, "kin_name": "亲田琮", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "tianrucheng", "kin_person_id": null, "kin_name": "艺蘅", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "tianrucheng", "kin_person_id": null, "kin_name": "子长离", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "tiexuan", "kin_person_id": null, "kin_name": "铁氏(铁铉次女)", "relation": "二女", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1336,6 +1385,9 @@
 {"person_id": "tulong", "kin_person_id": null, "kin_name": "赵氏(屠隆母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "tulong", "kin_person_id": null, "kin_name": "屠濬", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "tulong", "kin_person_id": null, "kin_name": "屠檏", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "tuqiao", "kin_person_id": null, "kin_name": "屠倬", "relation": "弟", "note": "", "source": "《明史》本传"}
+{"person_id": "tuqiao", "kin_person_id": null, "kin_name": "方氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "tuqiao", "kin_person_id": null, "kin_name": "屠湖", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "tuyong", "kin_person_id": null, "kin_name": "屠湘", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "tuyong", "kin_person_id": null, "kin_name": "薛氏(屠滽妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "tuyong", "kin_person_id": null, "kin_name": "屠𠇹", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1344,8 +1396,6 @@
 {"person_id": "tuyong", "kin_person_id": null, "kin_name": "徐氏(屠滽母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "tuyong", "kin_person_id": null, "kin_name": "屠瑜", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "tuyong", "kin_person_id": null, "kin_name": "屠子真", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangan", "kin_person_id": null, "kin_name": "王扆", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangan", "kin_person_id": null, "kin_name": "王庆", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangao", "kin_person_id": null, "kin_name": "死夫", "relation": "妻", "note": "", "source": "《明史》本传"}
 {"person_id": "wangao2", "kin_person_id": null, "kin_name": "王铭", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangao2", "kin_person_id": null, "kin_name": "王武", "relation": "六世孙;昆孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1363,21 +1413,9 @@
 {"person_id": "wangao2", "kin_person_id": null, "kin_name": "王延喆", "relation": "长子; 第一子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangbangrui", "kin_person_id": null, "kin_name": "正国", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "wangbangrui", "kin_person_id": null, "kin_name": "忧解职", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "wangcheng", "kin_person_id": null, "kin_name": "觉生应", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "wangcheng-2", "kin_person_id": null, "kin_name": "翰仕元", "relation": "父", "note": "", "source": "《明史》本传"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇义", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇仁", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇志", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇祖", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇道", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "张氏(王崇古妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇典", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇勋", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇教", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王崇雅", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王孟华", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "孙氏(王崇古母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王瑶", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangchonggu", "kin_person_id": null, "kin_name": "王馨", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "wangcong", "kin_person_id": null, "kin_name": "琰嗣", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "wangdaokun", "kin_person_id": null, "kin_name": "七十寿", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wangderen", "kin_person_id": null, "kin_name": "避仇外家", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wangdun", "kin_person_id": null, "kin_name": "丧起复", "relation": "母", "note": "", "source": "《明史》本传"}
@@ -1406,9 +1444,11 @@
 {"person_id": "wanghongru", "kin_person_id": null, "kin_name": "司氏(王鸿儒母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wanghongru", "kin_person_id": null, "kin_name": "王本", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wanghongru", "kin_person_id": null, "kin_name": "王成", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "wangji", "kin_person_id": null, "kin_name": "灶丁", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wangjiaping", "kin_person_id": null, "kin_name": "王湛初", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangjiaping", "kin_person_id": null, "kin_name": "王瀹初", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangjiaping", "kin_person_id": null, "kin_name": "王石溪", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "wangliang", "kin_person_id": null, "kin_name": "问故", "relation": "妻", "note": "", "source": "《明史》本传"}
 {"person_id": "wangong", "kin_person_id": null, "kin_name": "周氏(万恭妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangong", "kin_person_id": null, "kin_name": "万允位", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangong", "kin_person_id": null, "kin_name": "万燝", "relation": "孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1479,6 +1519,7 @@
 {"person_id": "wangxiangqian", "kin_person_id": null, "kin_name": "王之垣", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangxiangqian", "kin_person_id": null, "kin_name": "王重光", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyehao", "kin_person_id": null, "kin_name": "王业洵", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "wangyi", "kin_person_id": null, "kin_name": "王事元", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wangyingjiao", "kin_person_id": null, "kin_name": "汪应仪", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyingjiao", "kin_person_id": null, "kin_name": "汪应元", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyingjiao", "kin_person_id": null, "kin_name": "汪应龙", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1494,7 +1535,6 @@
 {"person_id": "wangyingjiao", "kin_person_id": null, "kin_name": "朱氏(汪应蛟继母)", "relation": "继母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyingzhen", "kin_person_id": null, "kin_name": "艰归", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wangyizhong", "kin_person_id": null, "kin_name": "程投于井", "relation": "妻", "note": "", "source": "《明史》本传"}
-{"person_id": "wangyongji", "kin_person_id": null, "kin_name": "王自学", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyu", "kin_person_id": null, "kin_name": "王世懋", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyu", "kin_person_id": null, "kin_name": "王世贞", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangyue", "kin_person_id": null, "kin_name": "王崇礼", "relation": "曾孙; 重孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1504,18 +1544,10 @@
 {"person_id": "wangzhang", "kin_person_id": null, "kin_name": "忧归", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "wangzhang", "kin_person_id": null, "kin_name": "训之严", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "wangzhang", "kin_person_id": null, "kin_name": "诃跪予杖", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "wangzhao", "kin_person_id": null, "kin_name": "以女", "relation": "妻", "note": "", "source": "《明史》本传"}
 {"person_id": "wangzhen", "kin_person_id": null, "kin_name": "王夏", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangzhen", "kin_person_id": null, "kin_name": "王韶", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangzhen", "kin_person_id": null, "kin_name": "王世规", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "谢氏(汪直妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪约", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪蒙", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪蕃", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪表", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪允绍", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "蒋氏(汪直母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪回显", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wangzhi", "kin_person_id": null, "kin_name": "汪民政", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangzhi-minister", "kin_person_id": null, "kin_name": "王某", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangzhi-minister", "kin_person_id": null, "kin_name": "王长谐", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wangzhi-minister", "kin_person_id": null, "kin_name": "王长谐", "relation": "次子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1580,7 +1612,6 @@
 {"person_id": "wuan", "kin_person_id": null, "kin_name": "孙世袭", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "wuan", "kin_person_id": null, "kin_name": "维圻嗣", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "wuan", "kin_person_id": null, "kin_name": "彦名", "relation": "父", "note": "", "source": "《明史》本传"}
-{"person_id": "wubaipeng", "kin_person_id": null, "kin_name": "丧归", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wuchen", "kin_person_id": null, "kin_name": "吴池", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuchen", "kin_person_id": null, "kin_name": "吴师道", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuchunfu", "kin_person_id": null, "kin_name": "吴民凤", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1616,7 +1647,7 @@
 {"person_id": "wuguolun", "kin_person_id": null, "kin_name": "吴义", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuhong", "kin_person_id": null, "kin_name": "以长坐", "relation": "兄", "note": "", "source": "《明史》本传"}
 {"person_id": "wuhong", "kin_person_id": null, "kin_name": "当死", "relation": "兄", "note": "", "source": "《明史》本传"}
-{"person_id": "wujie", "kin_person_id": null, "kin_name": "希周", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "wuliang-2", "kin_person_id": null, "kin_name": "战死", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "wulinzheng", "kin_person_id": null, "kin_name": "吴麟瑞", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wulinzheng", "kin_person_id": null, "kin_name": "朱氏(吴麟征妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wulinzheng", "kin_person_id": null, "kin_name": "吴中任", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1624,17 +1655,6 @@
 {"person_id": "wulinzheng", "kin_person_id": null, "kin_name": "吴䨥", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wulinzheng", "kin_person_id": null, "kin_name": "吴壮舆", "relation": "长子; 第一子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuti", "kin_person_id": null, "kin_name": "仁度请恤", "relation": "子", "note": "", "source": "《明史》本传"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "王氏(吴文华妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴文庄", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴文炳", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴文英", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴文莑", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴寅", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "陈氏(吴文华母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "世泽", "relation": "父", "note": "", "source": "《明史》本传"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴世泽", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "吴玱", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "wuwenhua", "kin_person_id": null, "kin_name": "陈氏(吴文华继妻)", "relation": "第二任妻", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuyiguan", "kin_person_id": null, "kin_name": "黄氏(吴一贯妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuyiguan", "kin_person_id": null, "kin_name": "吴某", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "wuyiguan", "kin_person_id": null, "kin_name": "吴贽", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1668,6 +1688,8 @@
 {"person_id": "xiangzhong", "kin_person_id": null, "kin_name": "项邦", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xiaomujitaihou", "kin_person_id": null, "kin_name": "暴薨", "relation": "妃", "note": "", "source": "《明史》本传"}
 {"person_id": "xiaomujitaihou", "kin_person_id": null, "kin_name": "为夫人", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "xiaoqianyuan", "kin_person_id": null, "kin_name": "罗氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "xiaoqianyuan", "kin_person_id": null, "kin_name": "亲萧缵", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "xiashizheng", "kin_person_id": null, "kin_name": "夏建", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xiashizheng", "kin_person_id": null, "kin_name": "夏醇", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xiashizheng", "kin_person_id": null, "kin_name": "沈氏(夏时正妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1714,7 +1736,9 @@
 {"person_id": "xieqian", "kin_person_id": null, "kin_name": "谢恩", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xieqian", "kin_person_id": null, "kin_name": "谢莹", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xieqian", "kin_person_id": null, "kin_name": "谢见贤", "relation": "高祖;四世祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "xingdong", "kin_person_id": null, "kin_name": "万氏", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "xingrang", "kin_person_id": null, "kin_name": "忧归", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "xingxun", "kin_person_id": null, "kin_name": "邢愚", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "xiongding", "kin_person_id": null, "kin_name": "丧除", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "xiongjia", "kin_person_id": null, "kin_name": "熊佐", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xiongmingyu", "kin_person_id": null, "kin_name": "熊人霖", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1769,6 +1793,9 @@
 {"person_id": "xuexuan", "kin_person_id": null, "kin_name": "三人", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "xuezhen", "kin_person_id": null, "kin_name": "薛瑄", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xuezhen", "kin_person_id": null, "kin_name": "薛崇义", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "xuezongkai", "kin_person_id": null, "kin_name": "庄氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "xuezongkai", "kin_person_id": null, "kin_name": "薛俊", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "xufuyuan", "kin_person_id": null, "kin_name": "许松", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "xufuzuo", "kin_person_id": null, "kin_name": "徐栻", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xuguan", "kin_person_id": null, "kin_name": "周氏(徐贯妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "xuguan", "kin_person_id": null, "kin_name": "徐从周", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1915,7 +1942,11 @@
 {"person_id": "yanne", "kin_person_id": null, "kin_name": "吕氏(严讷母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yanne", "kin_person_id": null, "kin_name": "严恪", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yanne", "kin_person_id": null, "kin_name": "严衡", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "yanqing", "kin_person_id": null, "kin_name": "余氏", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "yanriyu", "kin_person_id": null, "kin_name": "儿肯让人", "relation": "男", "note": "", "source": "《明史》本传"}
+{"person_id": "yanyishou", "kin_person_id": null, "kin_name": "邵氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "yanyishou", "kin_person_id": null, "kin_name": "颜公辅", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "yaojiyan", "kin_person_id": null, "kin_name": "姚畦", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "yaoximeng", "kin_person_id": null, "kin_name": "文卫辉", "relation": "外祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yaoximeng", "kin_person_id": null, "kin_name": "徐树丕", "relation": "女婿", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yaoximeng", "kin_person_id": null, "kin_name": "文氏(姚希孟母)", "relation": "嫡母", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -1925,6 +1956,7 @@
 {"person_id": "yaoximeng", "kin_person_id": null, "kin_name": "释再生", "relation": "孙女", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yaoximeng", "kin_person_id": "wenzhenmeng", "kin_name": "文震孟", "relation": "母舅", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yaoximeng", "kin_person_id": null, "kin_name": "姚丞", "relation": "玄孙;四世孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "yaoxueli", "kin_person_id": null, "kin_name": "姚伯高", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "yeqi", "kin_person_id": null, "kin_name": "叶木", "relation": "孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yeqi", "kin_person_id": null, "kin_name": "叶𦶜", "relation": "曾孙; 重孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yeqi", "kin_person_id": null, "kin_name": "叶士廉", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2008,7 +2040,9 @@
 {"person_id": "yudayou", "kin_person_id": null, "kin_name": "俞咨皐", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yudayou", "kin_person_id": null, "kin_name": "俞原瓒", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "yutonghai", "kin_person_id": null, "kin_name": "廷玉徙巢", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "yuyuede", "kin_person_id": null, "kin_name": "余叙", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "zangyingkui", "kin_person_id": null, "kin_name": "所生母卒", "relation": "父", "note": "", "source": "《明史》本传"}
+{"person_id": "zhangbi", "kin_person_id": null, "kin_name": "弘至", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangcai", "kin_person_id": null, "kin_name": "杨氏(张彩妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangcai", "kin_person_id": null, "kin_name": "张綗", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangcai", "kin_person_id": null, "kin_name": "张纲", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2038,6 +2072,8 @@
 {"person_id": "zhangguowei", "kin_person_id": null, "kin_name": "张世凤", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangguowei", "kin_person_id": null, "kin_name": "张世鹏", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangguowei", "kin_person_id": null, "kin_name": "张希武", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhanghongzhi", "kin_person_id": "wangshi-2", "kin_name": "王氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "zhanghongzhi", "kin_person_id": "zhangbi", "kin_name": "张弼", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangjiayin", "kin_person_id": null, "kin_name": "张宗胤", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangjiayin", "kin_person_id": null, "kin_name": "高元之", "relation": "女婿", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangjiayin", "kin_person_id": null, "kin_name": "向氏(张佳胤妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2052,6 +2088,7 @@
 {"person_id": "zhangjiayin", "kin_person_id": null, "kin_name": "沈氏(张佳胤母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangjiayin", "kin_person_id": null, "kin_name": "张文锦", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangjiayin", "kin_person_id": null, "kin_name": "张曰巽", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhangjimeng", "kin_person_id": null, "kin_name": "贾从之", "relation": "妻", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangjuzheng", "kin_person_id": null, "kin_name": "张居仁", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangjuzheng", "kin_person_id": null, "kin_name": "刘戡之", "relation": "女婿", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangjuzheng", "kin_person_id": null, "kin_name": "顾氏(张居正妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2110,19 +2147,17 @@
 {"person_id": "zhangwoxu", "kin_person_id": null, "kin_name": "蔚氏(张我续母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangwoxu", "kin_person_id": null, "kin_name": "张国彦", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangwoxu", "kin_person_id": null, "kin_name": "张绣", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhangxian", "kin_person_id": null, "kin_name": "李应", "relation": "女婿", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhangxian", "kin_person_id": null, "kin_name": "张廷杰", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhangxin", "kin_person_id": null, "kin_name": "淳嗣", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "zhangxin", "kin_person_id": null, "kin_name": "怪问之", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangxing", "kin_person_id": null, "kin_name": "安嗣", "relation": "子", "note": "", "source": "《明史》本传"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "张学尹", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "刘氏(张学颜妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "张文夔", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "张韶", "relation": "曾祖", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "宋氏(张学颜母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "张应麒", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "张悦", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhangxueyan", "kin_person_id": null, "kin_name": "陶氏(张学颜继母)", "relation": "继母", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhangxuan-2", "kin_person_id": null, "kin_name": "躬教育之", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangyining", "kin_person_id": null, "kin_name": "一清", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangyue-2", "kin_person_id": null, "kin_name": "老乞便养", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangyue-3", "kin_person_id": null, "kin_name": "老乞便养", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangyufei", "kin_person_id": null, "kin_name": "选侍王氏", "relation": "母", "note": "", "source": "《明史》本传"}
+{"person_id": "zhangzan", "kin_person_id": null, "kin_name": "已卒", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangzhenguan", "kin_person_id": null, "kin_name": "木坐贬", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "zhangzhi", "kin_person_id": null, "kin_name": "张德明", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhangzhi", "kin_person_id": null, "kin_name": "张德正", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2146,7 +2181,6 @@
 {"person_id": "zhaonanxing", "kin_person_id": null, "kin_name": "侯氏(赵南星母)", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhaonanxing", "kin_person_id": null, "kin_name": "赵汝弼", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhaonanxing", "kin_person_id": null, "kin_name": "赵泽民", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhaoyi", "kin_person_id": null, "kin_name": "荣嗣", "relation": "子", "note": "", "source": "《明史》本传"}
 {"person_id": "zhaoyongxian", "kin_person_id": null, "kin_name": "承谦", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "zhaozhenji", "kin_person_id": null, "kin_name": "赵升吉", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhaozhenji", "kin_person_id": null, "kin_name": "赵占吉", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2259,6 +2293,14 @@
 {"person_id": "zhoujing", "kin_person_id": null, "kin_name": "周瑄", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhoujing", "kin_person_id": null, "kin_name": "周杰", "relation": "祖父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhoujing", "kin_person_id": null, "kin_name": "顾氏(周经继母)", "relation": "继母", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "周应午", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "周应旗", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "周申", "relation": "从子;姪子", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "卫朴", "relation": "女婿", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "周安道", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "卫季敏", "relation": "第一任妻父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "黄度", "relation": "第二任妻父", "note": "", "source": "哈佛 CBDB 亲属记录"}
+{"person_id": "zhounan", "kin_person_id": null, "kin_name": "周深原", "relation": "长子; 第一子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhouneng", "kin_person_id": null, "kin_name": "为英宗妃", "relation": "女", "note": "", "source": "《明史》本传"}
 {"person_id": "zhouqiyuan", "kin_person_id": null, "kin_name": "周家椿", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhouqiyuan", "kin_person_id": null, "kin_name": "周尔发", "relation": "弟", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2274,6 +2316,7 @@
 {"person_id": "zhouyanru", "kin_person_id": null, "kin_name": "周素儒", "relation": "兄", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhouyanru", "kin_person_id": null, "kin_name": "周天瑞", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhouying", "kin_person_id": null, "kin_name": "大谟", "relation": "子", "note": "", "source": "《明史》本传"}
+{"person_id": "zhouyong", "kin_person_id": null, "kin_name": "忧服阕", "relation": "父", "note": "", "source": "《明史》本传"}
 {"person_id": "zhouyuji", "kin_person_id": null, "kin_name": "刘氏(周遇吉妻)", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhouzongjian", "kin_person_id": null, "kin_name": "周长卿", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhuangchang", "kin_person_id": null, "kin_name": "忧去", "relation": "母", "note": "", "source": "《明史》本传"}
@@ -2332,7 +2375,6 @@
 {"person_id": "zhuhui", "kin_person_id": null, "kin_name": "朱赋焮", "relation": "子", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhuhui", "kin_person_id": null, "kin_name": "为郭惠妃", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhuhui", "kin_person_id": null, "kin_name": "郭惠妃", "relation": "母", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhujian2", "kin_person_id": null, "kin_name": "朱塾", "relation": "父", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhujianjun", "kin_person_id": null, "kin_name": "朱慈煃", "relation": "七世孙;仍孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhujianjun", "kin_person_id": null, "kin_name": "朱常汶", "relation": "五世孙;来孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhujianjun", "kin_person_id": null, "kin_name": "朱常淠", "relation": "五世孙;来孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
@@ -2398,8 +2440,6 @@
 {"person_id": "zhumo", "kin_person_id": null, "kin_name": "为赵贵妃", "relation": "母", "note": "", "source": "《明史》本传"}
 {"person_id": "zhumo", "kin_person_id": null, "kin_name": "朱勋淯", "relation": "玄孙;四世孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhuneng", "kin_person_id": null, "kin_name": "王妙善", "relation": "妻子", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhuojing", "kin_person_id": null, "kin_name": "卓发之", "relation": "六世孙;昆孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
-{"person_id": "zhuojing", "kin_person_id": null, "kin_name": "杨奴", "relation": "养女", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhupian", "kin_person_id": null, "kin_name": "朱干跬", "relation": "七世孙;仍孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhupian", "kin_person_id": null, "kin_name": "朱禋洪", "relation": "九世孙", "note": "", "source": "哈佛 CBDB 亲属记录"}
 {"person_id": "zhupian", "kin_person_id": null, "kin_name": "朱誉桔", "relation": "五世孙;来孙", "note": "", "source": "哈佛 CBDB 亲属记录"}

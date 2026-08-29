@@ -296,7 +296,8 @@ def main(dry_run: bool) -> None:
     annals_path = STAGING / "annals.jsonl"
     entries = [json.loads(line) for line in annals_path.read_text(encoding="utf-8").splitlines() if line.strip()] \
         if annals_path.exists() else []
-    existing_event_ids = {e["id"] for e in tables["event"]}
+    # 编年与事件都要按 id 去重，否则每跑一次就把整批编年再追加一遍
+    existing_event_ids = {e["id"] for e in tables["event"]} | {a["id"] for a in tables["annal"]}
     # event.reign_id 是外键，只能填 reign 表里的 id；按年份反查落在哪个年号
     spans = [(r["id"], r["start_year"], r["end_year"]) for r in load("reign")]
 
@@ -317,6 +318,7 @@ def main(dry_run: bool) -> None:
         event_id = f"mingshi-bj{entry['juan']:02d}-{index:03d}"
         if event_id in existing_event_ids:
             continue
+        existing_event_ids.add(event_id)
         hits = [n for n in known_names if n in text]
         people_ids = sorted({name_to_id[n] for n in hits})[:12]
         tables["annal"].append({

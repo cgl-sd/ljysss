@@ -41,7 +41,6 @@
 {"event_id": "tianshun-caoshi", "person_id": "shiheng", "role": "参与"}
 {"event_id": "chenghua-accession", "person_id": "zhujian", "role": "参与"}
 {"event_id": "chenghua-western-factory", "person_id": "zhujian", "role": "参与"}
-{"event_id": "chenghua-western-factory", "person_id": "wangzhi", "role": "参与"}
 {"event_id": "chenghua-western-factory", "person_id": "shangluo", "role": "参与"}
 {"event_id": "hongzhi-accession", "person_id": "zhuyoutang", "role": "参与"}
 {"event_id": "hongzhi-accession", "person_id": "liudongyang", "role": "参与"}
@@ -65,7 +64,6 @@
 {"event_id": "longqing-accession", "person_id": "gaogong", "role": "参与"}
 {"event_id": "longqing-tribute", "person_id": "zhuzaihou", "role": "参与"}
 {"event_id": "longqing-tribute", "person_id": "gaogong", "role": "参与"}
-{"event_id": "longqing-tribute", "person_id": "wangchonggu", "role": "参与"}
 {"event_id": "wanli-reform", "person_id": "zhangjuzheng", "role": "参与"}
 {"event_id": "wanli-reform", "person_id": "zhuyijun", "role": "参与"}
 {"event_id": "wanli-accession", "person_id": "zhuyijun", "role": "参与"}
@@ -116,7 +114,6 @@
 {"event_id": "wiki-永乐迁都", "person_id": "zhudi", "role": "参与"}
 {"event_id": "wiki-永乐盛世", "person_id": "zhudi", "role": "参与"}
 {"event_id": "wiki-俺答封贡", "person_id": "zhangjuzheng", "role": "参与"}
-{"event_id": "wiki-俺答封贡", "person_id": "wangchonggu", "role": "参与"}
 {"event_id": "wiki-俺答封贡", "person_id": "fangfengshi", "role": "参与"}
 {"event_id": "wiki-俺答封贡", "person_id": "gaogong", "role": "参与"}
 {"event_id": "wiki-郭桓案", "person_id": "zhuyuanzhang", "role": "参与"}

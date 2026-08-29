@@ -82,6 +82,36 @@ def judge_ming(person: dict, intro: str) -> str:
     return "unknown"
 
 
+def purge_seeds(doomed: set[str]) -> None:
+    """删掉的人必须同时从 catalog.py 移除，否则服务启动的种子回写会把他们插回来。"""
+
+    path = BACKEND / "app" / "catalog.py"
+    lines = path.read_text(encoding="utf-8").split("\n")
+    # 种子有三种格式，各自精确匹配，避免误删正文里恰好提到该 id 的行
+    people_line = re.compile(r"^\s*(\"|')(?P<pid>[a-z0-9\-]+)(\"|')?\|")
+    dict_line = re.compile(r'^\s*"(?P<pid>[a-z0-9\-]+)"\s*:\s*"')
+    dropped = 0
+    kept = []
+    for line in lines:
+        pid = ""
+        if "|" in line and not line.strip().startswith("#"):
+            match = re.match(r"^\s*([a-z0-9\-]+)\|", line)
+            pid = match.group(1) if match else ""
+        if not pid:
+            match = dict_line.match(line)
+            pid = match.group("pid") if match else ""
+        if not pid:
+            # 关系边与画像键：整行里出现被删 id 的引号形式
+            quoted = re.findall(r"['\"]([a-z0-9\-]+)['\"]", line)
+            pid = next((token for token in quoted if token in doomed), "")
+        if pid in doomed:
+            dropped += 1
+            continue
+        kept.append(line)
+    path.write_text("\n".join(kept), encoding="utf-8")
+    print(f"catalog.py 同步移除 {dropped} 行种子记录（防止启动回写复活）")
+
+
 def main(dry_run: bool) -> None:
     people = load("person")
     refs = load("content_reference")
@@ -100,7 +130,7 @@ def main(dry_run: bool) -> None:
                 if r.get("content_type") == "person" and str(r.get("locator", "")).startswith("明史卷")}
 
     reasons: Counter[str] = Counter()
-    rewrite_needed: list[str] = []
+    rewrite_needed: list[str] = []  # 保留占位以兼容下方打印
     doomed: set[str] = set()
     for person in people:
         pid = person["id"]
@@ -110,7 +140,10 @@ def main(dry_run: bool) -> None:
             continue
         intro_head = (wiki_text.get(pid) or person.get("biography", ""))[:260]
         if re.search(r"可以指|可以是|可能指|（消歧义）", intro_head):
-            rewrite_needed.append(person["name"])
+            # 解析过一轮仍是消歧义页，说明拿不到属于他本人的条目正文，按标准不保留
+            reasons["正文仍是消歧义页"] += 1
+            doomed.add(pid)
+            continue
         intro = (wiki_text.get(pid) or person.get("biography", "") or person.get("summary", ""))[:600]
         verdict = judge_ming(person, intro)
         if verdict == "no":
@@ -172,6 +205,7 @@ def main(dry_run: bool) -> None:
     dump("person", [p for p in people if p["id"] not in doomed])
     dump("event", events)
     dump("content_reference", refs)
+    purge_seeds(doomed)
     print(f"已写入：人物余 {keep} 人")
 
 

@@ -8,7 +8,6 @@
 {"from_person_id": "dengzilong", "id": 2659, "note": "共事于1598年朝鲜战事终局", "reign": "嘉靖、万历", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "magui"}
 {"from_person_id": "fuyoude", "id": 2648, "note": "共事于1381年征云南", "reign": "洪武", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "lanyu"}
 {"from_person_id": "fuyoude", "id": 2649, "note": "共事于1381年征云南", "reign": "洪武", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "muying"}
-{"from_person_id": "gaogong", "id": 2655, "note": "共事于1571年封俺答为顺义王", "reign": "隆庆、万历", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "wangchonggu"}
 {"from_person_id": "hewenyuan", "id": 4197, "note": "", "reign": "景泰", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "heqiaoxin"}
 {"from_person_id": "hongchengchou", "id": 2660, "note": "共事于1642年松锦战局失利", "reign": "崇祯", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "zudashou"}
 {"from_person_id": "huanghuai", "id": 21, "note": "黄淮与杨溥同为永乐至宣德间的内阁重臣。", "reign": "永乐、洪熙、宣德", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "yangpu"}
@@ -35,11 +34,9 @@
 {"from_person_id": "muying", "id": 57, "note": "沐晟为沐英次子，后进封黔国公。", "reign": "洪武、永乐", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "musheng"}
 {"from_person_id": "qijiguang", "id": 10, "note": "谭纶经略东南，戚继光在相关军务中任职。", "reign": "嘉靖、隆庆", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "tanlun"}
 {"from_person_id": "qijiguang", "id": 6, "note": "二人均为东南海防与军队训练的重要将领。", "reign": "嘉靖、隆庆", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "yudayou"}
-{"from_person_id": "shangluo", "id": 2651, "note": "共事于1477年设西厂", "reign": "成化", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "wangzhi"}
 {"from_person_id": "shenshixing", "id": 3412, "note": "《明史》卷218“子用懋”", "reign": "万历", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "shenyongmao"}
 {"from_person_id": "wangyu", "id": 4199, "note": "", "reign": "嘉靖", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "wangshizhen"}
 {"from_person_id": "weizhongxian", "id": 46, "note": "李永贞的政治活动与天启朝内廷集团相关。", "reign": "天启", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "liyongzhen"}
-{"from_person_id": "weizhongxian", "id": 47, "note": "王体乾与魏忠贤同处天启朝内廷权力结构。", "reign": "天启", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "wangtiqian"}
 {"from_person_id": "weizhongxian", "id": 8, "note": "内廷权力结构是研究晚明政治的重要线索。", "reign": "天启", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyouxiao"}
 {"from_person_id": "wuweizhong", "id": 41, "note": "吴惟忠与陈璘的军旅经历均连接东南与朝鲜战场。", "reign": "万历", "relation_type": "同僚", "source_id": "mingshi-editorial-v1", "to_person_id": "chenlin"}
 {"from_person_id": "xiayunyi", "id": 4200, "note": "", "reign": "崇祯", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "xiawanchun"}
@@ -60,7 +57,6 @@
 {"from_person_id": "zhubiao", "id": 4215, "note": "", "reign": "建文", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyunwen"}
 {"from_person_id": "zhuchangluo", "id": 2087, "note": "", "reign": "崇祯", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyoujian"}
 {"from_person_id": "zhuchangluo", "id": 2088, "note": "", "reign": "天启", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyouxiao"}
-{"from_person_id": "zhuchangrun", "id": 2616, "note": "", "reign": "万历", "relation_type": "兄弟姐妹", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuchangying"}
 {"from_person_id": "zhudi", "id": 3, "note": "郑和受命率领宝船队多次出使印度洋诸国。", "reign": "永乐", "relation_type": "统属", "source_id": "mingshi-editorial-v1", "to_person_id": "zhenghe"}
 {"from_person_id": "zhudi", "id": 2096, "note": "", "reign": "洪熙", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhugaochi"}
 {"from_person_id": "zhugaochi", "id": 2097, "note": "", "reign": "宣德", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuzhanji"}
@@ -74,7 +70,6 @@
 {"from_person_id": "zhuyijun", "id": 2086, "note": "", "reign": "泰昌", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuchangluo"}
 {"from_person_id": "zhuyijun", "id": 4212, "note": "", "reign": "崇祯", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyoujian"}
 {"from_person_id": "zhuyijun", "id": 4214, "note": "", "reign": "天启", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyouxiao"}
-{"from_person_id": "zhuyoujian", "id": 49, "note": "杜勋为崇祯末内廷人物。", "reign": "崇祯", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "duxun"}
 {"from_person_id": "zhuyoujian", "id": 48, "note": "方正化为崇祯末司礼监太监。", "reign": "崇祯", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "fangzhenghua"}
 {"from_person_id": "zhuyoujian", "id": 2089, "note": "", "reign": "崇祯", "relation_type": "兄弟姐妹", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuyouxiao"}
 {"from_person_id": "zhuyoutang", "id": 45, "note": "高凤在弘治末、正德初任司礼监太监。", "reign": "弘治", "relation_type": "君臣", "source_id": "mingshi-editorial-v1", "to_person_id": "gaofeng"}
@@ -103,3 +98,10 @@
 {"from_person_id": "lizengzhi", "to_person_id": "liwenzhong", "relation_type": "父子", "reign": "建文、永乐", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
 {"from_person_id": "fuchenggongzhu", "to_person_id": "wangshi-2", "relation_type": "母子", "reign": "明", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
 {"from_person_id": "wangshi-2", "to_person_id": "limengchen", "relation_type": "配偶", "reign": "崇祯", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "jianglong", "to_person_id": "jiangang", "relation_type": "父子", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "zhanghongzhi", "to_person_id": "zhangbi", "relation_type": "父子", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "zhanghongzhi", "to_person_id": "wangshi-2", "relation_type": "母子", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "sunqing", "to_person_id": "chenshi", "relation_type": "母子", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "liuren", "to_person_id": "liujing", "relation_type": "父子", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "liushi-2", "to_person_id": "lichengyun", "relation_type": "配偶", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "baojie", "to_person_id": "yangshi", "relation_type": "母子", "reign": "明代", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
