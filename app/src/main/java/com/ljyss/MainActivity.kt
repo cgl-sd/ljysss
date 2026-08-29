@@ -615,15 +615,17 @@ private fun PersonProfile(
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
             LifeSection(life)
-            ProfileSection("家族与子嗣", readableParagraphs(family))
+            // 没有实料的栏目不占位：家族占位文案、空关系、空事件均整栏隐藏。
+            if (family.isNotBlank() && !family.contains("史料未见详载")) {
+                ProfileSection("家族与子嗣", readableParagraphs(family))
+            }
             // 帝王条目不显示人物关系（宗室家庭资料在家族与子嗣栏呈现）。
-            if (person.category != PersonCategory.EMPERORS) {
+            if (person.category != PersonCategory.EMPERORS && personRelations.isNotEmpty()) {
                 RelationSection(personRelations, onOpenPerson)
             }
-            ProfileSection(
-                "相关事件",
-                relatedEvents.ifEmpty { listOf("暂无已编的关联事件记录。") },
-            )
+            if (relatedEvents.isNotEmpty()) {
+                ProfileSection("相关事件", relatedEvents)
+            }
         }
     }
 }
@@ -637,8 +639,8 @@ private fun parseLifeBlocks(content: String): List<LifeBlock> {
         val line = raw.trim()
         when {
             line.isEmpty() -> continue
-            // 栏目大标题已是“生平”，跳过条目内首个同名小标题，避免重复。
-            line == "生平" && blocks.isEmpty() -> continue
+            // 栏目大标题已是“生平”，条目内同名小标题一律跳过，避免重复。
+            line == "生平" -> continue
             line.startsWith("〔《明史》原文") -> blocks.add(LifeBlock(true, true, line))
             line.length <= 18 && !line.endsWith("。") && !line.endsWith("！") && !line.endsWith("？") &&
                 !line.endsWith("；") && !line.contains("：") && !line.endsWith("」") ->
