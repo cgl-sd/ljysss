@@ -622,7 +622,7 @@ private fun PersonProfile(
             // 帝王条目不显示人物关系（宗室家庭资料在家族与子嗣栏呈现）。
             // 人物关系栏不含父子/母子（归家族栏）；帝王条目整栏不显示。
             val shownRelations = personRelations.filter {
-                it.relation_type !in parentChildTypes()
+                it.type !in parentChildTypes()
             }
             if (person.category != PersonCategory.EMPERORS && shownRelations.isNotEmpty()) {
                 RelationSection(shownRelations, onOpenPerson)
