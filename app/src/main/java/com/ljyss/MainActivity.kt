@@ -59,6 +59,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -101,6 +102,8 @@ import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.Reign
 import com.ljyss.data.model.SpecialItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
 import com.ljyss.ui.theme.Indigo
@@ -200,9 +203,22 @@ private fun TwoCapitalsApp(repository: MingRepository) {
             )
         },
     ) { innerPadding ->
+        var focusPerson by remember { mutableStateOf<String?>(null) }
         when (selectedSection) {
-            0 -> TimelineScreen(repository, innerPadding)
-            1 -> PeopleScreen(repository, innerPadding)
+            0 -> TimelineScreen(
+                repository = repository,
+                contentPadding = innerPadding,
+                onOpenPerson = { name ->
+                    focusPerson = name
+                    selectedSection = 1
+                },
+            )
+            1 -> PeopleScreen(
+                repository = repository,
+                contentPadding = innerPadding,
+                focusPerson = focusPerson,
+                onFocusConsumed = { focusPerson = null },
+            )
             2 -> WorldScreen(repository, innerPadding)
             else -> ProfileScreen(innerPadding)
         }
@@ -279,7 +295,11 @@ private fun MingBottomBar(selectedSection: Int, onSectionSelected: (Int) -> Unit
 }
 
 @Composable
-private fun TimelineScreen(repository: MingRepository, contentPadding: PaddingValues) {
+private fun TimelineScreen(
+    repository: MingRepository,
+    contentPadding: PaddingValues,
+    onOpenPerson: (String) -> Unit = {},
+) {
     val reigns = remember(repository) { repository.reigns() }
     var selectedTitle by rememberSaveable { mutableStateOf(reigns.first().title) }
     var selectedYear by rememberSaveable { mutableIntStateOf(reigns.first().startYear()) }
@@ -315,6 +335,7 @@ private fun TimelineScreen(repository: MingRepository, contentPadding: PaddingVa
                 showSources = showSources,
                 onSourceClick = { showSources = !showSources },
                 expandedEventId = expandedEventId,
+                onOpenPerson = onOpenPerson,
                 onEventClick = { eventId ->
                     expandedEventId = if (expandedEventId == eventId) null else eventId
                 },
@@ -341,7 +362,12 @@ private fun chineseYearNumber(value: Int): String {
 }
 
 @Composable
-private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValues) {
+private fun PeopleScreen(
+    repository: MingRepository,
+    contentPadding: PaddingValues,
+    focusPerson: String? = null,
+    onFocusConsumed: () -> Unit = {},
+) {
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.DYNASTY) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
@@ -358,6 +384,15 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
         allPeople.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
     }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
+    val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
+    var profileDetail by remember(selectedPerson?.id) { mutableStateOf(selectedPerson) }
+    LaunchedEffect(selectedPerson?.id) {
+        val person = selectedPerson
+        if (person != null && profileDetail?.sections.isNullOrEmpty()) {
+            val full = withContext(Dispatchers.IO) { repository.personDetail(person.id) }
+            if (full != null && full.sections.isNotEmpty()) profileDetail = full
+        }
+    }
     val childrenByPerson = remember(relations) {
         relations
             .filter { it.type in parentChildTypes() }
@@ -397,6 +432,21 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
             selectedPersonName = previous
         } else {
             returnFromProfile()
+        }
+    }
+
+    // 岁月事件里的参与人物点击后跳转至对应人物详情。
+    LaunchedEffect(focusPerson) {
+        if (focusPerson != null) {
+            allPeople.firstOrNull { it.name == focusPerson }?.let { person ->
+                selectedTab = PeopleTab.PEOPLE
+                selectedCategory = person.category
+                query = person.name
+                selectedPersonName = person.name
+                profileOrigin = "people"
+                personStack = emptyList()
+            }
+            onFocusConsumed()
         }
     }
 
@@ -444,7 +494,7 @@ private fun PeopleScreen(repository: MingRepository, contentPadding: PaddingValu
                 if (selectedPerson != null) {
                     item {
                         PersonProfile(
-                            person = selectedPerson,
+                            person = profileDetail ?: selectedPerson,
                             relations = relations,
                             events = allEvents,
                             onBack = ::closeProfileStep,
@@ -973,6 +1023,12 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
 private fun WorldScreen(repository: MingRepository, contentPadding: PaddingValues) {
     var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
     var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
+    val specials = repository.specialItems()
+    val relicGroups = remember(specials) {
+        listOf("制度", "器物", "习俗", "宫阙", "陵寝", "专题")
+            .map { cat -> cat to specials.filter { it.category == cat } }
+            .filter { it.second.isNotEmpty() }
+    }
 
     MingList(contentPadding) {
         item { MingMasthead() }
@@ -1043,12 +1099,20 @@ private fun WorldScreen(repository: MingRepository, contentPadding: PaddingValue
                 }
             }
             WorldSection.RELICS -> {
-                val specials = repository.specialItems()
                 if (specials.isEmpty()) {
                     item { SourceNote("典章科普内容将在内容服务载入后显示。") }
                 } else {
-                    items(specials, key = { it.id }) { item ->
-                        SpecialItemCard(item)
+                    relicGroups.forEach { (category, items) ->
+                        item(key = "relics-header-$category") {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(category, color = Ink, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.width(7.dp))
+                                Text("共 ${items.size} 篇", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+                            }
+                        }
+                        items(items, key = { it.id }) { item ->
+                            SpecialItemCard(item)
+                        }
                     }
                 }
             }
@@ -1332,6 +1396,7 @@ private fun TimelineArchive(
     onSourceClick: () -> Unit,
     expandedEventId: String?,
     onEventClick: (String) -> Unit,
+    onOpenPerson: (String) -> Unit,
 ) {
     val orderedEvents = reign.events.sortedWith(
         compareBy<HistoricalEvent>({ it.year ?: Int.MAX_VALUE }, { lunarMonthOrder(it.month) }, { it.title }),
@@ -1385,6 +1450,7 @@ private fun TimelineArchive(
                                     tone = if (index == 0) Vermilion else Indigo,
                                     expanded = expandedEventId == eventId,
                                     onClick = { onEventClick(eventId) },
+                                    onOpenPerson = onOpenPerson,
                                 )
                             }
                         }
@@ -1467,7 +1533,13 @@ private fun MonthLine(activeMonths: List<String>) {
 }
 
 @Composable
-private fun EventRow(event: HistoricalEvent, tone: Color, expanded: Boolean, onClick: () -> Unit) {
+private fun EventRow(
+    event: HistoricalEvent,
+    tone: Color,
+    expanded: Boolean,
+    onClick: () -> Unit,
+    onOpenPerson: (String) -> Unit = {},
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -1516,13 +1588,26 @@ private fun EventRow(event: HistoricalEvent, tone: Color, expanded: Boolean, onC
                     lineHeight = 23.sp,
                 )
                 if (event.participants.isNotEmpty()) {
-                    Text(
-                        text = "相关人物：${event.participants.joinToString("、")}",
-                        color = Vermilion,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Row(
+                        modifier = Modifier.padding(top = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("相关人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                        event.participants.forEach { name ->
+                            Text(
+                                text = name,
+                                modifier = Modifier
+                                    .clip(CutCornerShape(4.dp))
+                                    .clickable { onOpenPerson(name) }
+                                    .padding(horizontal = 6.dp, vertical = 3.dp),
+                                color = Vermilion,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
                 }
                 if (event.consequence.isNotBlank()) {
                     Text(

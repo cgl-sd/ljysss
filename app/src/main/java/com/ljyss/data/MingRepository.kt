@@ -19,6 +19,7 @@ interface MingRepository {
     fun allPeople(): List<HistoricalPerson>
     fun personRelations(): List<PersonRelation>
     fun institutions(): List<Institution>
+    fun personDetail(id: String): HistoricalPerson?
     fun specialItems(): List<SpecialItem>
     fun mapLayers(): List<MapLayer>
     fun mapLabels(period: MapPeriod): List<MapLabel>

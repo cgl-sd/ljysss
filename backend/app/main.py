@@ -58,7 +58,11 @@ def list_reigns() -> list[dict]:
 
 @app.get("/v1/bootstrap")
 def bootstrap_content() -> dict:
-    """A single offline-sync payload for the Android client during local development."""
+    """A single offline-sync payload for the Android client during local development.
+
+    全量内容一次下发（gzip 压缩传输）；App 一次加载后全内存访问，
+    不再产生按需请求，这是当前规模下最高效的访问路径。
+    """
 
     sections_by_person: dict[str, list[dict]] = {}
     for row in records(

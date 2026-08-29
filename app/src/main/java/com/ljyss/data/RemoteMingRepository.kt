@@ -23,6 +23,7 @@ import java.net.URL
  * 因此本地浏览不会被开发服务器中断。正式版将把这一实现替换为 Room 缓存优先的版本。
  */
 class RemoteMingRepository private constructor(
+    private val baseUrl: String,
     private val reignData: List<Reign>,
     private val peopleData: List<HistoricalPerson>,
     private val relationData: List<PersonRelation>,
@@ -40,6 +41,33 @@ class RemoteMingRepository private constructor(
     override fun personRelations(): List<PersonRelation> = relationData
 
     override fun institutions(): List<Institution> = institutionData
+
+    private val detailCache = java.util.concurrent.ConcurrentHashMap<String, HistoricalPerson>()
+
+    /** 详情兜底：bootstrap 已含全部内容时直接命中内存缓存，不再发请求。 */
+    override fun personDetail(id: String): HistoricalPerson? {
+        detailCache[id]?.let { return it }
+        return runCatching {
+            val connection = (URL("$baseUrl/v1/people/$id").openConnection() as HttpURLConnection).apply {
+                connectTimeout = 3_500
+                readTimeout = 8_000
+                requestMethod = "GET"
+                setRequestProperty("Accept-Encoding", "gzip")
+            }
+            val json = try {
+                val raw = connection.inputStream
+                val stream = if (connection.contentEncoding.equals("gzip", ignoreCase = true)) {
+                    java.util.zip.GZIPInputStream(raw)
+                } else {
+                    raw
+                }
+                stream.bufferedReader().use { it.readText() }
+            } finally {
+                connection.disconnect()
+            }
+            parsePerson(JSONObject(json))
+        }.getOrNull()?.also { if (it.id.isNotEmpty()) detailCache[it.id] = it }
+    }
 
     override fun specialItems(): List<SpecialItem> = specialData
 
@@ -71,10 +99,39 @@ class RemoteMingRepository private constructor(
             } finally {
                 connection.disconnect()
             }
-            return parse(JSONObject(json), mapFallback)
+            return parse(baseUrl, JSONObject(json), mapFallback)
         }
 
-        private fun parse(root: JSONObject, mapFallback: MingRepository): RemoteMingRepository {
+        private fun parsePerson(person: JSONObject): HistoricalPerson =
+            HistoricalPerson(
+                id = person.getString("id"),
+                name = person.getString("name"),
+                title = person.getString("title"),
+                reign = person.getString("reign"),
+                years = person.getString("years"),
+                note = person.getString("summary"),
+                category = PersonCategory.entries.first { it.label == person.getString("category") },
+                courtesyName = person.optString("courtesy_name"),
+                biography = person.optString("biography", person.getString("summary")),
+                familySummary = person.optString("family_summary"),
+                portraitKey = person.optString("portrait_key")
+                    .takeUnless { it.isBlank() || it == "null" },
+                verificationStatus = person.optString("verification_status", "未校验"),
+                sections = person.optJSONArray("sections")
+                    ?.let { array ->
+                        List(array.length()) { index ->
+                            val section = array.getJSONObject(index)
+                            PersonSection(
+                                key = section.getString("section_key"),
+                                title = section.getString("title"),
+                                content = section.getString("content"),
+                            )
+                        }
+                    }
+                    .orEmpty(),
+            )
+
+        private fun parse(baseUrl: String, root: JSONObject, mapFallback: MingRepository): RemoteMingRepository {
             val allEvents = root.getJSONArray("events")
             val eventsByReign = mutableMapOf<String, MutableList<HistoricalEvent>>()
             allEvents.forEachObject { event ->
@@ -107,35 +164,7 @@ class RemoteMingRepository private constructor(
                     events = eventsByReign[reign.getString("id")].orEmpty(),
                 )
             }
-            val people = root.getJSONArray("people").mapObjects { person ->
-                HistoricalPerson(
-                    id = person.getString("id"),
-                    name = person.getString("name"),
-                    title = person.getString("title"),
-                    reign = person.getString("reign"),
-                    years = person.getString("years"),
-                    note = person.getString("summary"),
-                    category = PersonCategory.entries.first { it.label == person.getString("category") },
-                    courtesyName = person.optString("courtesy_name"),
-                    biography = person.optString("biography", person.getString("summary")),
-                    familySummary = person.optString("family_summary"),
-                    portraitKey = person.optString("portrait_key")
-                        .takeUnless { it.isBlank() || it == "null" },
-                    verificationStatus = person.optString("verification_status", "未校验"),
-                    sections = person.optJSONArray("sections")
-                        ?.let { array ->
-                            List(array.length()) { index ->
-                                val section = array.getJSONObject(index)
-                                PersonSection(
-                                    key = section.getString("section_key"),
-                                    title = section.getString("title"),
-                                    content = section.getString("content"),
-                                )
-                            }
-                        }
-                        .orEmpty(),
-                )
-            }
+            val people = root.getJSONArray("people").mapObjects { parsePerson(it) }
             val relations = root.getJSONArray("relationships").mapObjects { relation ->
                 PersonRelation(
                     fromName = relation.getString("from_name"),
@@ -178,7 +207,7 @@ class RemoteMingRepository private constructor(
             require(people.size >= 700) { "内容服务人物资料尚未同步完成" }
             require(relations.size >= 30) { "内容服务人物家系资料尚未同步完成" }
             require(institutions.size >= 12) { "内容服务机构资料尚未同步完成" }
-            return RemoteMingRepository(reigns, people, relations, institutions, specials, mapFallback)
+            return RemoteMingRepository(baseUrl, reigns, people, relations, institutions, specials, mapFallback)
         }
 
         private fun JSONArray.forEachObject(block: (JSONObject) -> Unit) {

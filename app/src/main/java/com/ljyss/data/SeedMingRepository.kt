@@ -398,6 +398,9 @@ object SeedMingRepository : MingRepository {
 
     override fun institutions(): List<Institution> = institutionData
 
+    // 离线种子本身即完整资料，无需二次拉取。
+    override fun personDetail(id: String): HistoricalPerson? = peopleData.firstOrNull { it.id == id }
+
     // 离线种子不含典章科普；天下页对空列表显示引导文案。
     override fun specialItems(): List<SpecialItem> = emptyList()
 
