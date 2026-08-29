@@ -25,6 +25,10 @@ CONTENT_TABLES = [
     "content_reference",
     "person_research",
     "person_relation",
+    "person_kin",
+    "event_participant",
+    "annal",
+    "annal_participant",
     "institution",
     "institution_promotion",
     "institution_reform",
@@ -41,6 +45,10 @@ CONTENT_ORDER = {
     "event_section": ("event_id", "position"),
     "content_reference": ("content_type", "content_id", "section_key", "position"),
     "person_research": ("person_id", "provider"),
+    "person_kin": ("person_id", "relation", "kin_name"),
+    "event_participant": ("event_id", "person_id"),
+    "annal": ("year", "juan", "id"),
+    "annal_participant": ("annal_id", "person_id"),
     "institution_promotion": ("institution_id", "position"),
     "institution_reform": ("institution_id", "position"),
 }
@@ -156,6 +164,52 @@ CREATE TABLE IF NOT EXISTS person_relation (
     source_id TEXT NOT NULL REFERENCES source(id),
     UNIQUE(from_person_id, to_person_id, relation_type, reign)
 );
+
+-- 亲属与子嗣：与生平同级的一等数据。对方已在库内则记 kin_person_id 供跳转，
+-- 否则只留姓名；source 记这条出自 CBDB 亲属记录还是《明史》本传。
+CREATE TABLE IF NOT EXISTS person_kin (
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    kin_person_id TEXT REFERENCES person(id) ON DELETE CASCADE,
+    kin_name TEXT NOT NULL,
+    relation TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    UNIQUE(person_id, kin_name, relation)
+);
+
+CREATE INDEX IF NOT EXISTS person_kin_by_person ON person_kin(person_id, relation);
+
+-- 事件参与人：取代 event.participants 的姓名串，同名不同人靠 person_id 区分。
+CREATE TABLE IF NOT EXISTS event_participant (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT '参与',
+    UNIQUE(event_id, person_id)
+);
+
+CREATE INDEX IF NOT EXISTS event_participant_by_person ON event_participant(person_id);
+
+-- 《明史》本纪逐月编年：一句话一条的编年条目，与「事件专条」不同级，
+-- 不套背景/经过/结果/影响模板，只作系年事实与人物行迹的原料。
+CREATE TABLE IF NOT EXISTS annal (
+    id TEXT PRIMARY KEY,
+    juan INTEGER NOT NULL,
+    emperor TEXT NOT NULL DEFAULT '',
+    reign_id TEXT NOT NULL REFERENCES reign(id),
+    year INTEGER NOT NULL,
+    month TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS annal_by_year ON annal(year, juan);
+
+CREATE TABLE IF NOT EXISTS annal_participant (
+    annal_id TEXT NOT NULL REFERENCES annal(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    UNIQUE(annal_id, person_id)
+);
+
+CREATE INDEX IF NOT EXISTS annal_participant_by_person ON annal_participant(person_id);
 
 CREATE TABLE IF NOT EXISTS institution (
     id TEXT PRIMARY KEY,

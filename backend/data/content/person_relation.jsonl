@@ -89,3 +89,19 @@
 {"from_person_id": "zhuzhanji", "id": 2099, "note": "", "reign": "景泰", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuqiyu"}
 {"from_person_id": "zhuzhanji", "id": 2098, "note": "", "reign": "正统、天顺", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zhuqizhen"}
 {"from_person_id": "zudashou", "id": 2105, "note": "", "reign": "明代", "relation_type": "父子", "source_id": "mingshi-editorial-v1", "to_person_id": "zukefa"}
+{"from_person_id": "zhuyipai", "to_person_id": "zhuyihai", "relation_type": "兄弟姐妹", "reign": "崇祯", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "zhushuang", "to_person_id": "zhuyuanzhang", "relation_type": "父子", "reign": "洪武", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "zhusu", "to_person_id": "zhuyuanzhang", "relation_type": "父子", "reign": "洪武", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "zhuquan", "to_person_id": "zhuyuanzhang", "relation_type": "父子", "reign": "洪武", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "zhushangbing", "to_person_id": "zhushuang", "relation_type": "父子", "reign": "洪武", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "heqiaoxin", "to_person_id": "hewenyuan", "relation_type": "父子", "reign": "景泰", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "wangxiangchun", "to_person_id": "wangxiangqian", "relation_type": "兄弟姐妹", "reign": "隆庆", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "wangxiangqian", "to_person_id": "wangxiangchun", "relation_type": "兄弟姐妹", "reign": "万历", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "shenyongmao", "to_person_id": "shenshixing", "relation_type": "父子", "reign": "万历", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "xiawanchun", "to_person_id": "xiayunyi", "relation_type": "父子", "reign": "崇祯", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "yuanzongdao", "to_person_id": "yuanhongdao", "relation_type": "兄弟姐妹", "reign": "万历", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "yuanzhongdao", "to_person_id": "yuanhongdao", "relation_type": "兄弟姐妹", "reign": "万历", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "yuanzongdao", "to_person_id": "yuanzhongdao", "relation_type": "兄弟姐妹", "reign": "万历", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "lizengzhi", "to_person_id": "liwenzhong", "relation_type": "父子", "reign": "建文、永乐", "note": "据哈佛 CBDB 亲属记录", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "fuchenggongzhu", "to_person_id": "wangshi-2", "relation_type": "母子", "reign": "明", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
+{"from_person_id": "wangshi-2", "to_person_id": "limengchen", "relation_type": "配偶", "reign": "崇祯", "note": "据《明史》本传", "source_id": "mingshi-editorial-v1"}
