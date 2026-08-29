@@ -11,6 +11,7 @@
 ## 协作约定
 
 - 每次完成一组源码、资源或配置修改后，必须立即使用 Git 创建提交；提交前检查 `git status`，提交后确认工作区干净。
+- Git commit message 一律使用英文，沿用仓库既有的 `type: summary` 前缀风格（`feat`/`fix`/`refactor`/`chore`/`docs`/`data`/`audit`）；正文写改动动机与验证结论，其中的人物名、书名、栏目名与文件路径可保留原文。
 - 凡改动涉及 Android 应用或内容服务，提交之后必须重启软件让改动生效：重新构建并安装 APK（`./gradlew assembleDebug` + `adb install -r`）、重启本地内容服务（uvicorn 8000 端口）、执行 `adb reverse tcp:8000 tcp:8000` 并重新启动应用。
 - 测试截图、QA/audit 截图、设计对照等临时产物一律放入 `tmp/`（gitignore），不得提交到仓库；引用这些截图的文档路径须写 `tmp/…`。
 - 只保留本项目必要的文件：根目录不应出现散落的测试截图或 QA 文档；此类内容移入 `tmp/` 或 `docs/`。
