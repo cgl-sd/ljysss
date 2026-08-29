@@ -118,6 +118,9 @@ import kotlin.math.sin
 class MainActivity : ComponentActivity() {
     private var repository by mutableStateOf<MingRepository>(SeedMingRepository)
 
+    @Volatile
+    private var lastFetchFailed = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -128,12 +131,28 @@ class MainActivity : ComponentActivity() {
         }
         // 本地开发通过 `adb reverse tcp:8000 tcp:8000` 连接电脑上的内容服务；失败时保持离线资料。
         if (BuildConfig.DEBUG) {
-            Thread {
-                runCatching { RemoteMingRepository.load("http://127.0.0.1:8000") }
-                    .onSuccess { remote -> runOnUiThread { repository = remote } }
-                    .onFailure { error -> Log.w("MingContent", "使用离线资料：内容服务未连接", error) }
-            }.start()
+            loadRemoteContent()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 启动时内容服务未连接的，回到前台自动重试，避免长期停留在离线种子资料。
+        if (BuildConfig.DEBUG && lastFetchFailed) {
+            loadRemoteContent()
+        }
+    }
+
+    private fun loadRemoteContent() {
+        Thread {
+            lastFetchFailed = true
+            runCatching { RemoteMingRepository.load("http://127.0.0.1:8000") }
+                .onSuccess { remote ->
+                    lastFetchFailed = false
+                    runOnUiThread { repository = remote }
+                }
+                .onFailure { error -> Log.w("MingContent", "使用离线资料：内容服务未连接", error) }
+        }.start()
     }
 }
 
