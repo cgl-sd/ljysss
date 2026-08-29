@@ -16,6 +16,7 @@ import json
 import re
 import sys
 import time
+from html import unescape
 from pathlib import Path
 from urllib.request import Request, urlopen
 from concurrent.futures import ThreadPoolExecutor
@@ -50,6 +51,39 @@ def watched_urlopen(request, timeout: int = 25):
         return future.result(timeout=timeout + 10)
 
 
+TAGS = re.compile(r"<[^>]+>")
+# 维基文库的模板文字，全部不是《明史》本文。
+NOISE = (
+    "公有领域", "维基文库", "免责声明", "永久链接", "页面权限", "本模版", "姊妹计划",
+    "此作品已完成", "上传文件", "短链接", "跨语言链接", "在其他项目中", "检索自", "本页面",
+)
+BLOCK = re.compile(r"<(p|table)\b[^>]*>(.*?)</\1>", re.S)
+
+
+def strip_tags(fragment: str) -> str:
+    """去标签并折叠空白——古籍本文没有空格，维基模板塞进来的换行空白一律去掉。"""
+
+    return re.sub(r"[\s\u3000]+", "", unescape(TAGS.sub("", fragment)))
+
+
+def render_table(fragment: str) -> list[str]:
+    """表格按行取单元格，行内用全角空格分隔，保持世系的横向阅读顺序。
+
+    页顶页底的「上一卷 ◄ 明史卷N … ► 下一卷」导航框同样是表格，整张跳过。
+    """
+
+    if "◄" in fragment or "►" in fragment:
+        return []
+    noisy = lambda value: any(marker in value for marker in NOISE)
+    lines = []
+    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", fragment, re.S):
+        cells = [strip_tags(c) for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", row, re.S)]
+        line = "　".join(cell for cell in cells if cell and not noisy(cell))
+        if line and not noisy(line):
+            lines.append(line)
+    return lines
+
+
 def fetch_juan(juan: int) -> str:
     page = f"明史/卷{juan}"
     url = (
@@ -58,13 +92,17 @@ def fetch_juan(juan: int) -> str:
     )
     data = json.load(watched_urlopen(Request(url, headers={"User-Agent": USER_AGENT})))
     html = data.get("parse", {}).get("text", "")
-    body = re.sub(r"<(style|table|sup)[^>]*>.*?</\1>", "", html, flags=re.S)
-    paragraphs = [
-        re.sub(r"<[^>]+>", "", p).strip()
-        for p in re.findall(r"<p>(.*?)</p>", body, flags=re.S)
-    ]
-    paragraphs = [cc.convert(p) for p in paragraphs if p]
-    return "\n".join(paragraphs)
+    html = re.sub(r"<(style|script|sup)[^>]*>.*?</\1>", "", html, flags=re.S)
+
+    lines: list[str] = []
+    for kind, fragment in BLOCK.findall(html):
+        if kind == "table":
+            lines += render_table(fragment)
+            continue
+        text = strip_tags(fragment)
+        if text and not any(marker in text for marker in NOISE):
+            lines.append(text)
+    return cc.convert("\n".join(lines))
 
 
 def cmd_fetch(args) -> None:
