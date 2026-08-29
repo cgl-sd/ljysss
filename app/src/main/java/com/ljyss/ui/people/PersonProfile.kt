@@ -60,12 +60,7 @@ internal fun PersonProfile(
             .filter { it.isNotBlank() }
             .joinToString("\n")
             .ifBlank { "家族、配偶与子嗣资料正在整理。" }
-    // 关系与事件按人物交叉索引；没有记录时给出指向「关系」页的引导，避免空栏目。
-    val personRelations = relations
-        .filter { it.fromName == person.name || it.toName == person.name }
-        .map { relation ->
-            relation to (if (relation.fromName == person.name) relation.toName else relation.fromName)
-        }
+    // 相关事件按人物交叉索引；没有记录时整栏隐藏。
     val relatedEvents = events
         .filter { event -> event.participants.any { it == person.name } }
         .sortedBy { it.year ?: Int.MAX_VALUE }
@@ -103,10 +98,11 @@ internal fun PersonProfile(
             if (family.isNotBlank() && !family.contains("史料未见详载")) {
                 ProfileSection("家族", readableParagraphs(family))
             }
-            // 帝王条目不显示人物关系（宗室家庭资料在家族与子嗣栏呈现）。
-            // 人物关系栏不含父子/母子（归家族栏）；帝王条目整栏不显示。
+            // 人物关系栏只收本人为其中一端的记录，且不含父子/母子（归家族栏）；
+            // 帝王条目整栏不显示，宗室家庭资料在家族栏呈现。
             val shownRelations = relations.filter {
-                it.type !in parentChildTypes()
+                (it.fromName == person.name || it.toName == person.name) &&
+                    it.type !in parentChildTypes()
             }
             if (person.category != PersonCategory.EMPERORS && shownRelations.isNotEmpty()) {
                 RelationSection(
