@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -164,25 +165,23 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(390.dp)
+                        .aspectRatio(692f / 920f)
                         .padding(4.dp)
                         .clip(CutCornerShape(4.dp))
                         .background(XuanPaper),
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.world_reference_screen),
+                        painter = painterResource(R.drawable.world_atlas_plate),
                         contentDescription = "明代两京十三省地图",
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        alignment = Alignment.TopCenter,
+                        contentScale = ContentScale.Fit,
                     )
                     if (modernOverlayEnabled) {
                         Image(
-                            painter = painterResource(R.drawable.modern_reference_map),
+                            painter = painterResource(R.drawable.modern_atlas_plate),
                             contentDescription = "现代区划对照图已叠加",
                             modifier = Modifier.fillMaxSize().alpha(0.68f),
-                            contentScale = ContentScale.Crop,
-                            alignment = Alignment.TopCenter,
+                            contentScale = ContentScale.Fit,
                         )
                     }
                     Surface(
@@ -207,11 +206,13 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                 AtlasInfoCard(
                     title = "两京",
                     detail = "北京  ·  南京",
+                    illustration = R.drawable.atlas_two_capitals_palace,
                     modifier = Modifier.weight(1f),
                 )
                 AtlasInfoCard(
                     title = "十三省",
                     detail = "明代地方建置",
+                    illustration = R.drawable.atlas_thirteen_provinces_landscape,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -229,7 +230,12 @@ private fun AtlasCaption() {
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("◇", color = Brass, fontSize = 12.sp)
+            Image(
+                painter = painterResource(R.drawable.ding_map_emblem),
+                contentDescription = null,
+                modifier = Modifier.size(25.dp),
+                contentScale = ContentScale.Fit,
+            )
             Text(
                 "  明代两京一十三省舆图  ",
                 color = Ink,
@@ -244,19 +250,27 @@ private fun AtlasCaption() {
 }
 
 @Composable
-private fun AtlasInfoCard(title: String, detail: String, modifier: Modifier = Modifier) {
+private fun AtlasInfoCard(title: String, detail: String, illustration: Int, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier.height(72.dp),
+        modifier = modifier.height(86.dp),
         shape = CutCornerShape(6.dp),
         color = PaperShade.copy(alpha = 0.42f),
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.8f)),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            Text(detail, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+        Box(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 9.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                Text(detail, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+            }
+            Image(
+                painter = painterResource(illustration),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .width(92.dp)
+                    .height(37.dp),
+                contentScale = ContentScale.Fit,
+            )
         }
     }
 }
