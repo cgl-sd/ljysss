@@ -72,6 +72,34 @@ class LifeTextTest {
     }
 
     @Test
+    fun `孤立标点合并回相邻正文而不单独成段`() {
+        assertEquals(listOf("第一句。", "“第二句”"), readableParagraphs("第一句\n。\n“\n第二句\n”"))
+        assertTrue(parseLifeBlocks("第一句\n。\n第二句").none { it.text == "。" })
+    }
+
+    @Test
+    fun `没有来源标题的超长生平补通用内层结构`() {
+        val text = (1..45).joinToString("") { "第${it}段叙事文字足够长，用于验证移动端统一的生平分段结构。" }
+        val blocks = parseLifeBlocks(text)
+        assertEquals("概览", blocks.first().text)
+        assertTrue(blocks.any { it.text == "纪事" })
+        assertTrue(blocks.filter { !it.isHeader }.joinToString("") { it.text }.contains("第1段"))
+    }
+
+    @Test
+    fun `已有叙事标题的长生平不重复补标题`() {
+        val text = "早年\n" + (1..45).joinToString("") { "第${it}段叙事文字足够长，用于验证移动端统一的生平分段结构。" }
+        val blocks = parseLifeBlocks(text)
+        assertEquals(1, blocks.count { it.text == "早年" })
+        assertFalse(blocks.any { it.text == "概览" || it.text == "纪事" })
+    }
+
+    @Test
+    fun `生平折叠阈值固定为一千二百字`() {
+        assertEquals(1200, LifeCollapseCharacterLimit)
+    }
+
+    @Test
     fun `空白输入返回空表`() {
         assertEquals(emptyList<String>(), readableParagraphs("   \n  "))
     }

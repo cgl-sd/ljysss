@@ -5,11 +5,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,9 +21,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -80,7 +84,6 @@ internal fun PeopleScreen(
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
-    var profileOrigin by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var relationView by rememberSaveable { mutableStateOf(RelationView.PERSON) }
     val reigns = remember(repository) { repository.reigns() }
@@ -115,12 +118,8 @@ internal fun PeopleScreen(
     }
 
     fun returnFromProfile() {
-        val origin = profileOrigin
         selectedPersonName = null
-        profileOrigin = null
         personStack = emptyList()
-        query = ""
-        if (origin == "dynasty") selectedTab = PeopleTab.DYNASTY
     }
 
     // 人物详情内跳转另一人物时保留来路，返回键与页内返回逐层回退，最后才退出详情。
@@ -150,32 +149,41 @@ internal fun PeopleScreen(
                 selectedCategory = person.category
                 query = person.name
                 selectedPersonName = person.name
-                profileOrigin = "people"
                 personStack = emptyList()
             }
             onFocusConsumed()
         }
     }
 
-    // 人物履历打开后，系统返回键与页面内返回键保持同一行为，并恢复进入详情前的栏目。
+    // 人物履历打开后，系统返回键与悬浮返回键保持同一行为，并保留进入详情前的页面状态。
     BackHandler(enabled = selectedPersonName != null) {
         closeProfileStep()
     }
 
-    MingList(contentPadding) {
-        item { MingMasthead() }
-        item { OrnamentalTitle("人物") }
-        item {
-            PeopleTabRail(
-                selected = selectedTab,
-                onSelected = {
-                    selectedTab = it
-                    selectedPersonName = null
-                    profileOrigin = null
-                },
-            )
-        }
-        when (selectedTab) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        MingList(contentPadding) {
+            item { MingMasthead() }
+            item { OrnamentalTitle("人物") }
+            if (selectedPerson != null) {
+                item {
+                    PersonProfile(
+                        person = profileDetail ?: selectedPerson,
+                        relations = relations,
+                        onOpenPerson = ::openRelatedPerson,
+                    )
+                }
+            } else {
+                item {
+                    PeopleTabRail(
+                        selected = selectedTab,
+                        onSelected = {
+                            selectedTab = it
+                            selectedPersonName = null
+                            personStack = emptyList()
+                        },
+                    )
+                }
+                when (selectedTab) {
             PeopleTab.DYNASTY -> {
                 val selectedReign = reigns.firstOrNull { it.title == selectedReignTitle } ?: reigns.first()
                 item {
@@ -186,66 +194,48 @@ internal fun PeopleScreen(
                         reign = selectedReign,
                         people = allPeople.filter { it.reign.contains(selectedReign.title) },
                         onPersonSelected = { person ->
-                            selectedCategory = person.category
-                            query = person.name
                             selectedPersonName = person.name
-                            profileOrigin = "dynasty"
                             personStack = emptyList()
-                            selectedTab = PeopleTab.PEOPLE
                         },
                     )
                 }
             }
             PeopleTab.PEOPLE -> {
-                val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
-                if (selectedPerson != null) {
-                    item {
-                        PersonProfile(
-                            person = profileDetail ?: selectedPerson,
-                            relations = relations,
-
-                            onBack = ::closeProfileStep,
-                            onOpenPerson = ::openRelatedPerson,
-                        )
-                    }
+                item {
+                    CategoryRail(
+                        selectedCategory = selectedCategory,
+                        onSelected = { selectedCategory = it },
+                    )
+                }
+                item {
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = CutCornerShape(7.dp),
+                        placeholder = {
+                            Text("搜索姓名、官职或年号", color = Brass.copy(alpha = 0.72f), fontFamily = FontFamily.Serif, fontSize = 18.sp)
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Outlined.Search, contentDescription = null, tint = Brass)
+                        },
+                    )
+                }
+                item { PersonChronologyRail(reigns) }
+                if (people.isEmpty()) {
+                    item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
                 } else {
-                    item {
-                        CategoryRail(
-                            selectedCategory = selectedCategory,
-                            onSelected = { selectedCategory = it },
-                        )
-                    }
-                    item {
-                        OutlinedTextField(
-                            value = query,
-                            onValueChange = { query = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = CutCornerShape(7.dp),
-                            placeholder = {
-                                Text("搜索姓名、官职或年号", color = Brass.copy(alpha = 0.72f), fontFamily = FontFamily.Serif, fontSize = 18.sp)
-                            },
-                            leadingIcon = {
-                                Icon(Icons.Outlined.Search, contentDescription = null, tint = Brass)
+                    items(people, key = { it.name }) { person ->
+                        PersonCard(
+                            person = person,
+                            children = childrenByPerson[person.name].orEmpty(),
+                            expanded = false,
+                            onClick = {
+                                selectedPersonName = person.name
+                                personStack = emptyList()
                             },
                         )
-                    }
-                    item { PersonChronologyRail(reigns) }
-                    if (people.isEmpty()) {
-                        item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
-                    } else {
-                        items(people, key = { it.name }) { person ->
-                            PersonCard(
-                                person = person,
-                                children = childrenByPerson[person.name].orEmpty(),
-                                expanded = false,
-                                onClick = {
-                                    selectedPersonName = person.name
-                                    profileOrigin = "people"
-                                    personStack = emptyList()
-                                },
-                            )
-                        }
                     }
                 }
             }
@@ -261,6 +251,27 @@ internal fun PeopleScreen(
                     item { RelationshipLedger(repository.personRelations()) }
                 } else {
                     item { EventRelationshipNetwork(allEvents) }
+                }
+            }
+                }
+            }
+        }
+        if (selectedPerson != null) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 14.dp, top = 42.dp),
+                shape = CutCornerShape(7.dp),
+                color = PaperLight.copy(alpha = 0.96f),
+                border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+                shadowElevation = 3.dp,
+            ) {
+                IconButton(onClick = ::closeProfileStep) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "返回",
+                        tint = Ink,
+                    )
                 }
             }
         }

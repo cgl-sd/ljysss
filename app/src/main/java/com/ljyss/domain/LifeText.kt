@@ -2,6 +2,10 @@ package com.ljyss.domain
 
 internal data class LifeBlock(val isHeader: Boolean, val isClassicalMarker: Boolean, val text: String)
 
+/** 生平超过此长度才默认折叠，避免短条目多一次无意义操作。 */
+internal const val LifeCollapseCharacterLimit = 1200
+private const val LifeStructureThreshold = 900
+
 private val NarrativeInnerHeadings = setOf(
     "概览", "纪事", "早年", "早年经历", "早年生涯", "早期经历", "早期生涯", "晚年", "晚年经历", "晚年生涯", "求学",
     "仕途", "仕宦", "从政", "入仕", "经历", "事迹", "生涯", "官宦", "军旅", "征战",
@@ -19,10 +23,8 @@ internal fun isNarrativeInnerHeading(line: String): Boolean =
 
 internal fun parseLifeBlocks(content: String): List<LifeBlock> {
     val blocks = mutableListOf<LifeBlock>()
-    for (raw in content.split("\n")) {
-        val line = raw.trim()
+    for (line in normalizedTextLines(content)) {
         when {
-            line.isEmpty() -> continue
             // 栏目大标题已是“生平”，条目内同名小标题一律跳过，避免重复。
             line == "生平" -> continue
             line.startsWith("〔《明史》原文") -> blocks.add(LifeBlock(true, true, line))
@@ -35,15 +37,12 @@ internal fun parseLifeBlocks(content: String): List<LifeBlock> {
             }
         }
     }
-    return blocks
+    return addUniversalInnerHeadings(blocks)
 }
 
 /** 把长正文切成适合手机阅读的短段落：优先保留已有换行，再按句读边界二次分段。 */
 internal fun readableParagraphs(text: String): List<String> {
-    val blocks = text.replace("\r", "").trim()
-        .split(Regex("\\n+"))
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
+    val blocks = normalizedTextLines(text)
     if (blocks.isEmpty()) return emptyList()
     val paragraphs = mutableListOf<String>()
     for (block in blocks) {
@@ -66,3 +65,61 @@ internal fun readableParagraphs(text: String): List<String> {
     }
     return paragraphs
 }
+
+/**
+ * 将孤立的句读、引号等粘回相邻正文，避免爬取换行造成“。”或“」”独占一行。
+ * 若标点出现在正文前，则暂存并连接到下一段，保证不丢失语义。
+ */
+private fun normalizedTextLines(text: String): List<String> {
+    val normalized = mutableListOf<String>()
+    var prefix = ""
+    for (raw in text.replace("\r", "").split(Regex("\\n+"))) {
+        val line = raw.trim()
+        if (line.isEmpty()) continue
+        if (StandalonePunctuation.matches(line)) {
+            if (OpeningPunctuation.matches(line)) {
+                prefix += line
+            } else if (normalized.isNotEmpty()) {
+                normalized[normalized.lastIndex] += line
+            } else {
+                prefix += line
+            }
+        } else {
+            normalized += prefix + line
+            prefix = ""
+        }
+    }
+    return normalized
+}
+
+/** 为没有来源小标题的长生平补通用结构；已有标题始终原样保留。 */
+private fun addUniversalInnerHeadings(blocks: List<LifeBlock>): List<LifeBlock> {
+    val narrative = blocks.filter { !it.isHeader && !it.isClassicalMarker }
+    if (
+        narrative.sumOf { it.text.length } < LifeStructureThreshold ||
+        blocks.any { it.isHeader && !it.isClassicalMarker }
+    ) return blocks
+
+    val splitAt = narrative.sumOf { it.text.length } / 2
+    val structured = mutableListOf<LifeBlock>()
+    var consumed = 0
+    var hasOverview = false
+    var hasChronicle = false
+    for (block in blocks) {
+        if (!block.isHeader && !block.isClassicalMarker) {
+            if (!hasOverview) {
+                structured += LifeBlock(isHeader = true, isClassicalMarker = false, text = "概览")
+                hasOverview = true
+            } else if (!hasChronicle && consumed >= splitAt) {
+                structured += LifeBlock(isHeader = true, isClassicalMarker = false, text = "纪事")
+                hasChronicle = true
+            }
+            consumed += block.text.length
+        }
+        structured += block
+    }
+    return structured
+}
+
+private val StandalonePunctuation = Regex("^[、，。！？；：…“”‘’（）()《》〈〉【】〔〕·—–－〜～「」『』\\-]+$")
+private val OpeningPunctuation = Regex("^[“‘（(《〈【〔「『]+$")

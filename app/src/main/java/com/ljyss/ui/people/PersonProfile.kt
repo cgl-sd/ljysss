@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CutCornerShape
@@ -36,6 +35,7 @@ import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
+import com.ljyss.domain.LifeCollapseCharacterLimit
 import com.ljyss.domain.parseLifeBlocks
 import com.ljyss.domain.parentChildTypes
 import com.ljyss.domain.readableParagraphs
@@ -51,7 +51,6 @@ import com.ljyss.ui.theme.Vermilion
 internal fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
-    onBack: () -> Unit,
     onOpenPerson: (String) -> Unit,
 ) {
     // 四栏一律是库里预生成的文章，按 position 顺序渲染；空栏不显示。
@@ -74,18 +73,6 @@ internal fun PersonProfile(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
-            Text(
-                "← 返回",
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .clip(CutCornerShape(5.dp))
-                    .clickable(onClick = onBack)
-                    .padding(horizontal = 4.dp, vertical = 6.dp),
-                color = InkSoft,
-                fontFamily = FontFamily.Serif,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-            )
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
@@ -111,15 +98,15 @@ internal fun PersonProfile(
 private fun LifeSection(content: String) {
     val blocks = remember(content) { parseLifeBlocks(content) }
     var expanded by remember(content) { mutableStateOf(false) }
-    val limit = 1500
+    val limit = LifeCollapseCharacterLimit
     val total = content.length
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Text("生平", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
         var used = 0
         var truncated = false
         for (block in blocks) {
-            if (!expanded && used > limit) {
+            if (!expanded && used + block.text.length > limit) {
                 truncated = true
                 break
             }
@@ -142,6 +129,7 @@ private fun LifeSection(content: String) {
                 )
                 else -> Text(
                     block.text,
+                    modifier = Modifier.padding(top = 1.dp),
                     color = InkSoft,
                     fontFamily = FontFamily.Serif,
                     fontSize = 15.sp,

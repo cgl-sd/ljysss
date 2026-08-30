@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +27,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.model.HistoricalPerson
@@ -38,6 +40,10 @@ import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
+
+private val ArchiveEventCardHeight = 136.dp
+private val ArchivePersonCardWidth = 116.dp
+private val ArchivePersonCardHeight = 66.dp
 
 @Composable
 internal fun DynastyArchive(
@@ -76,15 +82,41 @@ internal fun DynastyArchive(
             } else {
                 reign.events.sortedBy { it.year ?: Int.MAX_VALUE }.forEach { event ->
                     Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(ArchiveEventCardHeight),
                         color = XuanPaper.copy(alpha = 0.68f),
                         shape = CutCornerShape(6.dp),
                         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.75f)),
                     ) {
                         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text("${event.year ?: ""} ${event.month} · ${event.title}", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                            Text(event.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp, lineHeight = 20.sp)
+                            Text(
+                                "${event.year ?: ""} ${event.month} · ${event.title}",
+                                color = Ink,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                event.description,
+                                color = InkSoft,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                             if (event.participants.isNotEmpty()) {
-                                Text("相关人物：${event.participants.joinToString("、")}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+                                Text(
+                                    "相关人物：${event.participants.joinToString("、")}",
+                                    color = Vermilion,
+                                    fontFamily = FontFamily.Serif,
+                                    fontSize = 13.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
                         }
                     }
@@ -114,6 +146,8 @@ private fun ArchiveGroup(
                 items(people, key = { it.name }) { person ->
                     Surface(
                         modifier = Modifier
+                            .width(ArchivePersonCardWidth)
+                            .height(ArchivePersonCardHeight)
                             .clip(CutCornerShape(5.dp))
                             .clickable { onPersonSelected(person) },
                         shape = CutCornerShape(5.dp),
@@ -121,8 +155,23 @@ private fun ArchiveGroup(
                         border = BorderStroke(1.dp, LineGold),
                     ) {
                         Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)) {
-                            Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                            Text(person.title, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 11.sp)
+                            Text(
+                                person.name,
+                                color = Ink,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                person.title,
+                                color = InkSoft,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 11.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
                 }
