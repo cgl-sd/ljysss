@@ -20,13 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +33,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -77,7 +71,6 @@ internal fun WorldScreen(
     onSearch: () -> Unit = {},
 ) {
     var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
-    var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
     val institutions = remember(repository) { repository.institutions() }
     val specials = remember(repository) { repository.specialItems() }
     val institutionGroups = remember(institutions) {
@@ -101,21 +94,22 @@ internal fun WorldScreen(
     }
 
     MingList(contentPadding) {
-        item { MingMasthead(onSearch) }
-        item { OrnamentalTitle("天下") }
         item {
-            WorldSectionRail(
-                selected = worldSection,
-                onSelected = { worldSection = it },
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                MingMasthead(onSearch)
+                OrnamentalTitle("天下")
+                WorldSectionRail(
+                    selected = worldSection,
+                    onSelected = { worldSection = it },
+                )
+            }
         }
         when (worldSection) {
             WorldSection.MAP -> {
                 item {
-                    AtlasMapPlate(
-                        modernOverlayEnabled = modernOverlayEnabled,
-                        onLayerToggle = { modernOverlayEnabled = !modernOverlayEnabled },
-                    )
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        AtlasMapPlate(modifier = Modifier.fillMaxWidth(0.86f))
+                    }
                 }
             }
             WorldSection.INSTITUTIONS -> {
@@ -146,11 +140,11 @@ internal fun WorldScreen(
     }
 }
 
-/** 保持原始舆图不变，并以图名、两京和十三省题签完成整张图的阅读落点。 */
+/** 紧凑舆图版：完整地图、花纹题签与两张说明卡须在同一屏连续可见。 */
 @Composable
-private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Unit) {
+private fun AtlasMapPlate(modifier: Modifier = Modifier) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = CutCornerShape(11.dp),
         color = PaperLight,
         border = BorderStroke(1.4.dp, LineGold),
@@ -176,24 +170,6 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,
                     )
-                    if (modernOverlayEnabled) {
-                        Image(
-                            painter = painterResource(R.drawable.modern_atlas_plate),
-                            contentDescription = "现代区划对照图已叠加",
-                            modifier = Modifier.fillMaxSize().alpha(0.68f),
-                            contentScale = ContentScale.Fit,
-                        )
-                    }
-                    Surface(
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(11.dp),
-                        shape = RoundedCornerShape(50),
-                        color = PaperLight.copy(alpha = 0.94f),
-                        border = BorderStroke(1.dp, Brass.copy(alpha = 0.55f)),
-                    ) {
-                        IconButton(onClick = onLayerToggle, modifier = Modifier.size(42.dp)) {
-                            Icon(Icons.Outlined.Layers, contentDescription = "切换现代区划图层", tint = Ink)
-                        }
-                    }
                 }
             }
             AtlasCaption()
@@ -205,13 +181,13 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
             ) {
                 AtlasInfoCard(
                     title = "两京",
-                    detail = "北京  ·  南京",
+                    detail = "北京\n南京",
                     illustration = R.drawable.atlas_two_capitals_palace,
                     modifier = Modifier.weight(1f),
                 )
                 AtlasInfoCard(
                     title = "十三省",
-                    detail = "明代地方建置",
+                    detail = null,
                     illustration = R.drawable.atlas_thirteen_provinces_landscape,
                     modifier = Modifier.weight(1f),
                 )
@@ -222,53 +198,51 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
 
 @Composable
 private fun AtlasCaption() {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 9.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+            .height(54.dp)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(R.drawable.ding_map_emblem),
-                contentDescription = null,
-                modifier = Modifier.size(25.dp),
-                contentScale = ContentScale.Fit,
-            )
-            Text(
-                "  明代两京一十三省舆图  ",
-                color = Ink,
-                fontFamily = FontFamily.Serif,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text("◇", color = Brass, fontSize = 12.sp)
-        }
-        Text("两京十三省 · 明代行政版图", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+        Image(
+            painter = painterResource(R.drawable.atlas_title_plaque),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillWidth,
+        )
+        Text(
+            "明代两京一十三省舆图",
+            color = Ink,
+            fontFamily = FontFamily.Serif,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
 @Composable
-private fun AtlasInfoCard(title: String, detail: String, illustration: Int, modifier: Modifier = Modifier) {
+private fun AtlasInfoCard(title: String, detail: String?, illustration: Int, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier.height(86.dp),
+        modifier = modifier.height(78.dp),
         shape = CutCornerShape(6.dp),
         color = PaperShade.copy(alpha = 0.42f),
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.8f)),
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 9.dp)) {
+        Box(modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 8.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                Text(detail, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+                Text(title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                detail?.let {
+                    Text(it, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp, lineHeight = 15.sp)
+                }
             }
             Image(
                 painter = painterResource(illustration),
                 contentDescription = null,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .width(92.dp)
-                    .height(37.dp),
+                    .width(72.dp)
+                    .height(30.dp),
                 contentScale = ContentScale.Fit,
             )
         }
