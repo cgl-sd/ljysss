@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -74,7 +73,7 @@ internal fun DynastyArchive(
                 fontSize = 14.sp,
             )
             groups.forEach { (category, members) ->
-                ArchiveGroup(category.label, category.subtitle, members, onPersonSelected)
+                ArchiveGroup(category.label, members, onPersonSelected)
             }
             Text("本朝大事", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             if (reign.events.isEmpty()) {
@@ -129,15 +128,12 @@ internal fun DynastyArchive(
 @Composable
 private fun ArchiveGroup(
     title: String,
-    hint: String,
     people: List<HistoricalPerson>,
     onPersonSelected: (HistoricalPerson) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(7.dp))
-            Text(hint, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp)
         }
         if (people.isEmpty()) {
             Text("本朝暂无已编人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)

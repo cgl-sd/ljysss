@@ -257,22 +257,18 @@ internal fun PeopleScreen(
             }
         }
         if (selectedPerson != null) {
-            Surface(
+            IconButton(
+                onClick = ::closeProfileStep,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(start = 14.dp, top = 42.dp),
-                shape = CutCornerShape(7.dp),
-                color = PaperLight.copy(alpha = 0.96f),
-                border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-                shadowElevation = 3.dp,
+                    .padding(start = 20.dp, top = 38.dp)
+                    .size(44.dp),
             ) {
-                IconButton(onClick = ::closeProfileStep) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "返回",
-                        tint = Ink,
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "返回",
+                    tint = Ink,
+                )
             }
         }
     }
