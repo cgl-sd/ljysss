@@ -623,4 +623,8 @@ def import_content() -> list[tuple[str, int]]:
                     )
             connection.commit()
             counts.append((table, len(records)))
+        # JSONL 是内容真相。新导入库若保留默认 user_version=0，会在首次服务启动时被
+        # catalog.py 的旧种子字段回写，覆盖已审计的人物分类或介绍；写入当前指纹即可
+        # 让启动同步仅在 catalog 本身变化时运行。
+        connection.execute(f"PRAGMA user_version = {_catalog_digest()}")
     return counts
