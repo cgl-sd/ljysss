@@ -33,6 +33,7 @@ import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.Reign
+import com.ljyss.domain.orderedPeopleForCards
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
@@ -55,7 +56,7 @@ internal fun DynastyArchive(
     onEventSelected: (HistoricalEvent) -> Unit,
 ) {
     val groups = PersonCategory.entries.map { category ->
-        category to archiveOrderedPeople(category, people.filter { it.category == category })
+        category to orderedPeopleForCards(people.filter { it.category == category })
     }
 
     Card(
@@ -219,27 +220,3 @@ private fun ArchiveGroup(
 }
 
 private fun archiveRoleLabel(person: HistoricalPerson): String = person.title
-
-private fun archiveOrderedPeople(category: PersonCategory, people: List<HistoricalPerson>): List<HistoricalPerson> =
-    people.sortedWith(compareBy<HistoricalPerson>(
-        { archiveRank(category, it) },
-        { it.reign },
-        { it.years.substringBefore('—').toIntOrNull() ?: Int.MAX_VALUE },
-        { it.displayName },
-    ))
-
-private fun archiveRank(category: PersonCategory, person: HistoricalPerson): Int = when (category) {
-    PersonCategory.COURT -> when {
-        person.title.contains("皇后") || person.title.contains("太后") -> 0
-        person.title.contains("妃") || person.title.contains("嫔") || person.title.contains("选侍") -> 1
-        else -> 2
-    }
-    PersonCategory.CLAN -> when {
-        person.title.contains("亲王") || person.title.matches(Regex(".{1,8}王")) -> 0
-        person.title.contains("郡王") -> 1
-        person.title.contains("世子") -> 2
-        person.title.contains("公主") -> 4
-        else -> 3
-    }
-    else -> 0
-}

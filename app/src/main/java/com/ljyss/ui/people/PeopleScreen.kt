@@ -51,7 +51,7 @@ import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.Reign
 import com.ljyss.domain.parentChildTypes
 import com.ljyss.domain.personBirthYear
-import com.ljyss.domain.personChronologyRank
+import com.ljyss.domain.orderedPeopleForCards
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.ljyss.ui.components.MingList
@@ -92,9 +92,9 @@ internal fun PeopleScreen(
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
-    // 排序键含字符串解析，只在资料变化时算一次；搜索与切类目仅做线性过滤。
+    // 两个入口必须共用人物卡排序；搜索与切类目仅做线性过滤。
     val sortedPeople = remember(repository) {
-        allPeople.sortedWith(compareBy({ personChronologyRank(it) }, { personBirthYear(it) }, { it.name }))
+        orderedPeopleForCards(allPeople)
     }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }

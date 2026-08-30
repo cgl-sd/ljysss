@@ -8,7 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** 人物页排序键的现有行为基线：年号次序优先、生年次之、姓名最后。 */
+/** 人物卡排序的行为基线：分类内先官职／爵等，同级再按最早年号。 */
 class PersonOrderTest {
     private fun person(reign: String, years: String, name: String = "某人") = HistoricalPerson(
         name = name,
@@ -87,6 +87,31 @@ class PersonOrderTest {
             emperors.map { personChronologyRank(it) },
             emperors.map { personChronologyRank(it) }.sorted(),
         )
+    }
+
+    @Test
+    fun `朝臣按官职层级后再按最早年号排列`() {
+        val ministers = listOf(
+            person("嘉靖", "1500—1560", "嘉靖尚书").copy(title = "兵部尚书"),
+            person("永乐", "1370—1430", "永乐尚书").copy(title = "礼部尚书"),
+            person("洪武", "1320—1380", "侍郎").copy(title = "兵部侍郎"),
+            person("洪武", "1320—1380", "首辅").copy(title = "内阁首辅"),
+        )
+
+        assertEquals(listOf("首辅", "永乐尚书", "嘉靖尚书", "侍郎"),
+            orderedPeopleForCards(ministers).map { it.name })
+    }
+
+    @Test
+    fun `将帅先国公后侯爵同爵按最早年号排列`() {
+        val generals = listOf(
+            person("永乐", "1370—1430", "永乐国公").copy(category = PersonCategory.GENERALS, title = "成国公"),
+            person("洪武", "1330—1390", "洪武侯").copy(category = PersonCategory.GENERALS, title = "西平侯"),
+            person("洪武", "1320—1380", "洪武公").copy(category = PersonCategory.GENERALS, title = "魏国公"),
+        )
+
+        assertEquals(listOf("洪武公", "永乐国公", "洪武侯"),
+            orderedPeopleForCards(generals).map { it.name })
     }
 
     private val seedComparator =
