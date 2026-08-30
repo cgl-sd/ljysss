@@ -21,11 +21,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -254,21 +252,6 @@ internal fun PeopleScreen(
                 }
             }
                 }
-            }
-        }
-        if (selectedPerson != null) {
-            IconButton(
-                onClick = ::closeProfileStep,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 20.dp, top = 38.dp)
-                    .size(44.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "返回",
-                    tint = Ink,
-                )
             }
         }
     }
