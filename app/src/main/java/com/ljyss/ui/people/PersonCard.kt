@@ -132,6 +132,28 @@ internal fun PersonPortrait(person: HistoricalPerson) {
         "朱允炆" -> R.drawable.portrait_zhuyunwen
         "朱棣" -> R.drawable.portrait_zhudi
         "朱瞻基" -> R.drawable.portrait_zhuzhanji
+        "朱标" -> R.drawable.portrait_zhubiao
+        "朱高炽" -> R.drawable.portrait_zhugaochi
+        "朱祁镇" -> R.drawable.portrait_zhuqizhen
+        "朱祁钰" -> R.drawable.portrait_zhuqiyu
+        "朱见深" -> R.drawable.portrait_zhujian
+        "朱祐樘" -> R.drawable.portrait_zhuyoutang
+        "朱厚照" -> R.drawable.portrait_zhuhouzhao
+        "朱厚熜" -> R.drawable.portrait_zhuhoucong
+        "朱载基" -> R.drawable.portrait_zhuzaiji
+        "朱载壑" -> R.drawable.portrait_zhuzaihe
+        "朱载坖" -> R.drawable.portrait_zhuzaihou
+        "朱翊钧" -> R.drawable.portrait_zhuyijun
+        "朱常洛" -> R.drawable.portrait_zhuchangluo
+        "朱聿键" -> R.drawable.portrait_zhuyujian
+        "朱由校" -> R.drawable.portrait_zhuyouxiao
+        "朱聿鐭" -> R.drawable.portrait_zhuyuyu
+        "朱由崧" -> R.drawable.portrait_zhuyousong
+        "朱常淓" -> R.drawable.portrait_zhuchangfang
+        "朱由检" -> R.drawable.portrait_zhuyoujian
+        "朱以海" -> R.drawable.portrait_zhuyihai
+        "朱由榔" -> R.drawable.portrait_zhuyoulang
+        "朱慈烺" -> R.drawable.portrait_zhucilang
         "刘基" -> R.drawable.portrait_liuji
         "徐达" -> R.drawable.portrait_xuda
         "于谦" -> R.drawable.portrait_yuqian
