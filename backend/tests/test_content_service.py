@@ -87,7 +87,10 @@ class ContentServiceTest(unittest.TestCase):
             for relationship in person["relationships"]
             if relationship["from_name"] == "徐达" and relationship["relation_type"] == "父子"
         }
-        self.assertEqual({"徐辉祖", "徐添福", "徐膺绪", "徐增寿"}, children)
+        # 徐添福没有可匹配的中文维基人物条目，已按人物库门槛移除；剩余子嗣仍须可跳转。
+        self.assertEqual({"徐辉祖", "徐膺绪", "徐增寿"}, children)
+        catalog_ids = {entry["id"] for entry in bootstrap_content()["people"]}
+        self.assertNotIn("xutianfu", catalog_ids)
 
     def test_famous_people_are_present_in_catalog(self):
         payload = bootstrap_content()

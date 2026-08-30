@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
-"""留下的人物必须同时满足两条：有维基百科条目，且读简介能确认是明代人。
+"""删除不满足中文维基百科明朝人物门槛的内容记录。
 
-判据一（有条目）：content_reference 里有指向维基条目的 url，或 person_wiki 存着该
-条目的条目名与全文（早期批量入库只没登记出处而已）。
+保留条件必须同时成立：维基正文可识别为库内这个人，且正文明确为明朝（含南明）人物。
+同名但属于他朝、现代人物、地名、制度或泛概念的页面不能作为人物资料。判定由
+``audit_person_existence.py`` 集中完成；本脚本只按其 ``confirmed`` 结果执行级联清理，
+不会凭《明史》卷次、年号或百度来源绕过该门槛。
 
-判据二（是明代人），按简介文字判：
-1. 简介自报他朝身份（「西汉…将领」「南宋…名臣」）→ 判否。这类条目讲的是同名他人，
-   即便《明史》另有同名传主，这一行也不是明人。
-2. 简介含明代年号，或含「明」且带 1300—1700 年数字 → 判是。
-3. 简介没有明代信号，但《明史》有传、或年号属明、或生卒落在明代 → 作为例外保留。
-
-连带清理：栏目、亲属、关系边、出处登记、维基全文、明史索引、CBDB 映射、检索台账、
-事件参与人、编年参与人；事件表的 participants 姓名串同步剔除。
+还会为已有 ``person_wiki`` 正文而缺少链接的保留人物补登记官方维基 URL。
 
     backend/.venv/bin/python backend/scripts/prune_to_wikipedia.py --dry-run
     backend/.venv/bin/python backend/scripts/prune_to_wikipedia.py
@@ -23,24 +18,18 @@ import argparse
 import json
 import re
 import sys
-from collections import Counter
+from collections import defaultdict
 from pathlib import Path
+from urllib.parse import quote, urlparse
 
 BACKEND = Path(__file__).resolve().parents[1]
 CONTENT = BACKEND / "data" / "content"
-STAGING = BACKEND / "data" / "staging"
-sys.path.insert(0, str(BACKEND))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-ERAS = ("洪武", "建文", "永乐", "洪熙", "宣德", "正统", "景泰", "天顺", "成化", "弘治", "正德",
-        "嘉靖", "隆庆", "万历", "泰昌", "天启", "崇祯", "弘光", "隆武", "绍武", "永历")
-OTHER_DYNASTY = re.compile(
-    r"(西汉|东汉|南宋|北宋|秦朝|汉朝|晋朝|隋朝|唐朝|唐代|宋代|宋朝|元代|元朝|三国|清朝|清代)"
-    r"[^\n，。]{0,14}?(?:将领|名臣|大臣|皇帝|政治家|学者|官员|人物|宗室|宰相|进士|诗人|外戚|画家|书法家)")
-MING_MARK = re.compile(r"(明朝|明代|明初|明末|明中叶|元末明初|明太祖|明成祖|明代宗室|朱元璋|洪武)")
-YEAR_IN_MING = re.compile(r"\b(1[3-6]\d{2})\b")
-BORN = re.compile(r"^\s*(\d{4})—")
+from audit_person_existence import audit  # noqa: E402
 
-# 表名 → 该表里指向 person.id 的列
+
+# 表名 → 指向 person.id 的列。删人时必须清除所有直接或反向关联。
 CASCADE = {
     "person_section": ["person_id"],
     "person_kin": ["person_id", "kin_person_id"],
@@ -62,151 +51,145 @@ def load(table: str) -> list[dict]:
 
 def dump(table: str, rows: list[dict]) -> None:
     (CONTENT / f"{table}.jsonl").write_text(
-        "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8"
+    )
 
 
-def judge_ming(person: dict, intro: str) -> str:
-    """读简介判朝代：yes / no / unknown。"""
-
-    head = intro[:260]
-    other = OTHER_DYNASTY.search(head)
-    if other and not MING_MARK.search(head):
-        return "no"
-    # 消歧义/重定向页说明正文取错了条目，但人未必不是明人——交旁证判
-    if re.search(r"可以指|可以是|可能指|（消歧义）", head):
-        return "unknown"
-    if any(era in head for era in ERAS):
-        return "yes"
-    if MING_MARK.search(head) and any(1300 <= int(y) <= 1700 for y in YEAR_IN_MING.findall(head)):
-        return "yes"
-    return "unknown"
+def is_wikipedia_url(url: str) -> bool:
+    return urlparse(url or "").netloc == "zh.wikipedia.org"
 
 
-def purge_seeds(doomed: set[str]) -> None:
-    """删掉的人必须同时从 catalog.py 移除，否则服务启动的种子回写会把他们插回来。"""
+def wikipedia_url(title: str) -> str:
+    return "https://zh.wikipedia.org/wiki/" + quote((title or "").replace(" ", "_"))
+
+
+def free_position(refs: list[dict], content_id: str) -> int:
+    used = {
+        row.get("position", 0)
+        for row in refs
+        if row.get("content_type") == "person" and row.get("content_id") == content_id
+        and row.get("section_key") == "life"
+    }
+    position = 0
+    while position in used:
+        position += 1
+    return position
+
+
+def purge_seeds(doomed: set[str]) -> int:
+    """同步删 catalog.py 的对应种子，防止服务启动回写复活已移除人物。"""
 
     path = BACKEND / "app" / "catalog.py"
     lines = path.read_text(encoding="utf-8").split("\n")
-    # 种子有三种格式，各自精确匹配，避免误删正文里恰好提到该 id 的行
-    people_line = re.compile(r"^\s*(\"|')(?P<pid>[a-z0-9\-]+)(\"|')?\|")
     dict_line = re.compile(r'^\s*"(?P<pid>[a-z0-9\-]+)"\s*:\s*"')
     dropped = 0
     kept = []
     for line in lines:
-        pid = ""
+        person_id = ""
         if "|" in line and not line.strip().startswith("#"):
             match = re.match(r"^\s*([a-z0-9\-]+)\|", line)
-            pid = match.group(1) if match else ""
-        if not pid:
+            person_id = match.group(1) if match else ""
+        if not person_id:
             match = dict_line.match(line)
-            pid = match.group("pid") if match else ""
-        if not pid:
-            # 关系边与画像键：整行里出现被删 id 的引号形式
+            person_id = match.group("pid") if match else ""
+        if not person_id:
             quoted = re.findall(r"['\"]([a-z0-9\-]+)['\"]", line)
-            pid = next((token for token in quoted if token in doomed), "")
-        if pid in doomed:
+            person_id = next((value for value in quoted if value in doomed), "")
+        if person_id in doomed:
             dropped += 1
             continue
         kept.append(line)
     path.write_text("\n".join(kept), encoding="utf-8")
-    print(f"catalog.py 同步移除 {dropped} 行种子记录（防止启动回写复活）")
+    return dropped
 
 
 def main(dry_run: bool) -> None:
+    _, results, profiles = audit(fetch_missing=True, include_profiles=True)
+    confirmed = {row["id"] for row in results if row["status"] == "confirmed"}
     people = load("person")
-    refs = load("content_reference")
-    wiki = load("person_wiki")
-    url_ids = {r["content_id"] for r in refs
-               if r.get("content_type") == "person" and r.get("url")}
-    titled = {r["person_id"]: r["wiki_title"] for r in wiki if r.get("wiki_title")}
-    wiki_text = {r["person_id"]: r.get("full_text", "") for r in wiki}
-    backfilled = sorted(set(titled) - url_ids)
-    has_article = url_ids | set(titled)
+    person_ids = {person["id"] for person in people}
+    if confirmed - person_ids:
+        raise SystemExit("审计结果与内容库不一致，拒绝删除")
+    doomed = person_ids - confirmed
 
-    rolls = {json.loads(line)["name"] for line in
-             (STAGING / "persons.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()} \
-        if (STAGING / "persons.jsonl").exists() else set()
-    anchored = {r["content_id"] for r in refs
-                if r.get("content_type") == "person" and str(r.get("locator", "")).startswith("明史卷")}
+    print(f"人物 {len(people)} → 保留 {len(confirmed)}，删除 {len(doomed)}")
+    for reason in sorted({row["reason"] for row in results if row["id"] in doomed}):
+        count = sum(row["reason"] == reason for row in results if row["id"] in doomed)
+        print(f"  {reason} {count}")
 
-    reasons: Counter[str] = Counter()
-    rewrite_needed: list[str] = []  # 保留占位以兼容下方打印
-    doomed: set[str] = set()
-    for person in people:
-        pid = person["id"]
-        if pid not in has_article:
-            reasons["无维基条目"] += 1
-            doomed.add(pid)
-            continue
-        intro_head = (wiki_text.get(pid) or person.get("biography", ""))[:260]
-        if re.search(r"可以指|可以是|可能指|（消歧义）", intro_head):
-            # 解析过一轮仍是消歧义页，说明拿不到属于他本人的条目正文，按标准不保留
-            reasons["正文仍是消歧义页"] += 1
-            doomed.add(pid)
-            continue
-        intro = (wiki_text.get(pid) or person.get("biography", "") or person.get("summary", ""))[:600]
-        verdict = judge_ming(person, intro)
-        if verdict == "no":
-            reasons["简介自报他朝身份"] += 1
-            doomed.add(pid)
-        elif verdict == "unknown" and not (pid in anchored or person["name"] in rolls
-                                           or any(era in (person.get("reign") or "") for era in ERAS)
-                                           or (BORN.match(person.get("years") or "")
-                                               and 1300 <= int(BORN.match(person["years"]).group(1)) <= 1660)):
-            reasons["简介无明代信号且无旁证"] += 1
-            doomed.add(pid)
-
-    keep = len(people) - len(doomed)
-    print(f"人物 {len(people)} → 保留 {keep}，删除 {len(doomed)}")
-    for reason, count in reasons.most_common():
-        print(f"  {reason:<22} {count}")
-    print(f"  （其中 {len(backfilled)} 人只有全文存档，补登记维基出处后保留）")
-    print(f"  正文是消歧义页、需换条目的：{len(rewrite_needed)} 人 例：{'、'.join(rewrite_needed[:8])}")
-
-    # 出处登记有 UNIQUE(类型, 对象, 栏目, 位次)，补登记要取该人物该栏目的下一个空位
-    used_positions = {(r["content_type"], r["content_id"], r["section_key"], r["position"]) for r in refs}
-
-    def free_position(kind: str, cid: str, section: str) -> int:
-        position = 0
-        while (kind, cid, section, position) in used_positions:
-            position += 1
-        used_positions.add((kind, cid, section, position))
-        return position
-
-    for pid in backfilled:
-        title = titled[pid]
-        refs.append({"content_type": "person", "content_id": pid, "section_key": "life",
-                     "position": free_position("person", pid, "life"),
-                     "title": f"维基百科「{title}」",
-                     "url": "https://zh.wikipedia.org/wiki/" + title.replace(" ", "_"),
-                     "locator": "", "note": "由全文存档补登记出处"})
-
-    doomed_names = {p["name"] for p in people if p["id"] in doomed}
     tables = {name: load(name) for name in CASCADE}
     report: dict[str, int] = {}
     for table, fields in CASCADE.items():
         before = len(tables[table])
-        tables[table] = [row for row in tables[table]
-                         if not any(row.get(field) in doomed for field in fields)]
+        tables[table] = [
+            row for row in tables[table]
+            if not any(row.get(field) in doomed for field in fields)
+        ]
         report[table] = before - len(tables[table])
 
+    # 人名字符串只能在该名字的全部 id 都被删除时剔除，不能因同名重复记录误删保留者。
+    ids_by_name: dict[str, set[str]] = defaultdict(set)
+    for person in people:
+        ids_by_name[person["name"]].add(person["id"])
+    doomed_names = {name for name, ids in ids_by_name.items() if ids <= doomed}
     events = load("event")
     for event in events:
-        names = [n.strip() for n in (event.get("participants") or "").split("、") if n.strip()]
-        event["participants"] = "、".join(n for n in names if n not in doomed_names)
-    refs = [r for r in refs if not (r.get("content_type") == "person" and r.get("content_id") in doomed)]
+        names = [name.strip() for name in (event.get("participants") or "").split("、") if name.strip()]
+        event["participants"] = "、".join(name for name in names if name not in doomed_names)
 
-    print("级联删除：" + "｜".join(f"{k} {v}" for k, v in report.items() if v))
+    refs = [
+        row for row in load("content_reference")
+        if not (row.get("content_type") == "person" and row.get("content_id") in doomed)
+    ]
+    result_by_id = {row["id"]: row for row in results}
+    # audit 为早期未缓存的记录按标题读取了离线维基包；将通过门槛的原文一并落入
+    # person_wiki，避免下一次只因缓存缺失而重复扫描或失去可复核正文。
+    wiki_by_person = {row["person_id"]: row for row in tables["person_wiki"]}
+    for person_id in sorted(confirmed - set(wiki_by_person)):
+        profile = profiles.get(person_id, {})
+        title = profile.get("wiki_title", "")
+        text = profile.get("full_text", "")
+        if not title or not text:
+            raise SystemExit(f"保留人物 {person_id} 缺少可写入的维基正文")
+        row = {"person_id": person_id, "wiki_title": title, "full_text": text}
+        tables["person_wiki"].append(row)
+        wiki_by_person[person_id] = row
+    backfilled = 0
+    for person_id in sorted(confirmed):
+        if any(
+            row.get("content_type") == "person" and row.get("content_id") == person_id
+            and is_wikipedia_url(row.get("url", ""))
+            for row in refs
+        ):
+            continue
+        wiki = wiki_by_person.get(person_id)
+        if not wiki or not wiki.get("wiki_title"):
+            raise SystemExit(f"保留人物 {person_id} 缺少可登记的维基条目")
+        refs.append({
+            "content_type": "person",
+            "content_id": person_id,
+            "section_key": "life",
+            "position": free_position(refs, person_id),
+            "title": f"维基百科「{wiki['wiki_title']}」",
+            "url": wikipedia_url(wiki["wiki_title"]),
+            "locator": wiki["wiki_title"],
+            "note": "由已核对的离线维基正文补登记出处",
+        })
+        backfilled += 1
+
+    print("级联删除：" + "｜".join(f"{table} {count}" for table, count in report.items() if count))
+    print(f"补登记中文维基出处：{backfilled} 条")
     if dry_run:
-        print("\n[dry-run] 未写入。")
+        print("[dry-run] 未写入。")
         return
-    for name, rows in tables.items():
-        dump(name, rows)
-    dump("person", [p for p in people if p["id"] not in doomed])
+
+    for table, rows in tables.items():
+        dump(table, rows)
+    dump("person", [person for person in people if person["id"] not in doomed])
     dump("event", events)
     dump("content_reference", refs)
-    purge_seeds(doomed)
-    print(f"已写入：人物余 {keep} 人")
+    seed_count = purge_seeds(doomed)
+    print(f"catalog.py 同步移除 {seed_count} 行种子记录；已写入人物余 {len(confirmed)} 人。")
 
 
 if __name__ == "__main__":
