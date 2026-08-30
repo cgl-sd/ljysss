@@ -123,18 +123,22 @@ internal fun RelationshipNetwork(relations: List<PersonRelation>) {
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
-                    val neighbourCenters = neighbours.mapIndexed { index, _ ->
+                    // 一位人物可与同一对象有多条关系。连线应按“对方姓名”取节点坐标，
+                    // 不能把关系序号当成去重后的节点序号，否则会越界并导致关系页崩溃。
+                    val neighbourCenters = neighbours.mapIndexed { index, name ->
                         val angle = -Math.PI / 2 + (Math.PI * 2 * index / neighbours.size.coerceAtLeast(1))
-                        androidx.compose.ui.geometry.Offset(
+                        name to androidx.compose.ui.geometry.Offset(
                             x = center.x + size.width * .39f * cos(angle).toFloat(),
                             y = center.y + size.height * .36f * sin(angle).toFloat(),
                         )
-                    }
-                    focusedRelations.forEachIndexed { index, relation ->
+                    }.toMap()
+                    focusedRelations.forEach { relation ->
+                        val otherName = if (relation.fromName == activeFocus) relation.toName else relation.fromName
+                        val endpoint = neighbourCenters.getValue(otherName)
                         drawLine(
                             color = relationshipColor(relation.type).copy(alpha = .72f),
                             start = center,
-                            end = neighbourCenters[index],
+                            end = endpoint,
                             strokeWidth = if (relation.type == RelationshipType.RULER_MINISTER) 3.dp.toPx() else 2.dp.toPx(),
                             cap = StrokeCap.Round,
                         )
