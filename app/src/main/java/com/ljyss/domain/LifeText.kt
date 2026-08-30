@@ -23,20 +23,33 @@ internal fun isNarrativeInnerHeading(line: String): Boolean =
 
 internal fun parseLifeBlocks(content: String): List<LifeBlock> {
     val blocks = mutableListOf<LifeBlock>()
+    val narrativeLines = mutableListOf<String>()
+
+    fun flushNarrative() {
+        if (narrativeLines.isEmpty()) return
+        // 爬取文本的换行并不等于段落：连续短句合并后再按句读分段，避免手机上一句一行。
+        readableParagraphs(narrativeLines.joinToString(separator = "")).forEach { paragraph ->
+            blocks.add(LifeBlock(false, false, paragraph))
+        }
+        narrativeLines.clear()
+    }
+
     for (line in normalizedTextLines(content)) {
         when {
             // 栏目大标题已是“生平”，条目内同名小标题一律跳过，避免重复。
-            line == "生平" -> continue
-            line.startsWith("〔《明史》原文") -> blocks.add(LifeBlock(true, true, line))
-            isNarrativeInnerHeading(line) ->
-                blocks.add(LifeBlock(true, false, line))
-            // 同一规则适用于所有人物：正文按句读拆成便于手机阅读的短段；不额外
-            // 制造与外层“生平”相近的标题。
-            else -> readableParagraphs(line).forEach { paragraph ->
-                blocks.add(LifeBlock(false, false, paragraph))
+            line == "生平" -> flushNarrative()
+            line.startsWith("〔《明史》原文") -> {
+                flushNarrative()
+                blocks.add(LifeBlock(true, true, line))
             }
+            isNarrativeInnerHeading(line) -> {
+                flushNarrative()
+                blocks.add(LifeBlock(true, false, line))
+            }
+            else -> narrativeLines += line
         }
     }
+    flushNarrative()
     return addUniversalInnerHeadings(blocks)
 }
 

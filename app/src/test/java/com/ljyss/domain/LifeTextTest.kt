@@ -78,6 +78,14 @@ class LifeTextTest {
     }
 
     @Test
+    fun `生平连续短句按句读合并而不逐行展示`() {
+        val text = (1..12).joinToString("\n") { "第${it}句叙事文字用于验证短行合并后的段落长度。" }
+        val paragraphs = parseLifeBlocks(text).filter { !it.isHeader }.map { it.text }
+        assertTrue(paragraphs.size < 12)
+        assertTrue(paragraphs.dropLast(1).all { it.length >= 130 })
+    }
+
+    @Test
     fun `没有来源标题的超长生平补通用内层结构`() {
         val text = (1..45).joinToString("") { "第${it}段叙事文字足够长，用于验证移动端统一的生平分段结构。" }
         val blocks = parseLifeBlocks(text)

@@ -41,9 +41,9 @@ import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
-private val ArchiveEventCardHeight = 136.dp
-private val ArchivePersonCardWidth = 116.dp
-private val ArchivePersonCardHeight = 66.dp
+private val ArchiveEventCardHeight = 94.dp
+private val ArchivePersonCardWidth = 100.dp
+private val ArchivePersonCardHeight = 54.dp
 
 @Composable
 internal fun DynastyArchive(
@@ -105,7 +105,7 @@ internal fun DynastyArchive(
                                 fontFamily = FontFamily.Serif,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
-                                maxLines = 3,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             if (event.participants.isNotEmpty()) {
@@ -154,7 +154,7 @@ private fun ArchiveGroup(
                         color = PaperShade,
                         border = BorderStroke(1.dp, LineGold),
                     ) {
-                        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)) {
+                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) {
                             Text(
                                 person.name,
                                 color = Ink,
@@ -165,11 +165,11 @@ private fun ArchiveGroup(
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                person.title,
+                                archiveRoleLabel(person),
                                 color = InkSoft,
                                 fontFamily = FontFamily.Serif,
                                 fontSize = 11.sp,
-                                maxLines = 2,
+                                maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
@@ -178,4 +178,43 @@ private fun ArchiveGroup(
             }
         }
     }
+}
+
+/** 朝代档案只显示一个可辨认的职位或爵位，完整称谓仍保留在详情页。 */
+private fun archiveRoleLabel(person: HistoricalPerson): String {
+    val title = person.title.trim()
+    if (title.isBlank()) return archiveFallbackRole(person.category)
+    if (person.category == PersonCategory.EMPERORS) {
+        return title.removePrefix("明").substringBefore('·').ifBlank { "皇帝" }
+    }
+    if (person.category == PersonCategory.COURT) {
+        Regex("(皇后|皇贵妃|贵妃|[贤淑宁德惠恭顺庄端孝]+妃|妃|嫔|太监)$")
+            .find(title)
+            ?.value
+            ?.let { return it }
+    }
+
+    val titleParts = title.split(Regex("[、，；;]|兼|（|\\("))
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+    val officeKeywords = listOf(
+        "首辅", "大学士", "尚书", "侍郎", "都御史", "总督", "巡抚", "督师", "都督",
+        "将军", "指挥使", "御史", "给事中", "布政使", "按察使", "知府", "知县", "祭酒", "学士",
+    )
+    titleParts.firstOrNull { part -> officeKeywords.any(part::contains) }
+        ?.let { return it }
+    titleParts.firstOrNull { part -> part.endsWith("王") || part.endsWith("公") || part.endsWith("侯") || part.endsWith("伯") }
+        ?.let { return it }
+    val fallback = titleParts.firstOrNull()?.removePrefix("明·")?.removePrefix("明代").orEmpty()
+    return fallback.takeUnless { it.isBlank() || it == person.name || it == "官员" }
+        ?: archiveFallbackRole(person.category)
+}
+
+private fun archiveFallbackRole(category: PersonCategory): String = when (category) {
+    PersonCategory.EMPERORS -> "皇帝"
+    PersonCategory.COURT -> "内廷"
+    PersonCategory.CLAN -> "宗室"
+    PersonCategory.MINISTERS -> "朝臣"
+    PersonCategory.GENERALS -> "将领"
+    PersonCategory.LITERATI -> "文人"
 }
