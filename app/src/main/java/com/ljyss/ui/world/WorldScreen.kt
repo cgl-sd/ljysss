@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -224,7 +225,7 @@ private fun AtlasCaption() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(54.dp),
         contentAlignment = Alignment.Center,
     ) {
         Image(
@@ -234,11 +235,15 @@ private fun AtlasCaption() {
             contentScale = ContentScale.Fit,
         )
         Text(
-            "明代两京一十三省舆图",
+            text = "明代两京一十三省舆图",
+            modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
             color = Ink,
             fontFamily = FontFamily.Serif,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
         )
     }
 }
