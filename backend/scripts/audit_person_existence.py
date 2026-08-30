@@ -50,6 +50,10 @@ OTHER_DYNASTY = re.compile(
     r"五代|辽朝|金朝|南宋|北宋|宋代|宋朝|元代|元朝|三国|清朝|清代|民国)"
     r"[^\n，。]{0,14}?(?:将领|名将|名臣|大臣|皇帝|政治家|学者|官员|人物|宗室|宰相|进士|诗人|外戚|画家|书法家)"
 )
+DISAMBIGUATION_HEAD = re.compile(
+    r"(?:可指|可以指|可能是指|下列.*?名字为|下列.*?人物|数个名为|可指下列人物|"
+    r"下列公主有封号)"
+)
 CALENDAR_LABEL = re.compile(r"^[元一二三四五六七八九十百千〇○零]+年$")
 GENERIC_TITLES = {"明代官员", "明代人物", "明朝人物", "宗室", "后妃", "宦官", "文人", "功臣"}
 
@@ -60,6 +64,7 @@ WIKIPEDIA_IDENTITY_TITLES = {
     "jishufei": {"孝穆纪太后"},
     "qishijiao": {"亓诗教", "诗教"},
     "mahuanghou": {"孝慈高皇后 (明朝)"},
+    "nankanggongzhu": {"朱玉华"},
     "zhuyoubin": {"朱祐檳"},
     "zhuyouhui": {"朱祐楎"},
 }
@@ -115,6 +120,14 @@ def has_other_dynasty_signal(text: str) -> bool:
     return bool(OTHER_DYNASTY.search(simplify(text)))
 
 
+def is_disambiguation_page(text: str) -> bool:
+    """消歧页罗列多个同名者，不是可供人物库使用的单一人物介绍。"""
+
+    # 标记必须出现在导语：正文中“无赃可指”之类普通叙述不能被误判为消歧页。
+    head = "\n".join(line.strip() for line in simplify(text).splitlines() if line.strip())[:240]
+    return bool(DISAMBIGUATION_HEAD.search(head))
+
+
 def wiki_identity_evidence(person: dict, text: str, wiki_title: str = "") -> tuple[bool, bool, bool]:
     """返回（姓名或称号匹配、明代信号、他朝直接证伪）。"""
 
@@ -162,6 +175,8 @@ def classify(
     name = simplify(person.get("name", ""))
     if is_calendar_label(name):
         return "rejected", "姓名是纪年词，不是人物实体"
+    if is_disambiguation_page(wiki_text):
+        return "rejected", "维基正文是消歧页，未指向单一人物介绍"
 
     identity, ming, other = wiki_identity_evidence(person, wiki_text, wiki_title)
     if other:

@@ -4,7 +4,7 @@ internal data class LifeBlock(val isHeader: Boolean, val isClassicalMarker: Bool
 
 internal fun parseLifeBlocks(content: String): List<LifeBlock> {
     val blocks = mutableListOf<LifeBlock>()
-    for ((index, raw) in content.split("\n").withIndex()) {
+    for (raw in content.split("\n")) {
         val line = raw.trim()
         when {
             line.isEmpty() -> continue
@@ -14,7 +14,11 @@ internal fun parseLifeBlocks(content: String): List<LifeBlock> {
             line.length <= 18 && !line.endsWith("。") && !line.endsWith("！") && !line.endsWith("？") &&
                 !line.endsWith("；") && !line.contains("：") && !line.endsWith("」") ->
                 blocks.add(LifeBlock(true, false, line))
-            else -> blocks.add(LifeBlock(false, false, line))
+            // 同一规则适用于所有人物：正文按句读拆成便于手机阅读的短段；不额外
+            // 制造与外层“生平”相近的标题。
+            else -> readableParagraphs(line).forEach { paragraph ->
+                blocks.add(LifeBlock(false, false, paragraph))
+            }
         }
     }
     return blocks

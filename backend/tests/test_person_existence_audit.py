@@ -93,6 +93,19 @@ class PersonExistenceAuditTest(unittest.TestCase):
         )
         self.assertEqual("confirmed", status)
 
+    def test_disambiguation_page_is_rejected_even_when_it_lists_a_ming_person(self):
+        status, reason = AUDIT.classify(
+            {"name": "张温", "title": "明朝将领"},
+            "历史上有数个名为张温的人：\n张温（明）：明朝初期军事将领。\n张温（东汉）：东汉人物。",
+            [],
+            [],
+            set(),
+            in_roster=False,
+            wiki_title="张温",
+        )
+        self.assertEqual("rejected", status)
+        self.assertIn("消歧页", reason)
+
 
 if __name__ == "__main__":
     unittest.main()

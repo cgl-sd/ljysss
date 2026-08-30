@@ -2,7 +2,7 @@
 """将已核对身份的明人改指到正确的中文维基百科条目。
 
 同名页曾把《明史》中的明人接到汉、唐、清等同名者，或接到王爵消歧义页。本脚本
-只处理下方逐条比对过姓名、字、官历或家世的十个目标；它会更新维基正文、出处链接和
+只处理下方逐条比对过姓名、字、官历或家世的目标；它会更新维基正文、出处链接和
 「生平」首段，不改变人物的其他栏目。不能从离线维基包取到目标页时立即退出，不写入。
 
     backend/.venv/bin/python backend/scripts/repair_person_wikipedia_sources.py --dry-run
@@ -42,6 +42,18 @@ TARGETS = {
     "xuzhonghang": "徐中行 (嘉靖進士)",
     "lizhen": "李楨 (隆慶進士)",
     "xuwenhua": "徐文华 (正德进士)",
+    # 消歧义页不能作为人物正文；以下目标均由原有卷次、称号或家世与具体条目交叉核对。
+    "chenheng": "陈亨 (明朝将领)",
+    "anguo": "安国 (明朝将领)",
+    "jiangqin": "蒋钦 (明朝)",
+    "luolun": "罗伦 (明朝)",
+    "zhangwen": "张温 (明朝)",
+    "huangbin": "黄彬 (明朝)",
+    "liucai": "刘才 (广恩伯)",
+    "zhangmingfeng": "张鸣凤 (清平)",
+    "nankanggongzhu": "朱玉华",
+    "yongangongzhu": "永安公主 (明朝)",
+    "wangjun": "汪俊 (明朝)",
 }
 
 t2s = OpenCC("t2s")

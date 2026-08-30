@@ -30,7 +30,7 @@ class ContentServiceTest(unittest.TestCase):
         schema = person_profile_schema()
         categories = schema["categories"]
         self.assertEqual(["帝王", "内廷", "封爵", "朝臣", "将帅", "文苑"], [item["label"] for item in categories])
-        self.assertEqual(2165, sum(item["person_count"] for item in categories))
+        self.assertEqual(len(bootstrap_content()["people"]), sum(item["person_count"] for item in categories))
         self.assertEqual(
             ["life", "family", "relations", "events"],
             [item["section_key"] for item in schema["sections"]],

@@ -37,6 +37,16 @@ class LifeTextTest {
     }
 
     @Test
+    fun `生平长正文按统一规则拆段而不新增栏目同名标题`() {
+        val text = (1..9).joinToString("") { "第${it}句叙述人物在明代仕途中的一段经历，并包含足够长度以触发移动端分段。" }
+        val blocks = parseLifeBlocks(text)
+        assertEquals(text, blocks.joinToString("") { it.text })
+        assertTrue(blocks.size > 1)
+        assertTrue(blocks.none { it.isHeader })
+        assertTrue(blocks.none { it.text == "生平经历" })
+    }
+
+    @Test
     fun `短块原样保留为一行一段`() {
         assertEquals(listOf("第一行", "第二行"), readableParagraphs("第一行\n第二行"))
     }
