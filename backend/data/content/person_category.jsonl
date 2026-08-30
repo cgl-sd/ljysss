@@ -1,0 +1,6 @@
+{"description": "皇帝、南明监国及在位君主。", "id": "emperor", "label": "帝王", "position": 0}
+{"description": "后妃与宦官。", "id": "inner-court", "label": "内廷", "position": 1}
+{"description": "藩王、宗室与功勋贵族。", "id": "titled-nobility", "label": "封爵", "position": 2}
+{"description": "参与中枢或地方治理的文官。", "id": "official", "label": "朝臣", "position": 3}
+{"description": "统兵将领及其他军事人物。", "id": "general", "label": "将帅", "position": 4}
+{"description": "文人、学者、艺术家与医家等文化人物。", "id": "literary", "label": "文苑", "position": 5}

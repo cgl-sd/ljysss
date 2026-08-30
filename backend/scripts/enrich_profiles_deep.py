@@ -223,7 +223,7 @@ def run_family_and_relations(people, curated_family, source_id, existing_pairs, 
                     db.execute(
                         """
                         INSERT INTO person_section(person_id, section_key, title, position, content)
-                        VALUES (?, 'family', '家族与子嗣', 1, ?)
+                        VALUES (?, 'family', '家族', 1, ?)
                         ON CONFLICT(person_id, section_key) DO UPDATE SET content = excluded.content
                         """,
                         (person_id, content),

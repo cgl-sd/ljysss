@@ -240,7 +240,7 @@ def main() -> int:
                 )
             else:
                 db.execute(
-                    "INSERT INTO person_section(person_id, section_key, title, position, content) VALUES (?, 'family', '家族与子嗣', 1, ?)",
+                    "INSERT INTO person_section(person_id, section_key, title, position, content) VALUES (?, 'family', '家族', 1, ?)",
                     (person_id, content),
                 )
             db.execute("UPDATE person SET family_summary = ? WHERE id = ?", (content, person_id))

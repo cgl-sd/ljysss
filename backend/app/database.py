@@ -18,9 +18,11 @@ CONTENT_DIRECTORY = DATA_DIRECTORY / "content"
 CONTENT_TABLES = [
     "source",
     "reign",
+    "person_category",
     "person",
     "event",
     "event_section",
+    "person_section_definition",
     "person_section",
     "content_reference",
     "person_research",
@@ -40,6 +42,8 @@ CONTENT_TABLES = [
 
 # 行序决定文本的 diff 稳定性：按主键或业务键排序，不依赖 SQLite 的物理顺序。
 CONTENT_ORDER = {
+    "person_category": ("position",),
+    "person_section_definition": ("position",),
     "person_relation": ("from_person_id", "to_person_id", "relation_type", "reign"),
     "person_section": ("person_id", "position"),
     "event_section": ("event_id", "position"),
@@ -52,6 +56,24 @@ CONTENT_ORDER = {
     "institution_promotion": ("institution_id", "position"),
     "institution_reform": ("institution_id", "position"),
 }
+
+# 人物分类和详情栏目都是内容模型的一部分，而不是前端散落的字面量。person 表仍保留
+# 中文 category 列，便于既有 Android 客户端直接筛选；写入触发器会要求其对应这里的标签。
+PERSON_CATEGORIES = (
+    ("emperor", "帝王", 0, "皇帝、南明监国及在位君主。"),
+    ("inner-court", "内廷", 1, "后妃与宦官。"),
+    ("titled-nobility", "封爵", 2, "藩王、宗室与功勋贵族。"),
+    ("official", "朝臣", 3, "参与中枢或地方治理的文官。"),
+    ("general", "将帅", 4, "统兵将领及其他军事人物。"),
+    ("literary", "文苑", 5, "文人、学者、艺术家与医家等文化人物。"),
+)
+
+PERSON_SECTION_DEFINITIONS = (
+    ("life", "生平", 0, "按时间叙述人物经历；每段正文附出处。"),
+    ("family", "家族", 1, "亲属、婚姻与子嗣，以及相关成员结局。"),
+    ("relations", "人物关系", 2, "本人直接相关的非亲子关系；帝王不展示与文臣、将帅的关系。"),
+    ("events", "相关事件", 3, "人物参与事件，按年份升序编排。"),
+)
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -70,6 +92,13 @@ CREATE TABLE IF NOT EXISTS reign (
     start_year INTEGER NOT NULL,
     end_year INTEGER NOT NULL,
     summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS person_category (
+    id TEXT PRIMARY KEY,
+    label TEXT NOT NULL UNIQUE,
+    position INTEGER NOT NULL UNIQUE,
+    description TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS person (
@@ -105,6 +134,13 @@ CREATE TABLE IF NOT EXISTS event (
 CREATE INDEX IF NOT EXISTS event_by_reign_year ON event(reign_id, year);
 CREATE INDEX IF NOT EXISTS person_by_category ON person(category);
 
+CREATE TABLE IF NOT EXISTS person_section_definition (
+    section_key TEXT PRIMARY KEY CHECK(section_key IN ('life', 'family', 'relations', 'events')),
+    title TEXT NOT NULL UNIQUE,
+    position INTEGER NOT NULL UNIQUE CHECK(position BETWEEN 0 AND 3),
+    description TEXT NOT NULL
+);
+
 -- 对外页面只显示统一栏目；出处在本表和 content_reference 中保存，供编辑校核。
 CREATE TABLE IF NOT EXISTS person_section (
     person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
@@ -115,6 +151,41 @@ CREATE TABLE IF NOT EXISTS person_section (
     content TEXT NOT NULL,
     PRIMARY KEY(person_id, section_key)
 );
+
+-- SQLite 不能为既有 person 表追加外键，故以触发器同时约束新库与旧库升级后的写入。
+CREATE TRIGGER IF NOT EXISTS person_category_must_be_registered
+BEFORE INSERT ON person
+WHEN NOT EXISTS (SELECT 1 FROM person_category WHERE label = NEW.category)
+BEGIN
+    SELECT RAISE(ABORT, 'person.category must be a registered person_category label');
+END;
+
+CREATE TRIGGER IF NOT EXISTS person_category_update_must_be_registered
+BEFORE UPDATE OF category ON person
+WHEN NOT EXISTS (SELECT 1 FROM person_category WHERE label = NEW.category)
+BEGIN
+    SELECT RAISE(ABORT, 'person.category must be a registered person_category label');
+END;
+
+CREATE TRIGGER IF NOT EXISTS person_section_must_match_definition
+BEFORE INSERT ON person_section
+WHEN NOT EXISTS (
+    SELECT 1 FROM person_section_definition
+    WHERE section_key = NEW.section_key AND title = NEW.title AND position = NEW.position
+)
+BEGIN
+    SELECT RAISE(ABORT, 'person_section must use a registered section definition');
+END;
+
+CREATE TRIGGER IF NOT EXISTS person_section_update_must_match_definition
+BEFORE UPDATE OF section_key, title, position ON person_section
+WHEN NOT EXISTS (
+    SELECT 1 FROM person_section_definition
+    WHERE section_key = NEW.section_key AND title = NEW.title AND position = NEW.position
+)
+BEGIN
+    SELECT RAISE(ABORT, 'person_section must use a registered section definition');
+END;
 
 CREATE TABLE IF NOT EXISTS event_section (
     event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
@@ -294,6 +365,7 @@ def initialize_database() -> None:
     with connect() as connection:
         connection.executescript(SCHEMA)
         _migrate_person_columns(connection)
+        _ensure_person_profile_taxonomy(connection)
         if connection.execute("PRAGMA user_version").fetchone()[0] == _catalog_digest():
             return
         _synchronize_catalog(connection)
@@ -466,6 +538,33 @@ def _migrate_person_columns(connection: sqlite3.Connection) -> None:
         connection.execute("ALTER TABLE person ADD COLUMN family_summary TEXT NOT NULL DEFAULT ''")
     if "verification_status" not in columns:
         connection.execute("ALTER TABLE person ADD COLUMN verification_status TEXT NOT NULL DEFAULT '未校验'")
+
+
+def _ensure_person_profile_taxonomy(connection: sqlite3.Connection) -> None:
+    """Seed the six categories and four visible profile sections for upgraded databases."""
+
+    connection.executemany(
+        """
+        INSERT INTO person_category(id, label, position, description)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            label = excluded.label,
+            position = excluded.position,
+            description = excluded.description
+        """,
+        PERSON_CATEGORIES,
+    )
+    connection.executemany(
+        """
+        INSERT INTO person_section_definition(section_key, title, position, description)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(section_key) DO UPDATE SET
+            title = excluded.title,
+            position = excluded.position,
+            description = excluded.description
+        """,
+        PERSON_SECTION_DEFINITIONS,
+    )
 
 
 def _apply_asset_metadata(connection: sqlite3.Connection) -> None:

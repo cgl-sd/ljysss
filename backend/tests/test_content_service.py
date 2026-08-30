@@ -24,6 +24,56 @@ class ContentServiceTest(unittest.TestCase):
         person = next(item for item in payload["people"] if item["id"] == "zhangjuzheng")
         self.assertIn("sections", person)
 
+    def test_person_profile_schema_registers_the_six_categories_and_four_sections(self):
+        from app.main import person_profile_schema
+
+        schema = person_profile_schema()
+        categories = schema["categories"]
+        self.assertEqual(["帝王", "内廷", "封爵", "朝臣", "将帅", "文苑"], [item["label"] for item in categories])
+        self.assertEqual(2165, sum(item["person_count"] for item in categories))
+        self.assertEqual(
+            ["life", "family", "relations", "events"],
+            [item["section_key"] for item in schema["sections"]],
+        )
+
+    def test_person_profile_rows_follow_registered_taxonomy(self):
+        from app.database import connect
+
+        with connect() as database:
+            unknown_category = database.execute(
+                """
+                SELECT COUNT(*) FROM person AS p
+                LEFT JOIN person_category AS c ON c.label = p.category
+                WHERE c.id IS NULL
+                """
+            ).fetchone()[0]
+            invalid_section = database.execute(
+                """
+                SELECT COUNT(*) FROM person_section AS s
+                LEFT JOIN person_section_definition AS d
+                    ON d.section_key = s.section_key AND d.title = s.title AND d.position = s.position
+                WHERE d.section_key IS NULL
+                """
+            ).fetchone()[0]
+        self.assertEqual(0, unknown_category)
+        self.assertEqual(0, invalid_section)
+
+    def test_database_rejects_an_unregistered_category_or_section_layout(self):
+        import sqlite3
+
+        from app.database import connect
+
+        with connect() as database:
+            with self.assertRaises(sqlite3.IntegrityError):
+                database.execute("UPDATE person SET category = '其他' WHERE id = 'zhangjuzheng'")
+            with self.assertRaises(sqlite3.IntegrityError):
+                database.execute(
+                    """
+                    UPDATE person_section SET title = '基本资料'
+                    WHERE person_id = 'zhangjuzheng' AND section_key = 'life'
+                    """
+                )
+
     def test_rebuild_schema_exposes_uniform_section_endpoints(self):
         from app.main import get_event_sections
 

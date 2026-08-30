@@ -25,6 +25,8 @@ PostgreSQL + PostGIS + 对象存储
 | `GET /v1/reigns` | 年号、起止年与摘要 |
 | `GET /v1/events?reign=hongwu&year=1368` | 按年号和年份查询事件 |
 | `GET /v1/people?category=emperor&q=` | 人物分类与检索 |
+| `GET /v1/person-categories` | 六类人物目录、说明与各类人数 |
+| `GET /v1/person-profile-schema` | 人物详情允许使用的分类与四个正文栏目 |
 | `GET /v1/people/{id}` | 生平、任职、参与事件、关系与史料 |
 | `GET /v1/institutions` | 中央、监察、军事、内廷与地方机构档案 |
 | `GET /v1/specials` | 天下页“典章”科普：宫殿、器物与制度名物 |
@@ -40,9 +42,15 @@ PostgreSQL + PostGIS + 对象存储
 - 同一人物、地点与事件使用稳定 ID，Android 缓存和后端更新可增量同步。
 - 前端不保存完整历史资料；只缓存最近阅读、收藏和离线专题包。
 
+## 人物介绍数据模型
+
+人物主档 `person` 使用受控的 `category` 标签；`person_category` 固定登记六类：帝王、内廷、封爵、朝臣、将帅、文苑。数据库触发器拒绝写入未登记的分类。
+
+人物正文存于 `person_section`，由 `person_section_definition` 约束为四栏及其排序：生平（0）、家族（1）、人物关系（2）、相关事件（3）。无实料的栏不创建记录，因此客户端直接隐藏；每段的出处仍由 `content_reference` 登记。`GET /v1/bootstrap` 同时返回分类与栏目目录，供客户端和后续编辑工具使用。
+
 ## 当前 App 的接入方式
 
-`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构、典章和来源（gzip 压缩传输）。当前目录有 17 年号、76 个事件、人物 2200 位（六分类：朝臣 1260、将帅 336、文苑 196、封爵 195、内廷 190、帝王 23）、关系 91、机构 12、典章 137。
+`MainActivity` 只调用 `MingRepository`，不在页面中保存人物、事件或机构资料。调试时，Android 通过 `adb reverse tcp:8000 tcp:8000` 访问 `GET /v1/bootstrap`；服务端以 SQLite 关系表返回年号、事件、人物、关系、机构、典章和来源（gzip 压缩传输）。当前目录有 17 年号、76 个事件、人物 2165 位（六分类：朝臣 1205、将帅 371、封爵 213、文苑 184、内廷 170、帝王 22）、关系 99、机构 12、典章 137。
 
 界面代码按功能分包在 `com.ljyss.ui.*`，纪年换算、农历月序、生平文本与人物年序等无 Android 依赖的规则在 `com.ljyss.domain`，由 `app/src/test` 的 JVM 用例覆盖。
 

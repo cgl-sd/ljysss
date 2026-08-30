@@ -80,6 +80,8 @@ def bootstrap_content() -> dict:
         "reigns": list_reigns(),
         "events": list_events(reign=None, year=None, q=None),
         "people": people,
+        "person_categories": list_person_categories(),
+        "person_section_definitions": list_person_section_definitions(),
         "relationships": list_relationships(),
         "institutions": list_institutions(),
         "specials": list_specials(),
@@ -162,6 +164,41 @@ def list_people(
     )
 
 
+@app.get("/v1/person-categories")
+def list_person_categories() -> list[dict]:
+    """Return the registered six-way taxonomy together with its current person counts."""
+
+    return records(
+        """
+        SELECT c.id, c.label, c.position, c.description, COUNT(p.id) AS person_count
+        FROM person_category AS c
+        LEFT JOIN person AS p ON p.category = c.label
+        GROUP BY c.id, c.label, c.position, c.description
+        ORDER BY c.position
+        """
+    )
+
+
+@app.get("/v1/person-profile-schema")
+def person_profile_schema() -> dict:
+    """Expose the classification registry and the only four allowed detail sections."""
+
+    return {
+        "categories": list_person_categories(),
+        "sections": list_person_section_definitions(),
+    }
+
+
+def list_person_section_definitions() -> list[dict]:
+    return records(
+        """
+        SELECT section_key, title, position, description
+        FROM person_section_definition
+        ORDER BY position
+        """
+    )
+
+
 @app.get("/v1/people/{person_id}")
 def get_person(person_id: str) -> dict:
     person = record(
@@ -178,7 +215,7 @@ def get_person(person_id: str) -> dict:
 
     person["sections"] = records(
         """
-        SELECT section_key, title, content
+        SELECT section_key, title, position, content
         FROM person_section
         WHERE person_id = ?
         ORDER BY position

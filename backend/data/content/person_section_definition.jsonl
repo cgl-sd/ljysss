@@ -1,0 +1,4 @@
+{"description": "按时间叙述人物经历；每段正文附出处。", "position": 0, "section_key": "life", "title": "生平"}
+{"description": "亲属、婚姻与子嗣，以及相关成员结局。", "position": 1, "section_key": "family", "title": "家族"}
+{"description": "本人直接相关的非亲子关系；帝王不展示与文臣、将帅的关系。", "position": 2, "section_key": "relations", "title": "人物关系"}
+{"description": "人物参与事件，按年份升序编排。", "position": 3, "section_key": "events", "title": "相关事件"}
