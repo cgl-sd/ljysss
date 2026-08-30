@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -342,7 +341,7 @@ private fun PersonChronologyRail(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Surface(
-                            modifier = Modifier.size(6.dp),
+                            modifier = Modifier.size(if (selected) 8.dp else 6.dp),
                             shape = RoundedCornerShape(50),
                             color = if (selected) Vermilion else Brass,
                         ) {}
@@ -366,31 +365,30 @@ private fun PersonChronologyRail(
 
 @Composable
 private fun CategoryRail(selectedCategory: PersonCategory, onSelected: (PersonCategory) -> Unit) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(PersonCategory.entries, key = { it.name }) { category ->
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        PersonCategory.entries.forEach { category ->
             val selected = category == selectedCategory
             Surface(
                 modifier = Modifier
-                    .widthIn(min = 88.dp)
-                    .clip(CutCornerShape(8.dp))
+                    .weight(1f)
+                    .clip(CutCornerShape(6.dp))
                     .clickable { onSelected(category) },
                 color = if (selected) Vermilion else PaperLight,
-                shape = CutCornerShape(8.dp),
+                shape = CutCornerShape(6.dp),
                 border = BorderStroke(1.dp, if (selected) Vermilion else LineGold),
             ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = category.label,
-                        color = if (selected) PaperLight else Ink,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
+                Text(
+                    text = category.label,
+                    modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp),
+                    color = if (selected) PaperLight else Ink,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                )
             }
         }
     }
