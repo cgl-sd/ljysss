@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -324,16 +323,7 @@ private fun PersonChronologyRail(
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.8f)),
     ) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("人物年表", color = Ink, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    selectedReign?.let { "已筛选：$it（再点取消）" } ?: "点击年号筛选人物",
-                    color = Vermilion,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 13.sp,
-                )
-            }
+            Text("人物年表", color = Ink, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
