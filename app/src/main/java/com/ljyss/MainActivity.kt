@@ -128,8 +128,8 @@ private val appSections = listOf(
         activeColor = Vermilion,
         // 头像图案几乎占满原始画布；缩小画框后才与其余木刻图标的可见笔画等大，
         // 同时给下方文字留下稳定间距。
-        iconSize = 19.dp,
-        selectedIconSize = 21.dp,
+        iconSize = 17.dp,
+        selectedIconSize = 18.dp,
     ),
 )
 
