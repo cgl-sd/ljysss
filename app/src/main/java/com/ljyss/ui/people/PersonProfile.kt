@@ -75,7 +75,15 @@ internal fun PersonProfile(
         ) {
             PersonPortrait(person)
             Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-            Text("${person.title}｜${person.reign}｜${person.years}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, textAlign = TextAlign.Center)
+            Text(
+                listOf(person.title, person.reign, person.years)
+                    .filter { it.isNotBlank() }
+                    .joinToString("｜"),
+                color = Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center,
+            )
             sections.forEach { section ->
                 val body = section.content
                 if (body.isBlank() || body.contains("史料未见详载")) return@forEach

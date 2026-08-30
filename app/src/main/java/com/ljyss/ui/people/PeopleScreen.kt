@@ -82,6 +82,7 @@ internal fun PeopleScreen(
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
+    var expandedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var relationView by rememberSaveable { mutableStateOf(RelationView.PERSON) }
     val reigns = remember(repository) { repository.reigns() }
@@ -185,15 +186,29 @@ internal fun PeopleScreen(
             PeopleTab.DYNASTY -> {
                 val selectedReign = reigns.firstOrNull { it.title == selectedReignTitle } ?: reigns.first()
                 item {
-                    ReignRail(reigns, selectedReign.title) { selectedReignTitle = it }
+                    ReignRail(reigns, selectedReign.title) {
+                        selectedReignTitle = it
+                        expandedArchiveEventId = null
+                    }
                 }
                 item {
                     DynastyArchive(
                         reign = selectedReign,
                         people = allPeople.filter { it.reign.contains(selectedReign.title) },
+                        expandedEventId = expandedArchiveEventId,
                         onPersonSelected = { person ->
                             selectedPersonName = person.name
                             personStack = emptyList()
+                        },
+                        onOpenPerson = { name ->
+                            if (allPeople.any { it.name == name }) {
+                                selectedPersonName = name
+                                personStack = emptyList()
+                            }
+                        },
+                        onEventSelected = { event ->
+                            val eventId = event.id.ifBlank { "${selectedReign.title}:${event.title}" }
+                            expandedArchiveEventId = if (expandedArchiveEventId == eventId) null else eventId
                         },
                     )
                 }

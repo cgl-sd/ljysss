@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,9 +30,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.Reign
+import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -40,7 +43,7 @@ import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
-private val ArchiveEventCardHeight = 94.dp
+private val ArchiveEventCardHeight = 108.dp
 private val ArchivePersonCardWidth = 100.dp
 private val ArchivePersonCardHeight = 54.dp
 
@@ -48,7 +51,10 @@ private val ArchivePersonCardHeight = 54.dp
 internal fun DynastyArchive(
     reign: Reign,
     people: List<HistoricalPerson>,
+    expandedEventId: String?,
     onPersonSelected: (HistoricalPerson) -> Unit,
+    onOpenPerson: (String) -> Unit,
+    onEventSelected: (HistoricalEvent) -> Unit,
 ) {
     // 本朝人物按六分类全量归档：朝臣、将帅之外，宗藩、内廷、文苑与帝王同列，避免遗漏。
     val groups = PersonCategory.entries.map { category -> category to people.filter { it.category == category } }
@@ -80,45 +86,99 @@ internal fun DynastyArchive(
                 Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
             } else {
                 reign.events.sortedBy { it.year ?: Int.MAX_VALUE }.forEach { event ->
-                    Surface(
+                    val eventId = event.id.ifBlank { "${reign.title}:${event.title}" }
+                    ArchiveEventCard(
+                        event = event,
+                        expanded = expandedEventId == eventId,
+                        onClick = { onEventSelected(event) },
+                        onOpenPerson = onOpenPerson,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 收起时三项信息同高展示；展开后保留完整叙述，避免用截断替代事件详情。 */
+@Composable
+private fun ArchiveEventCard(
+    event: HistoricalEvent,
+    expanded: Boolean,
+    onClick: () -> Unit,
+    onOpenPerson: (String) -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (expanded) Modifier else Modifier.height(ArchiveEventCardHeight))
+            .clip(CutCornerShape(6.dp))
+            .clickable(onClick = onClick),
+        color = XuanPaper.copy(alpha = 0.68f),
+        shape = CutCornerShape(6.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.75f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                "${event.year ?: ""} ${event.month} · ${event.title.ifBlank { "事件待补题" }}",
+                color = Ink,
+                fontFamily = FontFamily.Serif,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                "简介：${event.description.ifBlank { "事件简介正在整理。" }}",
+                color = InkSoft,
+                fontFamily = FontFamily.Serif,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                maxLines = if (expanded) Int.MAX_VALUE else 2,
+                overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+            )
+            ArchiveParticipants(event.participants, onOpenPerson)
+            if (expanded) {
+                HorizontalDivider(modifier = Modifier.padding(top = 4.dp), color = LineGold.copy(alpha = 0.75f))
+                Text(
+                    event.detail.takeIf { it.isNotBlank() && it != event.description }
+                        ?: "详细叙述正在依据史料继续整理。",
+                    color = Ink,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                    lineHeight = 23.sp,
+                )
+                Text("出处：${event.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchiveParticipants(participants: List<String>, onOpenPerson: (String) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("相关人物：", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+        if (participants.isEmpty()) {
+            Text("待补充", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+        } else {
+            LazyRow(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(participants, key = { it }) { name ->
+                    Text(
+                        name,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(ArchiveEventCardHeight),
-                        color = XuanPaper.copy(alpha = 0.68f),
-                        shape = CutCornerShape(6.dp),
-                        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.75f)),
-                    ) {
-                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(
-                                "${event.year ?: ""} ${event.month} · ${event.title}",
-                                color = Ink,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                event.description,
-                                color = InkSoft,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            if (event.participants.isNotEmpty()) {
-                                Text(
-                                    "相关人物：${event.participants.joinToString("、")}",
-                                    color = Vermilion,
-                                    fontFamily = FontFamily.Serif,
-                                    fontSize = 13.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-                    }
+                            .clip(CutCornerShape(4.dp))
+                            .clickable { onOpenPerson(name) }
+                            .padding(horizontal = 2.dp, vertical = 2.dp),
+                        color = Vermilion,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
         }
@@ -160,14 +220,16 @@ private fun ArchiveGroup(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            Text(
-                                archiveRoleLabel(person),
-                                color = InkSoft,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 11.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                            archiveRoleLabel(person).takeIf { it.isNotBlank() }?.let { role ->
+                                Text(
+                                    role,
+                                    color = InkSoft,
+                                    fontFamily = FontFamily.Serif,
+                                    fontSize = 11.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
                 }
@@ -179,7 +241,7 @@ private fun ArchiveGroup(
 /** 朝代档案只显示一个可辨认的职位或爵位，完整称谓仍保留在详情页。 */
 private fun archiveRoleLabel(person: HistoricalPerson): String {
     val title = person.title.trim()
-    if (title.isBlank()) return archiveFallbackRole(person.category)
+    if (title.isBlank()) return ""
     if (person.category == PersonCategory.EMPERORS) {
         return title.removePrefix("明").substringBefore('·').ifBlank { "皇帝" }
     }
@@ -203,14 +265,5 @@ private fun archiveRoleLabel(person: HistoricalPerson): String {
         ?.let { return it }
     val fallback = titleParts.firstOrNull()?.removePrefix("明·")?.removePrefix("明代").orEmpty()
     return fallback.takeUnless { it.isBlank() || it == person.name || it == "官员" }
-        ?: archiveFallbackRole(person.category)
-}
-
-private fun archiveFallbackRole(category: PersonCategory): String = when (category) {
-    PersonCategory.EMPERORS -> "皇帝"
-    PersonCategory.COURT -> "内廷"
-    PersonCategory.CLAN -> "宗室"
-    PersonCategory.MINISTERS -> "朝臣"
-    PersonCategory.GENERALS -> "将领"
-    PersonCategory.LITERATI -> "文人"
+        .orEmpty()
 }

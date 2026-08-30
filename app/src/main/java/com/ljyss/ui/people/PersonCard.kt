@@ -102,7 +102,9 @@ internal fun PersonCard(
                     )
                     HorizontalDivider(modifier = Modifier.width(26.dp), color = Brass)
                 }
-                Text(person.title, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                if (person.title.isNotBlank()) {
+                    Text(person.title, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                }
                 Text(person.years, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
                 if (expanded) {
                     HorizontalDivider(modifier = Modifier.padding(top = 5.dp), color = LineGold)
