@@ -79,7 +79,8 @@ internal fun PeopleScreen(
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.DYNASTY) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
-    var selectedPeopleReign by rememberSaveable { mutableStateOf<String?>(null) }
+    // 人物页进入后即明确显示洪武朝；年表始终有且只有一个选中朝代。
+    var selectedPeopleReign by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -112,11 +113,11 @@ internal fun PeopleScreen(
             .groupBy { it.fromName }
             .mapValues { entry -> entry.value.map { it.toName } }
     }
-    val people = remember(sortedPeople, selectedCategory, query) {
+    val people = remember(sortedPeople, selectedCategory, selectedPeopleReign, query) {
         val keyword = query.trim()
         sortedPeople.filter { person ->
             person.category == selectedCategory &&
-                (selectedPeopleReign?.let { person.reign.contains(it) } ?: true) &&
+                person.reign.contains(selectedPeopleReign) &&
                 (keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword))
         }
     }
@@ -270,8 +271,7 @@ internal fun PeopleScreen(
                         reigns = reigns,
                         selectedReign = selectedPeopleReign,
                         onSelected = { reign ->
-                            // 再点已选年号即回到全体，横向拖动不影响点击命中。
-                            selectedPeopleReign = if (selectedPeopleReign == reign) null else reign
+                            selectedPeopleReign = reign
                         },
                     )
                 }
@@ -313,7 +313,7 @@ internal fun PeopleScreen(
 @Composable
 private fun PersonChronologyRail(
     reigns: List<Reign>,
-    selectedReign: String?,
+    selectedReign: String,
     onSelected: (String) -> Unit,
 ) {
     Surface(
@@ -337,14 +337,14 @@ private fun PersonChronologyRail(
                         modifier = Modifier
                             .clip(CutCornerShape(4.dp))
                             .clickable { onSelected(reign.title) }
-                            .padding(horizontal = 2.dp, vertical = 3.dp),
+                            .padding(horizontal = 5.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Surface(
-                            modifier = Modifier.size(if (reign.title == "洪武") 8.dp else 6.dp),
+                            modifier = Modifier.size(6.dp),
                             shape = RoundedCornerShape(50),
-                            color = if (selected || reign.title == "洪武") Vermilion else Brass,
+                            color = if (selected) Vermilion else Brass,
                         ) {}
                         Column {
                             Text(
