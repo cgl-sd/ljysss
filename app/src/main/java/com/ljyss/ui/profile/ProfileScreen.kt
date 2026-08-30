@@ -52,10 +52,10 @@ internal fun ProfileScreen(contentPadding: PaddingValues) {
         }
         item {
             ProfileCard(
-                title = "离线资料包",
-                description = "当前为首批演示资料。正式版本支持按专题下载，并在本机加密缓存。",
+                title = "本地资料库",
+                description = "人物、事件与分栏资料已随应用安装；无网络时也可完整阅读。",
                 icon = Icons.Outlined.Download,
-                action = "资料管理",
+                action = "查看资料",
             )
         }
         item {
