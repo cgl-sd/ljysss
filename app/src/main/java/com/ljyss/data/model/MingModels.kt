@@ -63,7 +63,6 @@ data class PersonSection(
 )
 
 enum class PeopleTab(val label: String) {
-    DYNASTY("朝代档案"),
     PEOPLE("人物"),
     RELATIONSHIPS("关系"),
 }

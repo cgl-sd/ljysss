@@ -38,9 +38,9 @@ import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.Vermilion
 
 @Composable
-internal fun ProfileScreen(contentPadding: PaddingValues) {
+internal fun ProfileScreen(contentPadding: PaddingValues, onSearch: () -> Unit = {}) {
     MingList(contentPadding) {
-        item { MingMasthead() }
+        item { MingMasthead(onSearch) }
         item { OrnamentalTitle("我的") }
         item {
             ProfileCard(

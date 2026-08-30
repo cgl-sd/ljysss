@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +30,7 @@ import com.ljyss.ui.theme.Vermilion
 
 /** 书眉：鼎形图标、书名与「集录」朱印。 */
 @Composable
-internal fun MingMasthead() {
+internal fun MingMasthead(onSearch: (() -> Unit)? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -48,6 +52,16 @@ internal fun MingMasthead() {
         )
         Spacer(Modifier.width(9.dp))
         Seal("集录")
+        if (onSearch != null) {
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onSearch, modifier = Modifier.size(38.dp)) {
+                Icon(
+                    Icons.Outlined.Search,
+                    contentDescription = "全局搜索",
+                    tint = Vermilion,
+                )
+            }
+        }
     }
 }
 

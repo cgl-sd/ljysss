@@ -19,11 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -74,15 +70,13 @@ internal fun PeopleScreen(
     contentPadding: PaddingValues,
     focusPerson: String? = null,
     onFocusConsumed: () -> Unit = {},
+    onSearch: () -> Unit = {},
 ) {
-    var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.DYNASTY) }
+    var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.PEOPLE) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
-    var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     // 默认筛选洪武；再次点击当前朝代即可取消筛选、显示当前分类的全部人物。
     var selectedPeopleReign by rememberSaveable { mutableStateOf<String?>("洪武") }
-    var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var returnListOffset by rememberSaveable { mutableStateOf(0) }
@@ -92,7 +86,6 @@ internal fun PeopleScreen(
     val allPeople = remember(repository) { repository.allPeople() }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
-    val selectedArchiveEvent = allEvents.firstOrNull { it.id == selectedArchiveEventId }
     val peopleListState = rememberLazyListState()
     var profileDetail by remember(selectedPerson?.id) { mutableStateOf(selectedPerson) }
     LaunchedEffect(selectedPerson?.id) {
@@ -108,12 +101,10 @@ internal fun PeopleScreen(
             .groupBy { it.fromName }
             .mapValues { entry -> entry.value.map { it.toName } }
     }
-    val people = remember(allPeople, selectedCategory, selectedPeopleReign, query) {
-        val keyword = query.trim()
+    val people = remember(allPeople, selectedCategory, selectedPeopleReign) {
         val filtered = allPeople.filter { person ->
             person.category == selectedCategory &&
-                (selectedPeopleReign?.let { person.reign.contains(it) } ?: true) &&
-                (keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword))
+                (selectedPeopleReign?.let { person.reign.contains(it) } ?: true)
         }
         orderedPeopleForCards(filtered, selectedPeopleReign)
     }
@@ -121,12 +112,6 @@ internal fun PeopleScreen(
     fun returnFromProfile() {
         selectedPersonName = null
         personStack = emptyList()
-    }
-
-    fun openArchiveEvent(event: com.ljyss.data.model.HistoricalEvent) {
-        returnListIndex = peopleListState.firstVisibleItemIndex
-        returnListOffset = peopleListState.firstVisibleItemScrollOffset
-        selectedArchiveEventId = event.id
     }
 
     fun openProfileFromBrowse(name: String) {
@@ -169,7 +154,6 @@ internal fun PeopleScreen(
             allPeople.firstOrNull { it.name == focusPerson }?.let { person ->
                 selectedTab = PeopleTab.PEOPLE
                 selectedCategory = person.category
-                query = person.name
                 selectedPersonName = person.name
                 personStack = emptyList()
             }
@@ -178,8 +162,8 @@ internal fun PeopleScreen(
     }
 
     // 人物履历打开后，系统返回键与悬浮返回键保持同一行为，并保留进入详情前的页面状态。
-    BackHandler(enabled = selectedPersonName != null || selectedArchiveEventId != null) {
-        if (selectedPersonName != null) closeProfileStep() else selectedArchiveEventId = null
+    BackHandler(enabled = selectedPersonName != null) {
+        closeProfileStep()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -192,17 +176,8 @@ internal fun PeopleScreen(
                         onOpenPerson = ::openRelatedPerson,
                     )
                 }
-            } else if (selectedArchiveEvent != null) {
-                item {
-                    ArchiveEventProfile(
-                        event = selectedArchiveEvent,
-                        onOpenPerson = { name ->
-                            if (allPeople.any { it.name == name }) openProfileFromBrowse(name)
-                        },
-                    )
-                }
             } else {
-                item { MingMasthead() }
+                item { MingMasthead(onSearch) }
                 item { OrnamentalTitle("人物") }
                 item {
                     PeopleTabRail(
@@ -210,56 +185,16 @@ internal fun PeopleScreen(
                         onSelected = {
                             selectedTab = it
                             selectedPersonName = null
-                            selectedArchiveEventId = null
                             personStack = emptyList()
                         },
                     )
                 }
                 when (selectedTab) {
-            PeopleTab.DYNASTY -> {
-                val selectedReign = reigns.firstOrNull { it.title == selectedReignTitle } ?: reigns.first()
-                item {
-                    ReignRail(reigns, selectedReign.title) {
-                        selectedReignTitle = it
-                            selectedArchiveEventId = null
-                    }
-                }
-                item {
-                    DynastyArchive(
-                        reign = selectedReign,
-                        people = allPeople.filter { it.reign.contains(selectedReign.title) },
-                        onPersonSelected = { person ->
-                            openProfileFromBrowse(person.name)
-                        },
-                        onOpenPerson = { name ->
-                            if (allPeople.any { it.name == name }) {
-                                openProfileFromBrowse(name)
-                            }
-                        },
-                        onEventSelected = ::openArchiveEvent,
-                    )
-                }
-            }
             PeopleTab.PEOPLE -> {
                 item {
                     CategoryRail(
                         selectedCategory = selectedCategory,
                         onSelected = { selectedCategory = it },
-                    )
-                }
-                item {
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        shape = CutCornerShape(7.dp),
-                        placeholder = {
-                            Text("搜索姓名、官职或年号", color = Brass.copy(alpha = 0.72f), fontFamily = FontFamily.Serif, fontSize = 18.sp)
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Outlined.Search, contentDescription = null, tint = Brass)
-                        },
                     )
                 }
                 item {
@@ -272,7 +207,7 @@ internal fun PeopleScreen(
                     )
                 }
                 if (people.isEmpty()) {
-                    item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
+                    item { SourceNote("该分类在当前年号下暂无人物；再次点选当前年号可查看全部。") }
                 } else {
                     items(people, key = { it.name }) { person ->
                         PersonCard(

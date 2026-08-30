@@ -1,3 +1,7 @@
+{"institution_id": "astronomical-bureau", "label": "天文生", "position": 0}
+{"institution_id": "astronomical-bureau", "label": "博士", "position": 1}
+{"institution_id": "astronomical-bureau", "label": "监副", "position": 2}
+{"institution_id": "astronomical-bureau", "label": "监正", "position": 3}
 {"institution_id": "censorate", "label": "进士／举人", "position": 0}
 {"institution_id": "censorate", "label": "御史", "position": 1}
 {"institution_id": "censorate", "label": "按察使", "position": 2}
@@ -37,6 +41,19 @@
 {"institution_id": "grand-secretariat", "label": "侍读／侍讲", "position": 2}
 {"institution_id": "grand-secretariat", "label": "大学士", "position": 3}
 {"institution_id": "grand-secretariat", "label": "首辅", "position": 4}
+{"institution_id": "hanlin-academy", "label": "庶吉士", "position": 0}
+{"institution_id": "hanlin-academy", "label": "编修", "position": 1}
+{"institution_id": "hanlin-academy", "label": "侍读／侍讲", "position": 2}
+{"institution_id": "hanlin-academy", "label": "学士", "position": 3}
+{"institution_id": "imperial-academy", "label": "监生", "position": 0}
+{"institution_id": "imperial-academy", "label": "助教", "position": 1}
+{"institution_id": "imperial-academy", "label": "博士", "position": 2}
+{"institution_id": "imperial-academy", "label": "司业", "position": 3}
+{"institution_id": "imperial-academy", "label": "祭酒", "position": 4}
+{"institution_id": "imperial-medical-office", "label": "医士", "position": 0}
+{"institution_id": "imperial-medical-office", "label": "御医", "position": 1}
+{"institution_id": "imperial-medical-office", "label": "院判", "position": 2}
+{"institution_id": "imperial-medical-office", "label": "院使", "position": 3}
 {"institution_id": "jinyiwei", "label": "校尉", "position": 0}
 {"institution_id": "jinyiwei", "label": "力士", "position": 1}
 {"institution_id": "jinyiwei", "label": "小旗", "position": 2}

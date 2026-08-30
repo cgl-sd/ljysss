@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,7 @@ import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.components.Seal
 import com.ljyss.ui.components.SourceNote
+import com.ljyss.ui.search.SearchDestination
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
 import com.ljyss.ui.theme.Ink
@@ -66,18 +68,39 @@ import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
 @Composable
-internal fun WorldScreen(repository: MingRepository, contentPadding: PaddingValues) {
+internal fun WorldScreen(
+    repository: MingRepository,
+    contentPadding: PaddingValues,
+    searchDestination: SearchDestination? = null,
+    onSearchDestinationConsumed: () -> Unit = {},
+    onSearch: () -> Unit = {},
+) {
     var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
     var modernOverlayEnabled by rememberSaveable { mutableStateOf(false) }
-    val specials = repository.specialItems()
+    val institutions = remember(repository) { repository.institutions() }
+    val specials = remember(repository) { repository.specialItems() }
+    val institutionGroups = remember(institutions) {
+        institutionCategoryDefinitions.filter { group -> institutions.any { it.category in group.categories } }
+    }
     val relicGroups = remember(specials) {
-        listOf("制度", "器物", "习俗", "宫阙", "陵寝", "专题")
-            .map { cat -> cat to specials.filter { it.category == cat } }
-            .filter { it.second.isNotEmpty() }
+        specialCategoryDefinitions.filter { group -> specials.any { it.category in group.categories } }
+    }
+    var selectedInstitutionGroup by rememberSaveable { mutableStateOf("中央政务") }
+    var selectedRelicGroup by rememberSaveable { mutableStateOf("制度法令") }
+    LaunchedEffect(searchDestination) {
+        val destination = searchDestination ?: return@LaunchedEffect
+        destination.worldSection?.let { label ->
+            WorldSection.entries.firstOrNull { it.label == label }?.let { worldSection = it }
+        }
+        destination.worldCategory?.let { category ->
+            institutionGroups.firstOrNull { category in it.categories }?.let { selectedInstitutionGroup = it.label }
+            relicGroups.firstOrNull { category in it.categories }?.let { selectedRelicGroup = it.label }
+        }
+        onSearchDestinationConsumed()
     }
 
     MingList(contentPadding) {
-        item { MingMasthead() }
+        item { MingMasthead(onSearch) }
         item { OrnamentalTitle("天下") }
         item {
             WorldSectionRail(
@@ -140,7 +163,12 @@ internal fun WorldScreen(repository: MingRepository, contentPadding: PaddingValu
             }
             WorldSection.INSTITUTIONS -> {
                 item { InstitutionIntro() }
-                items(repository.institutions(), key = { it.id }) { institution ->
+                item {
+                    WorldCategoryRail(institutionGroups, selectedInstitutionGroup) { selectedInstitutionGroup = it }
+                }
+                val selectedGroup = institutionGroups.firstOrNull { it.label == selectedInstitutionGroup } ?: institutionGroups.firstOrNull()
+                val filteredInstitutions = selectedGroup?.let { group -> institutions.filter { it.category in group.categories } }.orEmpty()
+                items(filteredInstitutions, key = { it.id }) { institution ->
                     InstitutionCard(institution)
                 }
             }
@@ -148,17 +176,13 @@ internal fun WorldScreen(repository: MingRepository, contentPadding: PaddingValu
                 if (specials.isEmpty()) {
                     item { SourceNote("典章科普内容将在内容服务载入后显示。") }
                 } else {
-                    relicGroups.forEach { (category, items) ->
-                        item(key = "relics-header-$category") {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(category, color = Ink, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                Spacer(Modifier.width(7.dp))
-                                Text("共 ${items.size} 篇", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp)
-                            }
-                        }
-                        items(items, key = { it.id }) { item ->
-                            SpecialItemCard(item)
-                        }
+                    item {
+                        WorldCategoryRail(relicGroups, selectedRelicGroup) { selectedRelicGroup = it }
+                    }
+                    val selectedGroup = relicGroups.firstOrNull { it.label == selectedRelicGroup } ?: relicGroups.firstOrNull()
+                    val filteredSpecials = selectedGroup?.let { group -> specials.filter { it.category in group.categories } }.orEmpty()
+                    items(filteredSpecials, key = { it.id }) { item ->
+                        SpecialItemCard(item)
                     }
                 }
             }
@@ -171,6 +195,56 @@ private enum class WorldSection(val label: String) {
     MAP("舆图"),
     INSTITUTIONS("机构"),
     RELICS("典章"),
+}
+
+/** 机构按办事主体分，典章按制度、物件与场所分；同一实体只保留一个主归属。 */
+private data class WorldCategoryGroup(val label: String, val categories: Set<String>)
+
+private val institutionCategoryDefinitions = listOf(
+    WorldCategoryGroup("中央政务", setOf("中央政务")),
+    WorldCategoryGroup("监察司法", setOf("监察司法")),
+    WorldCategoryGroup("军事卫所", setOf("军事卫所")),
+    WorldCategoryGroup("内廷宦官", setOf("内廷宦官")),
+    WorldCategoryGroup("皇帝亲军", setOf("皇帝亲军")),
+    WorldCategoryGroup("皇族事务", setOf("皇族事务")),
+    WorldCategoryGroup("地方治理", setOf("地方治理")),
+    WorldCategoryGroup("教育礼制", setOf("教育礼制")),
+)
+
+private val specialCategoryDefinitions = listOf(
+    WorldCategoryGroup("制度法令", setOf("制度")),
+    WorldCategoryGroup("器物文书", setOf("器物")),
+    WorldCategoryGroup("礼俗生活", setOf("习俗")),
+    WorldCategoryGroup("宫阙陵寝", setOf("宫阙", "陵寝")),
+    WorldCategoryGroup("史事专题", setOf("专题")),
+)
+
+@Composable
+private fun WorldCategoryRail(
+    groups: List<WorldCategoryGroup>,
+    selected: String,
+    onSelected: (String) -> Unit,
+) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        items(groups, key = { it.label }) { group ->
+            val active = group.label == selected
+            Surface(
+                modifier = Modifier.clip(CutCornerShape(5.dp)).clickable { onSelected(group.label) },
+                shape = CutCornerShape(5.dp),
+                color = if (active) Vermilion else PaperLight,
+                border = BorderStroke(1.dp, if (active) Vermilion else LineGold),
+            ) {
+                Text(
+                    group.label,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    color = if (active) PaperLight else Ink,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -225,7 +299,7 @@ private fun SpecialItemCard(item: SpecialItem) {
 
 @Composable
 private fun InstitutionIntro() {
-    SourceNote("机构页按“中央政务、监察司法、军事卫所、内廷宦官、地方治理”归档。晋升路径是制度导览，具体授官仍以品秩、差遣与实录记载为准。")
+    SourceNote("机构收录有固定职掌、人员与沿革的办事主体；选择分类查看。制度、器物与宫阙另收于“典章”，同名内容不重复建档。")
 }
 
 @Composable

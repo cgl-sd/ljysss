@@ -52,6 +52,8 @@ import com.ljyss.data.OfflineMingRepository
 import com.ljyss.data.SeedMingRepository
 import com.ljyss.ui.people.PeopleScreen
 import com.ljyss.ui.profile.ProfileScreen
+import com.ljyss.ui.search.GlobalSearchDialog
+import com.ljyss.ui.search.SearchDestination
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
 import com.ljyss.ui.theme.InkSoft
@@ -122,6 +124,8 @@ private val appSections = listOf(
 @Composable
 private fun TwoCapitalsApp(repository: MingRepository) {
     var selectedSection by rememberSaveable { mutableIntStateOf(0) }
+    var searchOpen by rememberSaveable { mutableStateOf(false) }
+    var searchDestination by remember { mutableStateOf<SearchDestination?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -138,6 +142,9 @@ private fun TwoCapitalsApp(repository: MingRepository) {
             0 -> TimelineScreen(
                 repository = repository,
                 contentPadding = innerPadding,
+                searchDestination = searchDestination,
+                onSearchDestinationConsumed = { searchDestination = null },
+                onSearch = { searchOpen = true },
                 onOpenPerson = { name ->
                     focusPerson = name
                     selectedSection = 1
@@ -148,9 +155,28 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                 contentPadding = innerPadding,
                 focusPerson = focusPerson,
                 onFocusConsumed = { focusPerson = null },
+                onSearch = { searchOpen = true },
             )
-            2 -> WorldScreen(repository, innerPadding)
-            else -> ProfileScreen(innerPadding)
+            2 -> WorldScreen(
+                repository = repository,
+                contentPadding = innerPadding,
+                searchDestination = searchDestination,
+                onSearchDestinationConsumed = { searchDestination = null },
+                onSearch = { searchOpen = true },
+            )
+            else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
+        }
+        if (searchOpen) {
+            GlobalSearchDialog(
+                repository = repository,
+                onDismiss = { searchOpen = false },
+                onNavigate = { destination ->
+                    searchOpen = false
+                    selectedSection = destination.sectionIndex
+                    focusPerson = destination.personName
+                    searchDestination = destination.takeIf { it.reignTitle != null || it.worldSection != null }
+                },
+            )
         }
     }
 }
