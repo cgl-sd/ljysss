@@ -111,51 +111,10 @@ internal fun WorldScreen(
         when (worldSection) {
             WorldSection.MAP -> {
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(460.dp)
-                            .clip(CutCornerShape(10.dp))
-                            .background(XuanPaper),
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.world_reference_screen),
-                            contentDescription = "明代两京十三省地图",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                            alignment = Alignment.Center,
-                        )
-                        if (modernOverlayEnabled) {
-                            Image(
-                                painter = painterResource(R.drawable.modern_reference_map),
-                                contentDescription = "现代区划对照图已叠加",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .alpha(0.68f),
-                                contentScale = ContentScale.Crop,
-                                alignment = Alignment.Center,
-                            )
-                        }
-                        Surface(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(12.dp),
-                            shape = RoundedCornerShape(50),
-                            color = PaperLight.copy(alpha = 0.94f),
-                            border = BorderStroke(1.dp, Brass.copy(alpha = 0.55f)),
-                        ) {
-                            IconButton(
-                                onClick = { modernOverlayEnabled = !modernOverlayEnabled },
-                                modifier = Modifier.size(44.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Layers,
-                                    contentDescription = "切换现代区划图层",
-                                    tint = Ink,
-                                )
-                            }
-                        }
-                    }
+                    AtlasMapPlate(
+                        modernOverlayEnabled = modernOverlayEnabled,
+                        onLayerToggle = { modernOverlayEnabled = !modernOverlayEnabled },
+                    )
                 }
             }
             WorldSection.INSTITUTIONS -> {
@@ -183,6 +142,69 @@ internal fun WorldScreen(
                 }
             }
         }
+    }
+}
+
+/** 保持原始舆图不变，只以纸本衬框和相连题签把地图纳入页面版式。 */
+@Composable
+private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(9.dp),
+        color = PaperShade.copy(alpha = 0.44f),
+        border = BorderStroke(1.25.dp, LineGold),
+    ) {
+        Column(modifier = Modifier.padding(6.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(448.dp)
+                    .clip(CutCornerShape(6.dp))
+                    .background(XuanPaper),
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.world_reference_screen),
+                    contentDescription = "明代两京十三省地图",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center,
+                )
+                if (modernOverlayEnabled) {
+                    Image(
+                        painter = painterResource(R.drawable.modern_reference_map),
+                        contentDescription = "现代区划对照图已叠加",
+                        modifier = Modifier.fillMaxSize().alpha(0.68f),
+                        contentScale = ContentScale.Crop,
+                        alignment = Alignment.Center,
+                    )
+                }
+                Surface(
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(11.dp),
+                    shape = RoundedCornerShape(50),
+                    color = PaperLight.copy(alpha = 0.94f),
+                    border = BorderStroke(1.dp, Brass.copy(alpha = 0.55f)),
+                ) {
+                    IconButton(onClick = onLayerToggle, modifier = Modifier.size(42.dp)) {
+                        Icon(Icons.Outlined.Layers, contentDescription = "切换现代区划图层", tint = Ink)
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 11.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                AtlasFact("两京", "北京 · 南京", Modifier.weight(1f))
+                AtlasFact("十三省", "明代地方建置", Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AtlasFact(title: String, detail: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(detail, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
     }
 }
 

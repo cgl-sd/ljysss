@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,13 +16,15 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,13 +32,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.ljyss.data.MingRepository
 import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.ui.theme.Ink
@@ -67,49 +70,57 @@ private data class SearchResult(
     val destination: SearchDestination,
 )
 
+private enum class SearchFilter(val label: String) {
+    ALL("全部"), PEOPLE("人物"), TIMELINE("岁月"), WORLD("天下"),
+}
+
+/** 全屏检索路由，替代遮住原页的对话框；返回时无缝回到此前阅读位置。 */
 @Composable
-fun GlobalSearchDialog(
+fun GlobalSearchScreen(
     repository: MingRepository,
     onDismiss: () -> Unit,
     onNavigate: (SearchDestination) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
-    val results = remember(repository, query) { searchCatalog(repository, query) }
+    var filter by remember { mutableStateOf(SearchFilter.ALL) }
+    val searchFocus = remember { FocusRequester() }
+    val results = remember(repository, query, filter) {
+        searchCatalog(repository, query).filter { result -> filter.matches(result) }
+    }
     val resultListState = rememberLazyListState()
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92f),
-            shape = RoundedCornerShape(18.dp),
-            color = PaperLight,
-            border = BorderStroke(1.dp, LineGold),
+    BackHandler(onBack = onDismiss)
+    LaunchedEffect(Unit) { searchFocus.requestFocus() }
+    Surface(modifier = Modifier.fillMaxSize(), color = PaperLight) {
+        Column(
+            modifier = Modifier.padding(start = 20.dp, top = 48.dp, end = 20.dp, bottom = 22.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("全卷检索", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                        Text("寻阅明代档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Outlined.Close, contentDescription = "关闭搜索", tint = InkSoft)
-                    }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Outlined.ArrowBack, contentDescription = "返回", tint = Ink)
                 }
-                SearchField(query = query, onQueryChange = { query = it })
-                if (query.isBlank()) {
-                    SearchBlankState()
-                } else if (results.isEmpty()) {
-                    SearchEmptyState()
-                } else {
-                    Text("检得 ${results.size} 条", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    LazyColumn(
-                        modifier = Modifier.weight(1f).mingScrollbar(resultListState),
-                        state = resultListState,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(results, key = { it.id }) { result ->
-                            SearchResultCard(result) {
-                                onNavigate(result.destination)
-                            }
-                        }
+                Text("检索", color = Ink, fontFamily = FontFamily.Serif, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            }
+            SearchField(query = query, onQueryChange = { query = it }, modifier = Modifier.focusRequester(searchFocus))
+            SearchFilterRail(filter) { filter = it }
+            when {
+                query.isBlank() -> Text(
+                    "输入关键词，即可检索人物、岁月与天下资料。",
+                    color = InkSoft,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 15.sp,
+                )
+                results.isEmpty() -> SearchEmptyState()
+                else -> LazyColumn(
+                    modifier = Modifier.weight(1f).mingScrollbar(resultListState),
+                    state = resultListState,
+                    verticalArrangement = Arrangement.spacedBy(1.dp),
+                ) {
+                    item {
+                        Text("检得 ${results.size} 条", modifier = Modifier.padding(bottom = 8.dp), color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    }
+                    items(results, key = { it.id }) { result ->
+                        SearchResultCard(result) { onNavigate(result.destination) }
                     }
                 }
             }
@@ -118,7 +129,27 @@ fun GlobalSearchDialog(
 }
 
 @Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchFilterRail(selected: SearchFilter, onSelected: (SearchFilter) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        SearchFilter.entries.forEach { filter ->
+            val active = filter == selected
+            Text(
+                filter.label,
+                modifier = Modifier
+                    .clip(CutCornerShape(5.dp))
+                    .clickable { onSelected(filter) }
+                    .padding(horizontal = 13.dp, vertical = 8.dp),
+                color = if (active) Vermilion else Ink,
+                fontFamily = FontFamily.Serif,
+                fontSize = 17.sp,
+                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier: Modifier = Modifier) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = PaperShade.copy(alpha = 0.52f),
@@ -137,24 +168,10 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
                 BasicTextField(
                     value = query,
                     onValueChange = onQueryChange,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = modifier.fillMaxWidth(),
                     singleLine = true,
                     textStyle = TextStyle(color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp),
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SearchBlankState() {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("一卷可查人物、岁月与天下万象。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
-        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            listOf("人物", "年号", "大事", "机构", "典章").forEach { label ->
-                Surface(shape = CutCornerShape(4.dp), color = PaperShade.copy(alpha = 0.74f), border = BorderStroke(1.dp, LineGold.copy(alpha = 0.7f))) {
-                    Text(label, modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp), color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
-                }
             }
         }
     }
@@ -168,10 +185,10 @@ private fun SearchEmptyState() {
 @Composable
 private fun SearchResultCard(result: SearchResult, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(CutCornerShape(6.dp)).clickable(onClick = onClick),
-        shape = CutCornerShape(6.dp),
-        color = PaperShade.copy(alpha = 0.68f),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.78f)),
+        modifier = Modifier.fillMaxWidth().clip(CutCornerShape(2.dp)).clickable(onClick = onClick),
+        shape = CutCornerShape(2.dp),
+        color = PaperLight,
+        border = BorderStroke(0.75.dp, LineGold.copy(alpha = 0.65f)),
     ) {
         Row(modifier = Modifier.padding(horizontal = 11.dp, vertical = 10.dp), verticalAlignment = Alignment.Top) {
             Surface(shape = CutCornerShape(3.dp), color = Vermilion) {
@@ -183,6 +200,13 @@ private fun SearchResultCard(result: SearchResult, onClick: () -> Unit) {
             }
         }
     }
+}
+
+private fun SearchFilter.matches(result: SearchResult): Boolean = when (this) {
+    SearchFilter.ALL -> true
+    SearchFilter.PEOPLE -> result.kind == "人物"
+    SearchFilter.TIMELINE -> result.kind == "年号" || result.kind == "大事"
+    SearchFilter.WORLD -> result.kind == "机构" || result.kind == "典章"
 }
 
 private fun searchCatalog(repository: MingRepository, rawQuery: String): List<SearchResult> {

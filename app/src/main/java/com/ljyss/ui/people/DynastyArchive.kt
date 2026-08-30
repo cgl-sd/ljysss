@@ -1,9 +1,12 @@
 package com.ljyss.ui.people
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,8 +21,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,7 +35,6 @@ import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.Reign
 import com.ljyss.domain.orderedPeopleForCards
-import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -43,7 +43,7 @@ import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
-private val ArchiveEventCardHeight = 108.dp
+private val ArchiveEventCardHeight = 116.dp
 private val ArchivePersonCardWidth = 78.dp
 private val ArchivePersonCardHeight = 55.dp
 
@@ -70,18 +70,21 @@ internal fun DynastyArchive(
             modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("${reign.title}朝档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("${reign.title}朝档案", modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                Surface(shape = CutCornerShape(4.dp), color = Vermilion) {
+                    Text("朝档", modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp), color = PaperLight, fontFamily = FontFamily.Serif, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
             Text(reign.summary, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
-            Text(
-                "本朝已编 ${people.size} 人，${reign.events.size} 件大事",
-                color = Vermilion,
-                fontFamily = FontFamily.Serif,
-                fontSize = 14.sp,
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ArchiveStat("本朝已编", "${people.size} 人", Modifier.weight(1f))
+                ArchiveStat("本朝大事", "${reign.events.size} 件", Modifier.weight(1f))
+            }
             groups.forEach { (category, members) ->
                 ArchiveGroup(category.label, members, onPersonSelected)
             }
-            Text("本朝大事", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            ArchiveSectionHeading("本朝大事")
             if (reign.events.isEmpty()) {
                 Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
             } else {
@@ -94,6 +97,30 @@ internal fun DynastyArchive(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ArchiveStat(label: String, value: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        shape = CutCornerShape(5.dp),
+        color = PaperShade.copy(alpha = 0.48f),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.78f)),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(value, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(label, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+private fun ArchiveSectionHeading(title: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Box(modifier = Modifier.padding(start = 9.dp).weight(1f).height(1.dp).background(LineGold.copy(alpha = 0.72f)))
+        Text("◇", modifier = Modifier.padding(start = 7.dp), color = Vermilion, fontSize = 13.sp)
     }
 }
 
@@ -114,10 +141,12 @@ private fun ArchiveEventCard(
         shape = CutCornerShape(6.dp),
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.75f)),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
+        Row {
+            Box(modifier = Modifier.width(3.dp).fillMaxHeight().background(Vermilion.copy(alpha = 0.82f)))
+            Column(
+                modifier = Modifier.weight(1f).padding(horizontal = 11.dp, vertical = 9.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
             Text(
                 "${event.year ?: ""} ${event.month} · ${event.title.ifBlank { "事件待补题" }}",
                 color = Ink,
@@ -137,6 +166,7 @@ private fun ArchiveEventCard(
                 overflow = TextOverflow.Ellipsis,
             )
             ArchiveParticipants(event.participants, onOpenPerson)
+            }
         }
     }
 }
@@ -177,9 +207,7 @@ private fun ArchiveGroup(
     onPersonSelected: (HistoricalPerson) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
+        ArchiveSectionHeading(title)
         if (people.isEmpty()) {
             Text("本朝暂无已编人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
         } else {

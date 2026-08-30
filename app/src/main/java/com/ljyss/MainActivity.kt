@@ -53,7 +53,7 @@ import com.ljyss.data.OfflineMingRepository
 import com.ljyss.data.SeedMingRepository
 import com.ljyss.ui.people.PeopleScreen
 import com.ljyss.ui.profile.ProfileScreen
-import com.ljyss.ui.search.GlobalSearchDialog
+import com.ljyss.ui.search.GlobalSearchScreen
 import com.ljyss.ui.search.SearchDestination
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
@@ -135,58 +135,23 @@ private fun TwoCapitalsApp(repository: MingRepository) {
         modifier = Modifier.fillMaxSize(),
         containerColor = XuanPaper,
         bottomBar = {
-            MingBottomBar(
-                selectedSection = selectedSection,
-                onSectionSelected = { destination ->
-                    if (destination != selectedSection) {
-                        focusPerson = null
-                        personReturnSection = null
-                        searchDestination = null
-                    }
-                    selectedSection = destination
-                },
-            )
+            if (!searchOpen) {
+                MingBottomBar(
+                    selectedSection = selectedSection,
+                    onSectionSelected = { destination ->
+                        if (destination != selectedSection) {
+                            focusPerson = null
+                            personReturnSection = null
+                            searchDestination = null
+                        }
+                        selectedSection = destination
+                    },
+                )
+            }
         },
     ) { innerPadding ->
-        sectionStateHolder.SaveableStateProvider("section-$selectedSection") {
-            when (selectedSection) {
-                0 -> TimelineScreen(
-                    repository = repository,
-                    contentPadding = innerPadding,
-                    searchDestination = searchDestination,
-                    onSearchDestinationConsumed = { searchDestination = null },
-                    onSearch = { searchOpen = true },
-                    onOpenPerson = { name ->
-                        personReturnSection = selectedSection
-                        focusPerson = name
-                        selectedSection = 1
-                    },
-                )
-                1 -> PeopleScreen(
-                    repository = repository,
-                    contentPadding = innerPadding,
-                    focusPerson = focusPerson,
-                    onFocusConsumed = { focusPerson = null },
-                    onProfileExit = {
-                        personReturnSection?.let { origin ->
-                            personReturnSection = null
-                            selectedSection = origin
-                        }
-                    },
-                    onSearch = { searchOpen = true },
-                )
-                2 -> WorldScreen(
-                    repository = repository,
-                    contentPadding = innerPadding,
-                    searchDestination = searchDestination,
-                    onSearchDestinationConsumed = { searchDestination = null },
-                    onSearch = { searchOpen = true },
-                )
-                else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
-            }
-        }
         if (searchOpen) {
-            GlobalSearchDialog(
+            GlobalSearchScreen(
                 repository = repository,
                 onDismiss = { searchOpen = false },
                 onNavigate = { destination ->
@@ -198,6 +163,44 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                     searchDestination = destination.takeIf { it.reignTitle != null || it.worldSection != null }
                 },
             )
+        } else {
+            sectionStateHolder.SaveableStateProvider("section-$selectedSection") {
+                when (selectedSection) {
+                    0 -> TimelineScreen(
+                        repository = repository,
+                        contentPadding = innerPadding,
+                        searchDestination = searchDestination,
+                        onSearchDestinationConsumed = { searchDestination = null },
+                        onSearch = { searchOpen = true },
+                        onOpenPerson = { name ->
+                            personReturnSection = selectedSection
+                            focusPerson = name
+                            selectedSection = 1
+                        },
+                    )
+                    1 -> PeopleScreen(
+                        repository = repository,
+                        contentPadding = innerPadding,
+                        focusPerson = focusPerson,
+                        onFocusConsumed = { focusPerson = null },
+                        onProfileExit = {
+                            personReturnSection?.let { origin ->
+                                personReturnSection = null
+                                selectedSection = origin
+                            }
+                        },
+                        onSearch = { searchOpen = true },
+                    )
+                    2 -> WorldScreen(
+                        repository = repository,
+                        contentPadding = innerPadding,
+                        searchDestination = searchDestination,
+                        onSearchDestinationConsumed = { searchDestination = null },
+                        onSearch = { searchOpen = true },
+                    )
+                    else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
+                }
+            }
         }
     }
 }
