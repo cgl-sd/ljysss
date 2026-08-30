@@ -123,7 +123,7 @@ class PersonProfileNormalizationTest(unittest.TestCase):
         self.assertEqual(result, "人物以诗文闻名。")
 
     def test_direct_ming_military_description_beats_noble_title(self):
-        person = {"category": "封爵", "title": "魏国公"}
+        person = {"category": "朝臣", "title": "魏国公"}
         source = "徐达，字天德。徐达是明朝开国功臣、军事将领。"
         self.assertEqual(NORMALIZE.inferred_category(person, source), "将帅")
 
@@ -131,6 +131,56 @@ class PersonProfileNormalizationTest(unittest.TestCase):
         person = {"category": "将帅", "title": "荣定"}
         source = "梅殷是中国明朝开国君主朱元璋的女婿，曾参与军事事务。"
         self.assertEqual(NORMALIZE.inferred_category(person, source), "将帅")
+
+    def test_inner_court_requires_the_subjects_palace_identity(self):
+        person = {"category": "内廷", "title": "兵部尚书"}
+        source = "某人为明朝官员，曾上疏皇后并参与边务。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "朝臣")
+
+    def test_legacy_inner_court_label_without_palace_identity_is_not_preserved(self):
+        person = {"category": "内廷", "title": "明·杨廷麟"}
+        source = "杨廷麟，明朝政治人物，官至兵部右侍郎。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "朝臣")
+
+    def test_generic_eunuch_title_needs_wikipedia_confirmation(self):
+        person = {"category": "内廷", "title": "宦官"}
+        source = "崔铣，明朝理学家、政治人物，官至南京礼部右侍郎。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "朝臣")
+
+    def test_royal_clan_is_not_classified_only_because_of_a_noble_rank(self):
+        person = {"category": "朝臣", "title": "宁王"}
+        source = "朱权是明朝宗室、藩王。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "宗藩")
+
+    def test_generic_imported_clan_title_needs_wikipedia_identity_confirmation(self):
+        person = {"category": "朝臣", "title": "明朝藩王"}
+        source = "陈奇瑜，字正学，山西保德州人。明朝政治人物，官至五省总督。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "朝臣")
+
+    def test_generic_imported_clan_title_can_be_confirmed_by_imperial_lineage(self):
+        person = {"category": "朝臣", "title": "明朝藩王"}
+        source = "齐恭王朱榑，明太祖第七子，达定妃所生。洪武年间就藩。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "宗藩")
+
+    def test_senior_official_literatus_is_not_left_in_literary_category(self):
+        person = {"category": "文苑", "title": "礼部尚书"}
+        source = "某人是明朝文学家、官员，官至礼部尚书。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "朝臣")
+
+    def test_low_rank_literatus_stays_in_literary_category(self):
+        person = {"category": "文苑", "title": "诗人"}
+        source = "某人为明朝诗人，曾短暂出任县学教谕。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "文苑")
+
+    def test_military_office_beats_a_bad_legacy_clan_title(self):
+        person = {"category": "宗藩", "title": "明朝藩王"}
+        source = "童仲揆，南直隶应天府人。武进士出身，历官都指挥，擢拔为副总兵。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "将帅")
+
+    def test_southern_ming_regent_is_classified_as_emperor(self):
+        person = {"category": "宗藩", "title": "潞王"}
+        source = "朱常淓为明朝宗室。弘光帝被俘后，朱常淓自称监国。"
+        self.assertEqual(NORMALIZE.inferred_category(person, source), "帝王")
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ class ContentServiceTest(unittest.TestCase):
 
         schema = person_profile_schema()
         categories = schema["categories"]
-        self.assertEqual(["帝王", "内廷", "封爵", "朝臣", "将帅", "文苑"], [item["label"] for item in categories])
+        self.assertEqual(["帝王", "内廷", "宗藩", "朝臣", "将帅", "文苑"], [item["label"] for item in categories])
         self.assertEqual(len(bootstrap_content()["people"]), sum(item["person_count"] for item in categories))
         self.assertEqual(
             ["life", "family", "relations", "events"],
@@ -57,6 +57,19 @@ class ContentServiceTest(unittest.TestCase):
             ).fetchone()[0]
         self.assertEqual(0, unknown_category)
         self.assertEqual(0, invalid_section)
+
+    def test_person_catalog_and_section_queries_have_supporting_indexes(self):
+        from app.database import connect
+
+        with connect() as database:
+            indexes = {
+                row[0] for row in database.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'index'"
+                )
+            }
+        self.assertTrue(
+            {"person_by_category_reign_name", "person_section_by_person_position"} <= indexes
+        )
 
     def test_database_rejects_an_unregistered_category_or_section_layout(self):
         import sqlite3
@@ -151,13 +164,13 @@ class ContentServiceTest(unittest.TestCase):
         }
         self.assertTrue(expected <= names)
 
-    def test_new_categories_include_court_and_titled_groups(self):
+    def test_categories_include_court_and_clan_groups_without_a_noble_rank_bucket(self):
         payload = bootstrap_content()
         categories = {person["category"] for person in payload["people"]}
         self.assertIn("内廷", categories)
-        self.assertIn("封爵", categories)
-        # 六分类收拢后不应再出现旧标签。
-        self.assertFalse(categories & {"皇帝", "后妃", "宦官", "藩王", "勋贵", "名臣", "名将", "文人"})
+        self.assertIn("宗藩", categories)
+        # 爵位不再是分类；内廷、旧封爵等旧标签都不能漏入发布数据。
+        self.assertFalse(categories & {"皇帝", "后妃", "宦官", "藩王", "勋贵", "封爵", "名臣", "名将", "文人"})
 
     def test_world_page_special_items_are_served(self):
         payload = bootstrap_content()

@@ -9,7 +9,9 @@
   与外层“生平”重复的标题；
 * 保留一份去重后的 ``〔《明史》原文〕`` 块；
 * 校验六分类、四分栏、中文维基人物页及来源登记；
-* 对简介明确称为“明朝军事将领”的人物，以同一条通用规则归入“将帅”。
+* 分类只依据传主自己的称号与维基导语：内廷限后妃、宫人、乳母与宦官；宗藩限
+  皇室宗亲与藩王；任高阶官职的文人归入朝臣而非文苑；
+* 爵位不是分类依据：有军事或政务角色的勋贵分别归入将帅或朝臣。
 
     backend/.venv/bin/python backend/scripts/normalize_person_profiles.py --check
     backend/.venv/bin/python backend/scripts/normalize_person_profiles.py --apply
@@ -110,18 +112,46 @@ DISAMBIGUATION = re.compile(r"(?:可指|可以指|可能是指|下列.*?(?:名�
 PLACEHOLDER = re.compile(r"^(?:其家世与亲属，)?(?:现存史料|現存史料|资料|資料)未见详载。?$", re.I)
 LONG_BIO_WITHOUT_HEADINGS = 900
 
-LITERARY = re.compile(r"诗人|詩人|文学家|文學家|文人|学者|學者|画家|畫家|书法家|書法家|医家|醫家|医学家|醫學家|艺术家|藝術家|戏曲家|戲曲家")
+LITERARY = re.compile(r"诗人|詩人|文学家|文學家|文人|作家|學者|学者|画家|畫家|书法家|書法家|医家|醫家|医学家|醫學家|艺术家|藝術家|戏曲家|戲曲家|戏曲作家|戲曲作家")
 OFFICIAL = re.compile(r"官员|官員|政治人物|官吏|进士|進士|尚书|尚書|侍郎|御史|知县|知縣|主事|给事中|給事中|大学士|大學士|翰林")
+# “当过大官”须压过文人身份。进士、主事等一般仕履不单独否定文苑，避免把以
+# 文化成就为主、短暂任低阶职的人一律挪走。
+SENIOR_CIVIL_OFFICE = re.compile(
+    r"内阁|內閣|大学士|大學士|首辅|首輔|尚书|尚書|侍郎|都御史|巡抚|巡撫|总督|總督|"
+    r"布政使|按察使|大理寺[卿丞]|通政使|詹事|祭酒|太子太保|太子少保|少师|少傅|少保|"
+    r"六部(?:尚书|侍郎)|南京(?:吏|户|礼|兵|刑|工)部"
+)
+INNER_COURT_IDENTITY = re.compile(
+    r"皇后|太后|太皇太后|皇贵妃|皇貴妃|贵妃|貴妃|淑妃|贤妃|賢妃|妃|嫔|嬪|"
+    r"选侍|選侍|宦官|太监|太監|内官|內官|宫人|宮人|女官|乳母|奉圣夫人|奉聖夫人"
+)
+GENERIC_INNER_COURT_TITLE = re.compile(r"^(?:宦官|后妃)$")
+DIRECT_INNER_COURT = re.compile(
+    r"(?:元末明初|南明|明(?:朝|代|初|末))[^。！？\n]{0,24}(?:宦官|太监|太監|内官|內官|皇后|太后|贵妃|貴妃|妃|嫔|嬪|选侍|選侍|宫人|宮人|乳母)"
+)
+IMPERIAL_CLAN_IDENTITY = re.compile(
+    r"皇太子|皇子|皇女|公主|宗室|宗亲|宗親|藩王|亲王|親王|郡王|世子|郡主|"
+    r"(?:^|[、，,／/·])[^、，,／/·]{1,5}王(?:[、，,／/]|$)"
+)
+GENERIC_CLAN_TITLE = re.compile(r"^明(?:朝|代)?藩王$")
+DIRECT_IMPERIAL_CLAN = re.compile(
+    r"(?:元末明初|南明|明(?:朝|代|初|末))[^。！？\n]{0,32}(?:宗室|宗亲|宗親|藩王|亲王|親王|郡王|公主|皇太子|皇子|皇女)"
+)
+IMPERIAL_LINEAGE_IN_INTRO = re.compile(
+    r"(?:^[^。！？]{0,18}王朱|明(?:太祖|成祖|仁宗|宣宗|英宗|代宗|宪宗|孝宗|武宗|世宗|穆宗|神宗|光宗|熹宗|思宗)"
+    r"[^。！？]{0,28}第[一二三四五六七八九十\d]+(?:子|女)|明朝第[一二三四五六七八九十\d]+代[^。！？]{0,10}王)"
+)
 MING_CONTEXT = r"(?:元末明初|南明|明(?:朝|代|初|末))"
 DIRECT_MILITARY = re.compile(
     MING_CONTEXT + r"[^。！？\n]{0,24}(?:军事将领|軍事將領|军事人物|軍事人物|将领|將領|名将|名將|武将|武將|开国功臣|開國功臣)"
 )
 DIRECT_LITERARY = re.compile(
-    MING_CONTEXT + r"[^。！？\n]{0,24}(?:文学家|文學家|诗人|詩人|文人|戏曲家|戲曲家|画家|畫家|书法家|書法家|学者|學者|医家|醫家)"
+    MING_CONTEXT + r"[^。！？\n]{0,24}(?:文学家|文學家|诗人|詩人|文人|作家|戏曲家|戲曲家|戏曲作家|戲曲作家|画家|畫家|书法家|書法家|学者|學者|医家|醫家)"
 )
 DIRECT_OFFICIAL = re.compile(
     MING_CONTEXT + r"[^。！？\n]{0,24}(?:官员|官員|政治人物|官吏)"
 )
+MILITARY_OFFICE = re.compile(r"总兵|總兵|副总兵|副總兵|参将|參將|游击|遊擊|都督|都指挥|都指揮|指挥使|指揮使|守备|守備")
 
 
 def load(table: str) -> list[dict]:
@@ -371,8 +401,8 @@ def is_disambiguation(text: str) -> bool:
     return bool(DISAMBIGUATION.search(head))
 
 
-def inferred_category(person: dict, wiki_text: str) -> str:
-    """按维基导语与现有称号重算六分类；证据不足时保留既有类别而不猜测。"""
+def person_intro(wiki_text: str) -> str:
+    """取维基导语；只用传主身份最集中的开头，避免正文他人身份造成误归。"""
 
     intro_parts: list[str] = []
     for line in (wiki_text or "").splitlines():
@@ -384,39 +414,92 @@ def inferred_category(person: dict, wiki_text: str) -> str:
         intro_parts.append(line)
         if len("".join(intro_parts)) >= 360:
             break
-    intro = "".join(intro_parts)[:360]
+    return "".join(intro_parts)[:360]
+
+
+def is_inner_court_identity(title: str, intro: str) -> bool:
+    """内廷只接受传主本人明确的宫廷身份，不能由正文中的大臣或皇帝反推。"""
+
+    # 早期导入曾把崔铣、梁寅等称号粗写为“宦官”。具体宫廷称号可直接采用；
+    # 裸“宦官/后妃”须由维基导语确认，不能让错误旧标签把大臣留在内廷。
+    if GENERIC_INNER_COURT_TITLE.fullmatch(title):
+        return bool(DIRECT_INNER_COURT.search(intro[:180]))
+    return bool(INNER_COURT_IDENTITY.search(title))
+
+
+def is_imperial_clan_identity(title: str, intro: str) -> bool:
+    """宗藩按血缘/藩王身份，而非“国公、侯、伯”等可获得的爵位判断。"""
+
+    # 早期导入将少量人物的称号粗写成“明朝藩王”；这类泛称会把陈奇瑜、张凤翼
+    # 等传主错分，故必须再由维基导语确认。具体王号、世子、公主等则可直接确认。
+    head = re.split(r"[。！？]", intro, maxsplit=1)[0]
+    return bool(
+        (not GENERIC_CLAN_TITLE.fullmatch(title) and IMPERIAL_CLAN_IDENTITY.search(title))
+        or DIRECT_IMPERIAL_CLAN.search(intro[:180])
+        or IMPERIAL_LINEAGE_IN_INTRO.search(head)
+    )
+
+
+def inferred_category(person: dict, wiki_text: str) -> str:
+    """按传主称号与维基导语重算六分类，爵位本身不再构成一类。"""
+
+    intro = person_intro(wiki_text)
     title = person.get("title", "")
-    # 君主、内廷与宗室只能由条目称号确认；导语经常会提及传主的君主、父母或同僚，
-    # 不能把这些身份误归给传主。其余类别须有导语的明朝身份词或称号证据，证据不足
-    # 时保留现有类别而不猜测。
-    if re.search(r"皇帝|监国|監國|君主|[\u4e00-\u9fff]帝(?:[、·]|$)", title):
+    # 君主、内廷与宗藩只能由条目称号或导语的传主身份确认；正文经常提及其君主、
+    # 父母和同僚，不能从这些他人身份反推分类。
+    if (
+        re.search(r"皇帝|监国|監國|君主|[\u4e00-\u9fff]帝(?:[、·]|$)", title)
+        or re.search(r"(?:自称|自稱|称|稱)(?:为|為)?(?:监国|監國)", intro[:180])
+    ):
         return "帝王"
-    if re.search(r"皇后|太后|贵妃|貴妃|淑妃|贤妃|賢妃|嫔|嬪|宦官|太监|太監", title):
+    if is_inner_court_identity(title, intro):
         return "内廷"
-    if re.search(r"公主|宗室|亲王|親王|郡王|藩王|世子|皇子|皇女|(?:^|[、·])[^、·]{1,5}王(?:[、·]|$)", title):
-        return "封爵"
+    if is_imperial_clan_identity(title, intro):
+        return "宗藩"
     if re.search(r"将领|將領|名将|名將|武将|武將|总兵|總兵|都督|指挥使|指揮使", title):
         return "将帅"
-    if DIRECT_MILITARY.search(intro):
+    if DIRECT_MILITARY.search(intro) or MILITARY_OFFICE.search(intro):
         return "将帅"
+    if SENIOR_CIVIL_OFFICE.search(title) or SENIOR_CIVIL_OFFICE.search(intro):
+        return "朝臣"
     if DIRECT_LITERARY.search(intro):
+        return "文苑"
+    if LITERARY.search(title):
         return "文苑"
     if DIRECT_OFFICIAL.search(intro):
         return "朝臣"
-    if LITERARY.search(title):
-        return "文苑"
-    if re.search(r"国公|國公|侯爵|伯爵|勋贵|勳貴", title):
-        return "封爵"
     if OFFICIAL.search(title):
         return "朝臣"
-    return person.get("category", "")
+    # 勋贵不再按爵位单列；来源未提供可复核的新身份词时仅保留已有职业类别，
+    # 避免把原有将帅、文苑因导语过短而错误冲掉。
+    previous = person.get("category", "")
+    # 帝王、内廷、宗藩都必须每次由正面身份证据确认；不能因旧导入标签而留存。
+    return previous if previous in {"朝臣", "将帅", "文苑"} else "朝臣"
 
 
 def category_is_compatible(person: dict, wiki_text: str) -> bool:
     return person.get("category") == inferred_category(person, wiki_text)
 
 
+PERSON_CATEGORY_REGISTRY = (
+    ("emperor", "帝王", 0, "在位君主与南明监国。"),
+    ("inner-court", "内廷", 1, "宫中的后妃、宫人、乳母与宦官。"),
+    ("imperial-clan", "宗藩", 2, "皇室宗亲、藩王与公主；不以爵位作为归类理由。"),
+    ("official", "朝臣", 3, "参与中枢、地方或朝廷政治的非军事人物。"),
+    ("general", "将帅", 4, "统兵将领与其他以军事活动为主的人物。"),
+    ("literary", "文苑", 5, "未任高阶官职、以文艺、学术、医术等成就为主的人物。"),
+)
+
+
+def normalize_category_registry(tables: dict[str, list[dict]]) -> None:
+    tables["person_category"] = [
+        {"id": category_id, "label": label, "position": position, "description": description}
+        for category_id, label, position, description in PERSON_CATEGORY_REGISTRY
+    ]
+
+
 def normalize_tables(tables: dict[str, list[dict]]) -> dict[str, int]:
+    normalize_category_registry(tables)
     wiki_by_id = {row["person_id"]: row for row in tables["person_wiki"]}
     lives = {row["person_id"]: row for row in tables["person_section"] if row["section_key"] == "life"}
     stats: Counter[str] = Counter()
@@ -482,7 +565,7 @@ def audit_tables(tables: dict[str, list[dict]]) -> dict:
         body = modern_life(life.get("content", ""))
         reasons: list[str] = []
         if person.get("category") not in categories:
-            reasons.append("分类不在六分类目录")
+            reasons.append("分类不在受控目录")
         elif not category_is_compatible(person, source_text):
             reasons.append("分类与维基身份词不相容")
         if not source_text or is_disambiguation(source_text):

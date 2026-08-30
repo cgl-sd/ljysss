@@ -60,12 +60,12 @@ CONTENT_ORDER = {
 # 人物分类和详情栏目都是内容模型的一部分，而不是前端散落的字面量。person 表仍保留
 # 中文 category 列，便于既有 Android 客户端直接筛选；写入触发器会要求其对应这里的标签。
 PERSON_CATEGORIES = (
-    ("emperor", "帝王", 0, "皇帝、南明监国及在位君主。"),
-    ("inner-court", "内廷", 1, "后妃与宦官。"),
-    ("titled-nobility", "封爵", 2, "藩王、宗室与功勋贵族。"),
-    ("official", "朝臣", 3, "参与中枢或地方治理的文官。"),
+    ("emperor", "帝王", 0, "在位君主与南明监国。"),
+    ("inner-court", "内廷", 1, "宫中的后妃、宫人、乳母与宦官。"),
+    ("imperial-clan", "宗藩", 2, "皇室宗亲、藩王与公主；不以爵位作为归类理由。"),
+    ("official", "朝臣", 3, "参与中枢、地方或朝廷政治的非军事人物。"),
     ("general", "将帅", 4, "统兵将领及其他军事人物。"),
-    ("literary", "文苑", 5, "文人、学者、艺术家与医家等文化人物。"),
+    ("literary", "文苑", 5, "未任高阶官职、以文艺、学术、医术等成就为主的人物。"),
 )
 
 PERSON_SECTION_DEFINITIONS = (
@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS event (
 
 CREATE INDEX IF NOT EXISTS event_by_reign_year ON event(reign_id, year);
 CREATE INDEX IF NOT EXISTS person_by_category ON person(category);
+CREATE INDEX IF NOT EXISTS person_by_category_reign_name ON person(category, reign, name);
 
 CREATE TABLE IF NOT EXISTS person_section_definition (
     section_key TEXT PRIMARY KEY CHECK(section_key IN ('life', 'family', 'relations', 'events')),
@@ -151,6 +152,7 @@ CREATE TABLE IF NOT EXISTS person_section (
     content TEXT NOT NULL,
     PRIMARY KEY(person_id, section_key)
 );
+CREATE INDEX IF NOT EXISTS person_section_by_person_position ON person_section(person_id, position);
 
 -- SQLite 不能为既有 person 表追加外键，故以触发器同时约束新库与旧库升级后的写入。
 CREATE TRIGGER IF NOT EXISTS person_category_must_be_registered
@@ -541,7 +543,7 @@ def _migrate_person_columns(connection: sqlite3.Connection) -> None:
 
 
 def _ensure_person_profile_taxonomy(connection: sqlite3.Connection) -> None:
-    """Seed the six categories and four visible profile sections for upgraded databases."""
+    """Seed the controlled categories and four visible profile sections for upgraded databases."""
 
     connection.executemany(
         """
@@ -553,6 +555,14 @@ def _ensure_person_profile_taxonomy(connection: sqlite3.Connection) -> None:
             description = excluded.description
         """,
         PERSON_CATEGORIES,
+    )
+    # “封爵”是爵位状态，不是人物职业或宫廷身份。升级旧库时先将该标签迁到
+    # “宗藩”，再移除已废止的目录项；后续内容导入会按人物自身的来源证据细分。
+    connection.execute("UPDATE person SET category = '宗藩' WHERE category = '封爵'")
+    category_ids = ", ".join("?" for _ in PERSON_CATEGORIES)
+    connection.execute(
+        f"DELETE FROM person_category WHERE id NOT IN ({category_ids})",
+        tuple(category[0] for category in PERSON_CATEGORIES),
     )
     connection.executemany(
         """

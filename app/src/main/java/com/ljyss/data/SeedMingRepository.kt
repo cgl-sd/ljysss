@@ -162,7 +162,7 @@ object SeedMingRepository : MingRepository {
         HistoricalPerson("魏忠贤", "司礼监太监", "天启", "1568—1627", "天启年间内廷权力的代表人物，晚明政治史争议集中。", PersonCategory.COURT),
         // 后妃与藩王：离线种子至少覆盖每一类人物，保证断网时全部栏目可浏览。
         HistoricalPerson("马皇后", "明太祖皇后", "洪武", "1332—1382", "孝慈高皇后马氏，明太祖朱元璋的皇后，明初宫廷政治的重要参与者。", PersonCategory.COURT),
-        HistoricalPerson("朱常洵", "福王", "万历", "1586—1641", "明神宗第三子，封福王；明末宗室中的重要人物。", PersonCategory.TITLED),
+        HistoricalPerson("朱常洵", "福王", "万历", "1586—1641", "明神宗第三子，封福王；明末宗室中的重要人物。", PersonCategory.CLAN),
         // 名臣：首批扩展名录，卷次与引文位置由后端资料校对流程补全。
         HistoricalPerson("李善长", "韩国公", "洪武", "1314—1390", "明初开国功臣，长期参与制度草创与中枢政务。", PersonCategory.MINISTERS, courtesyName = "百室"),
         HistoricalPerson("宋濂", "翰林学士承旨", "洪武", "1310—1381", "明初重要文臣与学者，主持《元史》修纂并参与朝廷文教事务。", PersonCategory.MINISTERS, courtesyName = "景濂"),
@@ -222,20 +222,20 @@ object SeedMingRepository : MingRepository {
         HistoricalPerson("王安", "司礼监秉笔太监", "泰昌、天启", "？—1621", "泰昌、天启之际的内廷人物。", PersonCategory.COURT),
         HistoricalPerson("曹化淳", "司礼监太监", "崇祯", "1589—1662", "崇祯朝内廷人物，晚明京师政局中多有记载。", PersonCategory.COURT),
         // 勋贵家系：保留子嗣本人的人物条目，并通过“父子”关系连接，避免只在父辈生平中一笔带过。
-        HistoricalPerson("徐辉祖", "魏国公", "建文", "？—1407", "徐达长子，承袭魏国公；靖难后被削爵幽禁。", PersonCategory.TITLED),
-        HistoricalPerson("徐添福", "魏国公世子", "洪武", "？—？", "徐达次子，早卒，未能承袭魏国公爵。", PersonCategory.TITLED),
-        HistoricalPerson("徐膺绪", "中军都督佥事", "永乐", "？—？", "徐达第三子，仕至中军都督佥事。", PersonCategory.TITLED),
-        HistoricalPerson("徐增寿", "定国公", "建文、永乐", "？—1402", "徐达第四子，永乐初追封定国公。", PersonCategory.TITLED),
-        HistoricalPerson("常茂", "郑国公", "洪武", "？—1391", "常遇春长子，承袭郑国公。", PersonCategory.TITLED),
-        HistoricalPerson("常升", "开平王后裔", "洪武、建文", "？—？", "常遇春次子，明初勋贵家系成员。", PersonCategory.TITLED),
-        HistoricalPerson("沐春", "西平侯", "洪武、建文", "？—1398", "沐英长子，承袭西平侯，镇守云南。", PersonCategory.TITLED),
-        HistoricalPerson("沐晟", "西平侯、黔国公", "永乐、洪熙、宣德", "1368—1439", "沐英次子，长期镇守云南，后进封黔国公。", PersonCategory.TITLED),
-        HistoricalPerson("沐斌", "黔国公", "正统、景泰", "？—？", "沐晟之子，承袭黔国公。", PersonCategory.TITLED),
-        HistoricalPerson("李景隆", "曹国公", "建文、永乐", "？—？", "李文忠长子，建文朝曾领兵北伐。", PersonCategory.TITLED),
-        HistoricalPerson("李增枝", "前军左都督", "建文、永乐", "？—？", "李文忠次子，官至前军左都督。", PersonCategory.TITLED),
-        HistoricalPerson("李芳英", "中都正留守", "洪武、建文", "？—？", "李文忠第三子，官至中都正留守。", PersonCategory.TITLED),
-        HistoricalPerson("刘琏", "江西参政", "洪武", "？—1380", "刘基长子，曾任监察御史、江西参政。", PersonCategory.TITLED, courtesyName = "孟藻"),
-        HistoricalPerson("刘璟", "阁门使", "洪武、建文", "？—1402", "刘基次子，曾任阁门使、谷王长史。", PersonCategory.TITLED, courtesyName = "仲璟"),
+        HistoricalPerson("徐辉祖", "魏国公", "建文", "？—1407", "徐达长子，承袭魏国公；靖难后被削爵幽禁。", PersonCategory.MINISTERS),
+        HistoricalPerson("徐添福", "魏国公世子", "洪武", "？—？", "徐达次子，早卒，未能承袭魏国公爵。", PersonCategory.MINISTERS),
+        HistoricalPerson("徐膺绪", "中军都督佥事", "永乐", "？—？", "徐达第三子，仕至中军都督佥事。", PersonCategory.GENERALS),
+        HistoricalPerson("徐增寿", "定国公", "建文、永乐", "？—1402", "徐达第四子，永乐初追封定国公。", PersonCategory.GENERALS),
+        HistoricalPerson("常茂", "郑国公", "洪武", "？—1391", "常遇春长子，承袭郑国公。", PersonCategory.GENERALS),
+        HistoricalPerson("常升", "开平王后裔", "洪武、建文", "？—？", "常遇春次子，明初勋贵家系成员。", PersonCategory.MINISTERS),
+        HistoricalPerson("沐春", "西平侯", "洪武、建文", "？—1398", "沐英长子，承袭西平侯，镇守云南。", PersonCategory.GENERALS),
+        HistoricalPerson("沐晟", "西平侯、黔国公", "永乐、洪熙、宣德", "1368—1439", "沐英次子，长期镇守云南，后进封黔国公。", PersonCategory.GENERALS),
+        HistoricalPerson("沐斌", "黔国公", "正统、景泰", "？—？", "沐晟之子，承袭黔国公。", PersonCategory.GENERALS),
+        HistoricalPerson("李景隆", "曹国公", "建文、永乐", "？—？", "李文忠长子，建文朝曾领兵北伐。", PersonCategory.GENERALS),
+        HistoricalPerson("李增枝", "前军左都督", "建文、永乐", "？—？", "李文忠次子，官至前军左都督。", PersonCategory.GENERALS),
+        HistoricalPerson("李芳英", "中都正留守", "洪武、建文", "？—？", "李文忠第三子，官至中都正留守。", PersonCategory.GENERALS),
+        HistoricalPerson("刘琏", "江西参政", "洪武", "？—1380", "刘基长子，曾任监察御史、江西参政。", PersonCategory.MINISTERS, courtesyName = "孟藻"),
+        HistoricalPerson("刘璟", "阁门使", "洪武、建文", "？—1402", "刘基次子，曾任阁门使、谷王长史。", PersonCategory.MINISTERS, courtesyName = "仲璟"),
     )
 
     private val relationData = listOf(

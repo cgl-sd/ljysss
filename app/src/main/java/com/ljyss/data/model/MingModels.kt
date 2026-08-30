@@ -22,14 +22,14 @@ data class HistoricalEvent(
     val consequence: String = "",
 )
 
-/** 人物六分类：帝王 / 内廷（后妃·宦官）/ 封爵（藩王·勋贵）/ 朝臣 / 将帅 / 文苑。 */
+/** 人物六分类：帝王 / 内廷 / 宗藩 / 朝臣 / 将帅 / 文苑。爵位本身不作为分类。 */
 enum class PersonCategory(val label: String, val subtitle: String) {
     EMPERORS("帝王", "皇帝与本朝君主"),
-    COURT("内廷", "后妃与宦官"),
-    TITLED("封爵", "藩王与勋贵"),
+    COURT("内廷", "后妃、宫人与宦官"),
+    CLAN("宗藩", "宗室、藩王与公主"),
     MINISTERS("朝臣", "辅政文臣"),
     GENERALS("将帅", "武将与督师"),
-    LITERATI("文苑", "文人与学者"),
+    LITERATI("文苑", "未任高官的文人与学者"),
 }
 
 data class HistoricalPerson(

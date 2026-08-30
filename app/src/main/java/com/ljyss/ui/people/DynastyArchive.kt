@@ -45,7 +45,7 @@ internal fun DynastyArchive(
     people: List<HistoricalPerson>,
     onPersonSelected: (HistoricalPerson) -> Unit,
 ) {
-    // 本朝人物按六分类全量归档：朝臣、将帅之外，封爵、内廷、文苑与帝王同列，避免遗漏。
+    // 本朝人物按六分类全量归档：朝臣、将帅之外，宗藩、内廷、文苑与帝王同列，避免遗漏。
     val groups = PersonCategory.entries.map { category -> category to people.filter { it.category == category } }
 
     Card(
