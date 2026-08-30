@@ -53,8 +53,16 @@ internal fun PersonProfile(
     relations: List<PersonRelation>,
     onOpenPerson: (String) -> Unit,
 ) {
-    // 四栏一律是库里预生成的文章，按 position 顺序渲染；空栏不显示。
-    val sections = person.sections.sortedBy { it.position }
+    // 正常读取服务端预生成栏目；离线种子没有 sections 时回退至摘要生平，
+    // 不能让人物详情只剩姓名与画像。
+    val sections = person.sections
+        .ifEmpty {
+            person.biography
+                .takeIf { it.isNotBlank() }
+                ?.let { listOf(PersonSection(key = "life", title = "生平", content = it, position = 0)) }
+                .orEmpty()
+        }
+        .sortedBy { it.position }
     // 关系文章中出现的对方姓名保持可点击，跳转规则与旧的条目列表一致。
     val relationNames = relations
         .filter { (it.fromName == person.name || it.toName == person.name) && it.type !in parentChildTypes() }
