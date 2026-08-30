@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,6 +32,7 @@ internal fun TimelineScreen(
     val reigns = remember(repository) { repository.reigns() }
     val allPeople = remember(repository) { repository.allPeople() }
     var selectedTitle by rememberSaveable { mutableStateOf(reigns.first().title) }
+    var selectedYear by rememberSaveable { mutableIntStateOf(reigns.first().startYear()) }
     var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
     val archiveListState = rememberLazyListState()
     val eventDetailListState = rememberLazyListState()
@@ -40,6 +42,7 @@ internal fun TimelineScreen(
         val destination = searchDestination ?: return@LaunchedEffect
         destination.reignTitle?.takeIf { title -> reigns.any { it.title == title } }?.let { title ->
             selectedTitle = title
+            selectedYear = destination.year ?: reigns.first { it.title == title }.startYear()
             selectedArchiveEventId = destination.eventId
         }
         onSearchDestinationConsumed()
@@ -56,11 +59,16 @@ internal fun TimelineScreen(
             item {
                 ReignRail(reigns, selectedTitle) {
                     selectedTitle = it
+                    selectedYear = reigns.first { reign -> reign.title == it }.startYear()
                     selectedArchiveEventId = null
                 }
             }
             item {
-                ReignEventLine(selectedReign)
+                ReignYearRail(
+                    reign = selectedReign,
+                    selectedYear = selectedYear,
+                    onSelected = { selectedYear = it },
+                )
             }
             item {
                 DynastyArchive(
