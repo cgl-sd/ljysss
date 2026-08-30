@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS person_category (
 CREATE TABLE IF NOT EXISTS person (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    display_name TEXT NOT NULL DEFAULT '',
     title TEXT NOT NULL,
     reign TEXT NOT NULL,
     years TEXT NOT NULL,
@@ -540,6 +541,9 @@ def _migrate_person_columns(connection: sqlite3.Connection) -> None:
         connection.execute("ALTER TABLE person ADD COLUMN family_summary TEXT NOT NULL DEFAULT ''")
     if "verification_status" not in columns:
         connection.execute("ALTER TABLE person ADD COLUMN verification_status TEXT NOT NULL DEFAULT '未校验'")
+    if "display_name" not in columns:
+        connection.execute("ALTER TABLE person ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
+    connection.execute("UPDATE person SET display_name = name WHERE trim(display_name) = ''")
 
 
 def _ensure_person_profile_taxonomy(connection: sqlite3.Connection) -> None:

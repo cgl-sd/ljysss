@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -117,7 +118,7 @@ private val appSections = listOf(
     AppSection(label = "岁月", iconRes = R.drawable.nav_timeline_woodblock, activeColor = Vermilion),
     AppSection(label = "人物", iconRes = R.drawable.nav_people_woodblock, activeColor = Vermilion),
     AppSection(label = "天下", vectorIcon = Icons.Outlined.Public, activeColor = Vermilion),
-    AppSection(label = "我的", iconRes = R.drawable.nav_profile_woodblock, activeColor = Vermilion),
+    AppSection(label = "我的", vectorIcon = Icons.Outlined.Person, activeColor = Vermilion),
 )
 
 @Composable

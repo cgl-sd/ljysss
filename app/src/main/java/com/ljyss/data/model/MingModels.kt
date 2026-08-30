@@ -49,6 +49,8 @@ data class HistoricalPerson(
     val verificationStatus: String = "已校验",
     /** 服务端按栏目组织的详情正文；离线种子资料为空列表，界面自动降级为 biography 单段。 */
     val sections: List<PersonSection> = emptyList(),
+    /** 面向读者的姓名；宗室女性有可考本名时与档案封号分开保存。 */
+    val displayName: String = name,
 )
 
 /** 人物详情结构化栏目：life／family／relations／events，按服务端 position 排序。 */

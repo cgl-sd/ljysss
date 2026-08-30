@@ -83,7 +83,7 @@ internal fun PeopleScreen(
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
-    var expandedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var returnListOffset by rememberSaveable { mutableStateOf(0) }
@@ -97,6 +97,7 @@ internal fun PeopleScreen(
     }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
+    val selectedArchiveEvent = allEvents.firstOrNull { it.id == selectedArchiveEventId }
     val peopleListState = rememberLazyListState()
     var profileDetail by remember(selectedPerson?.id) { mutableStateOf(selectedPerson) }
     LaunchedEffect(selectedPerson?.id) {
@@ -123,6 +124,12 @@ internal fun PeopleScreen(
     fun returnFromProfile() {
         selectedPersonName = null
         personStack = emptyList()
+    }
+
+    fun openArchiveEvent(event: com.ljyss.data.model.HistoricalEvent) {
+        returnListIndex = peopleListState.firstVisibleItemIndex
+        returnListOffset = peopleListState.firstVisibleItemScrollOffset
+        selectedArchiveEventId = event.id
     }
 
     fun openProfileFromBrowse(name: String) {
@@ -174,8 +181,8 @@ internal fun PeopleScreen(
     }
 
     // 人物履历打开后，系统返回键与悬浮返回键保持同一行为，并保留进入详情前的页面状态。
-    BackHandler(enabled = selectedPersonName != null) {
-        closeProfileStep()
+    BackHandler(enabled = selectedPersonName != null || selectedArchiveEventId != null) {
+        if (selectedPersonName != null) closeProfileStep() else selectedArchiveEventId = null
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -188,6 +195,15 @@ internal fun PeopleScreen(
                         onOpenPerson = ::openRelatedPerson,
                     )
                 }
+            } else if (selectedArchiveEvent != null) {
+                item {
+                    ArchiveEventProfile(
+                        event = selectedArchiveEvent,
+                        onOpenPerson = { name ->
+                            if (allPeople.any { it.name == name }) openProfileFromBrowse(name)
+                        },
+                    )
+                }
             } else {
                 item { MingMasthead() }
                 item { OrnamentalTitle("人物") }
@@ -197,6 +213,7 @@ internal fun PeopleScreen(
                         onSelected = {
                             selectedTab = it
                             selectedPersonName = null
+                            selectedArchiveEventId = null
                             personStack = emptyList()
                         },
                     )
@@ -207,14 +224,13 @@ internal fun PeopleScreen(
                 item {
                     ReignRail(reigns, selectedReign.title) {
                         selectedReignTitle = it
-                        expandedArchiveEventId = null
+                            selectedArchiveEventId = null
                     }
                 }
                 item {
                     DynastyArchive(
                         reign = selectedReign,
                         people = allPeople.filter { it.reign.contains(selectedReign.title) },
-                        expandedEventId = expandedArchiveEventId,
                         onPersonSelected = { person ->
                             openProfileFromBrowse(person.name)
                         },
@@ -223,10 +239,7 @@ internal fun PeopleScreen(
                                 openProfileFromBrowse(name)
                             }
                         },
-                        onEventSelected = { event ->
-                            val eventId = event.id.ifBlank { "${selectedReign.title}:${event.title}" }
-                            expandedArchiveEventId = if (expandedArchiveEventId == eventId) null else eventId
-                        },
+                        onEventSelected = ::openArchiveEvent,
                     )
                 }
             }

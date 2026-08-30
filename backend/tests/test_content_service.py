@@ -115,6 +115,29 @@ class ContentServiceTest(unittest.TestCase):
             ).fetchone()[0]
         self.assertEqual(people, with_biography)
 
+    def test_published_people_have_a_display_name_and_formal_second_line(self):
+        from app.database import connect
+
+        with connect() as database:
+            invalid = database.execute(
+                """
+                SELECT id FROM person
+                WHERE trim(display_name) = '' OR trim(title) = ''
+                   OR instr(title, '明朝官员') > 0 OR instr(title, '明朝将领') > 0
+                   OR instr(title, '?') > 0
+                """
+            ).fetchall()
+        self.assertEqual([], invalid)
+
+    def test_crown_princes_are_in_the_emperor_catalog(self):
+        from app.database import connect
+
+        with connect() as database:
+            misplaced = database.execute(
+                "SELECT id FROM person WHERE title LIKE '%太子' AND category <> '帝王'"
+            ).fetchall()
+        self.assertEqual([], misplaced)
+
     def test_person_catalog_has_no_cbdb_legacy_rows(self):
         from app.database import connect
 

@@ -42,11 +42,11 @@ class LifeTextTest {
     }
 
     @Test
-    fun `生平长正文按统一规则拆段而不新增栏目同名标题`() {
+    fun `生平长正文不按字数强拆且不新增栏目同名标题`() {
         val text = (1..9).joinToString("") { "第${it}句叙述人物在明代仕途中的一段经历，并包含足够长度以触发移动端分段。" }
         val blocks = parseLifeBlocks(text)
         assertEquals(text, blocks.joinToString("") { it.text })
-        assertTrue(blocks.size > 1)
+        assertEquals(1, blocks.size)
         assertTrue(blocks.none { it.isHeader })
         assertTrue(blocks.none { it.text == "生平经历" })
     }
@@ -57,12 +57,11 @@ class LifeTextTest {
     }
 
     @Test
-    fun `长块按句读聚合且拼接无损`() {
+    fun `长块保持为同一自然段`() {
         val text = (1..8).joinToString("") { "第${it}句讲述一段足够长的内容以便触发聚合规则的阈值测试。" }
         val paragraphs = readableParagraphs(text)
         assertEquals(text, paragraphs.joinToString(""))
-        assertTrue(paragraphs.size > 1)
-        assertTrue(paragraphs.dropLast(1).all { it.length >= 130 })
+        assertEquals(listOf(text), paragraphs)
     }
 
     @Test
@@ -79,16 +78,15 @@ class LifeTextTest {
     }
 
     @Test
-    fun `生平连续短句按句读合并而不逐行展示`() {
+    fun `生平保留内容库给出的自然段边界`() {
         val text = (1..12).joinToString("\n") { "第${it}句叙事文字用于验证短行合并后的段落长度。" }
         val paragraphs = parseLifeBlocks(text).filter { !it.isHeader }.map { it.text }
-        assertTrue(paragraphs.size < 12)
-        assertTrue(paragraphs.dropLast(1).all { it.length >= 130 })
+        assertEquals(12, paragraphs.size)
     }
 
     @Test
-    fun `没有来源标题的超长生平补通用内层结构`() {
-        val text = (1..45).joinToString("") { "第${it}段叙事文字足够长，用于验证移动端统一的生平分段结构。" }
+    fun `没有来源标题的多段长生平补通用内层结构`() {
+        val text = (1..45).joinToString("\n\n") { "第${it}段叙事文字足够长，用于验证移动端统一的生平分段结构。" }
         val blocks = parseLifeBlocks(text)
         assertEquals("概览", blocks.first().text)
         assertTrue(blocks.any { it.text == "纪事" })

@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,21 +42,21 @@ import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
-private val ArchiveEventCardHeight = 108.dp
-private val ArchivePersonCardWidth = 100.dp
-private val ArchivePersonCardHeight = 54.dp
+private val ArchiveEventCardHeight = 144.dp
+private val ArchivePersonCardWidth = 88.dp
+private val ArchivePersonCardHeight = 64.dp
 
 @Composable
 internal fun DynastyArchive(
     reign: Reign,
     people: List<HistoricalPerson>,
-    expandedEventId: String?,
     onPersonSelected: (HistoricalPerson) -> Unit,
     onOpenPerson: (String) -> Unit,
     onEventSelected: (HistoricalEvent) -> Unit,
 ) {
-    // 本朝人物按六分类全量归档：朝臣、将帅之外，宗藩、内廷、文苑与帝王同列，避免遗漏。
-    val groups = PersonCategory.entries.map { category -> category to people.filter { it.category == category } }
+    val groups = PersonCategory.entries.map { category ->
+        category to archiveOrderedPeople(category, people.filter { it.category == category })
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -73,7 +72,7 @@ internal fun DynastyArchive(
             Text("${reign.title}朝档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
             Text(reign.summary, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
             Text(
-                "本朝已编 ${people.size} 人、${reign.events.size} 件大事；人物按六分类全量入档。",
+                "本朝已编 ${people.size} 人，${reign.events.size} 件大事",
                 color = Vermilion,
                 fontFamily = FontFamily.Serif,
                 fontSize = 14.sp,
@@ -86,10 +85,8 @@ internal fun DynastyArchive(
                 Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
             } else {
                 reign.events.sortedBy { it.year ?: Int.MAX_VALUE }.forEach { event ->
-                    val eventId = event.id.ifBlank { "${reign.title}:${event.title}" }
                     ArchiveEventCard(
                         event = event,
-                        expanded = expandedEventId == eventId,
                         onClick = { onEventSelected(event) },
                         onOpenPerson = onOpenPerson,
                     )
@@ -99,18 +96,17 @@ internal fun DynastyArchive(
     }
 }
 
-/** 收起时三项信息同高展示；展开后保留完整叙述，避免用截断替代事件详情。 */
+/** 档案卡只承担入口职责；完整介绍在独立事件页阅读。 */
 @Composable
 private fun ArchiveEventCard(
     event: HistoricalEvent,
-    expanded: Boolean,
     onClick: () -> Unit,
     onOpenPerson: (String) -> Unit,
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (expanded) Modifier else Modifier.height(ArchiveEventCardHeight))
+            .height(ArchiveEventCardHeight)
             .clip(CutCornerShape(6.dp))
             .clickable(onClick = onClick),
         color = XuanPaper.copy(alpha = 0.68f),
@@ -136,22 +132,10 @@ private fun ArchiveEventCard(
                 fontFamily = FontFamily.Serif,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
-                maxLines = if (expanded) Int.MAX_VALUE else 2,
-                overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
             )
             ArchiveParticipants(event.participants, onOpenPerson)
-            if (expanded) {
-                HorizontalDivider(modifier = Modifier.padding(top = 4.dp), color = LineGold.copy(alpha = 0.75f))
-                Text(
-                    event.detail.takeIf { it.isNotBlank() && it != event.description }
-                        ?: "详细叙述正在依据史料继续整理。",
-                    color = Ink,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 15.sp,
-                    lineHeight = 23.sp,
-                )
-                Text("出处：${event.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp)
-            }
         }
     }
 }
@@ -201,9 +185,7 @@ private fun ArchiveGroup(
             LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 items(people, key = { it.name }) { person ->
                     Surface(
-                        modifier = Modifier
-                            .width(ArchivePersonCardWidth)
-                            .height(ArchivePersonCardHeight)
+                        modifier = Modifier.width(ArchivePersonCardWidth).height(ArchivePersonCardHeight)
                             .clip(CutCornerShape(5.dp))
                             .clickable { onPersonSelected(person) },
                         shape = CutCornerShape(5.dp),
@@ -212,7 +194,7 @@ private fun ArchiveGroup(
                     ) {
                         Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) {
                             Text(
-                                person.name,
+                                person.displayName,
                                 color = Ink,
                                 fontFamily = FontFamily.Serif,
                                 fontSize = 15.sp,
@@ -220,16 +202,14 @@ private fun ArchiveGroup(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            archiveRoleLabel(person).takeIf { it.isNotBlank() }?.let { role ->
-                                Text(
-                                    role,
-                                    color = InkSoft,
-                                    fontFamily = FontFamily.Serif,
-                                    fontSize = 11.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
+                            Text(
+                                archiveRoleLabel(person),
+                                color = InkSoft,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 11.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
                 }
@@ -238,32 +218,28 @@ private fun ArchiveGroup(
     }
 }
 
-/** 朝代档案只显示一个可辨认的职位或爵位，完整称谓仍保留在详情页。 */
-private fun archiveRoleLabel(person: HistoricalPerson): String {
-    val title = person.title.trim()
-    if (title.isBlank()) return ""
-    if (person.category == PersonCategory.EMPERORS) {
-        return title.removePrefix("明").substringBefore('·').ifBlank { "皇帝" }
-    }
-    if (person.category == PersonCategory.COURT) {
-        Regex("(皇后|皇贵妃|贵妃|[贤淑宁德惠恭顺庄端孝]+妃|妃|嫔|太监)$")
-            .find(title)
-            ?.value
-            ?.let { return it }
-    }
+private fun archiveRoleLabel(person: HistoricalPerson): String = person.title
 
-    val titleParts = title.split(Regex("[、，；;]|兼|（|\\("))
-        .map { it.trim() }
-        .filter { it.isNotBlank() }
-    val officeKeywords = listOf(
-        "首辅", "大学士", "尚书", "侍郎", "都御史", "总督", "巡抚", "督师", "都督",
-        "将军", "指挥使", "御史", "给事中", "布政使", "按察使", "知府", "知县", "祭酒", "学士",
-    )
-    titleParts.firstOrNull { part -> officeKeywords.any(part::contains) }
-        ?.let { return it }
-    titleParts.firstOrNull { part -> part.endsWith("王") || part.endsWith("公") || part.endsWith("侯") || part.endsWith("伯") }
-        ?.let { return it }
-    val fallback = titleParts.firstOrNull()?.removePrefix("明·")?.removePrefix("明代").orEmpty()
-    return fallback.takeUnless { it.isBlank() || it == person.name || it == "官员" }
-        .orEmpty()
+private fun archiveOrderedPeople(category: PersonCategory, people: List<HistoricalPerson>): List<HistoricalPerson> =
+    people.sortedWith(compareBy<HistoricalPerson>(
+        { archiveRank(category, it) },
+        { it.reign },
+        { it.years.substringBefore('—').toIntOrNull() ?: Int.MAX_VALUE },
+        { it.displayName },
+    ))
+
+private fun archiveRank(category: PersonCategory, person: HistoricalPerson): Int = when (category) {
+    PersonCategory.COURT -> when {
+        person.title.contains("皇后") || person.title.contains("太后") -> 0
+        person.title.contains("妃") || person.title.contains("嫔") || person.title.contains("选侍") -> 1
+        else -> 2
+    }
+    PersonCategory.CLAN -> when {
+        person.title.contains("亲王") || person.title.matches(Regex(".{1,8}王")) -> 0
+        person.title.contains("郡王") -> 1
+        person.title.contains("世子") -> 2
+        person.title.contains("公主") -> 4
+        else -> 3
+    }
+    else -> 0
 }

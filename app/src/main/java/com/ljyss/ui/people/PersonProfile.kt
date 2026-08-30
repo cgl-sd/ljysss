@@ -83,7 +83,7 @@ internal fun PersonProfile(
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
             PersonPortrait(person)
-            Text(person.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            Text(person.displayName, color = Ink, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text(
                 listOf(person.title, person.reign, person.years)
                     .filter { it.isNotBlank() }

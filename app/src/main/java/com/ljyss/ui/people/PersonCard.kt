@@ -82,7 +82,7 @@ internal fun PersonCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = person.name,
+                        text = person.displayName,
                         color = Ink,
                         modifier = Modifier.weight(1f),
                         fontFamily = FontFamily.Serif,
@@ -94,7 +94,7 @@ internal fun PersonCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     HorizontalDivider(modifier = Modifier.width(26.dp), color = Brass)
                     Text(
-                        text = "  ${person.reign}  ",
+                        text = "  ${person.title}  ",
                         color = Vermilion,
                         fontFamily = FontFamily.Serif,
                         fontSize = 18.sp,
@@ -102,9 +102,7 @@ internal fun PersonCard(
                     )
                     HorizontalDivider(modifier = Modifier.width(26.dp), color = Brass)
                 }
-                if (person.title.isNotBlank()) {
-                    Text(person.title, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
-                }
+                Text(person.reign, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
                 Text(person.years, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
                 if (expanded) {
                     HorizontalDivider(modifier = Modifier.padding(top = 5.dp), color = LineGold)

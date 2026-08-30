@@ -130,6 +130,7 @@ class RemoteMingRepository private constructor(
                         }
                     }
                     .orEmpty(),
+                displayName = person.optString("display_name").ifBlank { person.getString("name") },
             )
 
         private fun parse(baseUrl: String, root: JSONObject, mapFallback: MingRepository): RemoteMingRepository {

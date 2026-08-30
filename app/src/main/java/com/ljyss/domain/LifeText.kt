@@ -27,8 +27,8 @@ internal fun parseLifeBlocks(content: String): List<LifeBlock> {
 
     fun flushNarrative() {
         if (narrativeLines.isEmpty()) return
-        // 爬取文本的换行并不等于段落：连续短句合并后再按句读分段，避免手机上一句一行。
-        readableParagraphs(narrativeLines.joinToString(separator = "")).forEach { paragraph ->
+        // 内容库已在导入时把抓取短行归并为自然段；展示层绝不再按字数拆开一段正文。
+        narrativeLines.flatMap(::readableParagraphs).forEach { paragraph ->
             blocks.add(LifeBlock(false, false, paragraph))
         }
         narrativeLines.clear()
@@ -53,30 +53,11 @@ internal fun parseLifeBlocks(content: String): List<LifeBlock> {
     return addUniversalInnerHeadings(blocks)
 }
 
-/** 把长正文切成适合手机阅读的短段落：优先保留已有换行，再按句读边界二次分段。 */
+/** 保留内容库的自然段边界；手机换行由 Text 自行完成，不把一段经历强拆成数段。 */
 internal fun readableParagraphs(text: String): List<String> {
     val blocks = normalizedTextLines(text)
     if (blocks.isEmpty()) return emptyList()
-    val paragraphs = mutableListOf<String>()
-    for (block in blocks) {
-        if (block.length <= 140) {
-            paragraphs += block
-            continue
-        }
-        val sentences = block.split(Regex("(?<=[。！？；])"))
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-        var buffer = ""
-        for (sentence in sentences) {
-            buffer += sentence
-            if (buffer.length >= 130) {
-                paragraphs += buffer
-                buffer = ""
-            }
-        }
-        if (buffer.isNotEmpty()) paragraphs += buffer
-    }
-    return mergeLeadingParagraphPunctuation(paragraphs)
+    return mergeLeadingParagraphPunctuation(blocks)
 }
 
 /** 段首的孤立引号、句读归入上段末尾，保证每一段从正文文字开始。 */
@@ -123,7 +104,7 @@ private fun normalizedTextLines(text: String): List<String> {
 private fun addUniversalInnerHeadings(blocks: List<LifeBlock>): List<LifeBlock> {
     val narrative = blocks.filter { !it.isHeader && !it.isClassicalMarker }
     if (
-        narrative.sumOf { it.text.length } < LifeStructureThreshold ||
+        narrative.sumOf { it.text.length } < LifeStructureThreshold || narrative.size < 2 ||
         blocks.any { it.isHeader && !it.isClassicalMarker }
     ) return blocks
 
