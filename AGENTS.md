@@ -27,5 +27,5 @@
 - 岁月事件展开须含事件介绍、相关人物（可点击跳转人物详情）、影响与出处；事件参与人物的判据为人名或帝号别名出现于事件首段、且事件年份落在其生卒期内；“史料来源”按钮不保留。
 - 天下页由舆图、机构、典章三个栏目组成：机构自人物页迁入；典章收录宫殿、器物与制度名物（尚方宝剑、王命旗牌、丹书铁券等）的科普卡片；页面顶部保留鼎形图标与“天下”题字。
 - 原始权威数据包永久存放于 `backend/sources/`，已加 macOS `uchg` 防删保护，禁止删除；更新时先 `chflags -R nouchg` 解锁，替换后重新加锁。三份分别为 `wikipedia_zh/`（维基中文全量 parquet）、`cbdb/`（哈佛 CBDB SQLite）与 `mingshi_full/`（《明史》332 卷定形语料 + 其原料 `ming_histroy.txt`）。《明史》只有 `mingshi_full/` 这一份：早先按卷抓自维基文库的 `sources/mingshi/` 因抓取器只取 `<p>` 而丢光表部、且 312 卷混入模板文字，已被取代删除，不要重建它。来源登记见根 `README.md`。
-- 三个原始来源之外，内容的版本库真相是 `backend/data/content/*.jsonl`（按表一行一条）。跑完导入脚本或人工校订后须执行 `backend/scripts/content_store.py export` 把 SQLite 的变化写回文本再提交；`ming_history.sqlite3` 是本地运行产物，不提交、也不手工编辑。启动回写受 `catalog.py` 名录指纹（`PRAGMA user_version`）门控：名录未变则完全跳过，因此直接改库里的种子字段不会被下次启动冲掉，但也不会被反向同步进文本。
+- 三个原始来源之外，内容的版本库真相是 `backend/data/content/*.jsonl`（按表一行一条）。跑完导入脚本或人工校订后须执行 `backend/scripts/content_store.py export` 把 SQLite 的变化写回文本再提交；`ming_history.sqlite3` 是本地运行产物，不提交、也不手工编辑。启动回写受 `catalog.py` 名录指纹（`PRAGMA user_version`）门控：名录未变则完全跳过，因此直接改库里的名录字段不会被下次启动冲掉，但也不会被反向同步进文本。
 - 数据准确性审计规则与修正清单记录于 `docs/data-audit.md`；关系边与事件参与人物的新增/修改须通过 `audit_data_accuracy.py` 同类校验（生卒年合理性 + 首段出现判据）。

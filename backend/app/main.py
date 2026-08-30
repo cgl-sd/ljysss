@@ -9,8 +9,6 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.gzip import GZipMiddleware
 
 from .database import DATABASE_PATH, connect, initialize_database
-
-
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     initialize_database()
@@ -58,7 +56,7 @@ def list_reigns() -> list[dict]:
 
 @app.get("/v1/bootstrap")
 def bootstrap_content() -> dict:
-    """A single offline-sync payload for the Android client during local development.
+    """A single content payload for development tools and consistency checks.
 
     全量内容一次下发（gzip 压缩传输）；App 一次加载后全内存访问，
     不再产生按需请求，这是当前规模下最高效的访问路径。
@@ -309,22 +307,3 @@ def get_source(source_id: str) -> dict:
     if not source:
         raise HTTPException(status_code=404, detail="未找到该史料来源")
     return source
-
-
-@app.get("/v1/map/layers")
-def map_layers(period: str = "ming", year: int = Query(default=1368, ge=1368, le=1644)) -> dict:
-    """Textual map metadata. Production will add GeoJSON/PostGIS geometry and validity ranges."""
-
-    if period not in {"ming", "modern"}:
-        raise HTTPException(status_code=400, detail="period 仅支持 ming 或 modern")
-    return {
-        "period": period,
-        "year": year,
-        "layers": [
-            {"id": "administration", "label": "两京十三省", "enabled_by_default": True},
-            {"id": "neighbours", "label": "周边政权", "enabled_by_default": True},
-            {"id": "activity", "label": "势力范围", "enabled_by_default": True},
-            {"id": "events", "label": "事件地点", "enabled_by_default": False},
-        ],
-        "review_status": "几何边界与势力范围待导入 PostGIS 后按年代发布",
-    }

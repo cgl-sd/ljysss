@@ -124,7 +124,7 @@ internal fun WorldScreen(
             }
             WorldSection.RELICS -> {
                 if (specials.isEmpty()) {
-                    item { SourceNote("典章科普内容将在内容服务载入后显示。") }
+                    item { SourceNote("暂无典章资料。") }
                 } else {
                     item {
                         WorldCategoryRail(relicGroups, selectedRelicGroup) { selectedRelicGroup = it }

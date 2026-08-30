@@ -36,15 +36,15 @@ android {
     }
 
     sourceSets {
-        getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/offlineContentAssets").get().asFile)
+    getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/contentDatabaseAssets").get().asFile)
     }
 }
 
 // 发布内容库的真相仍是 backend/data/content/*.jsonl；SQLite 由导入流程生成。
 // 构建 APK 时把已生成的只读库作为 asset 打包，首次启动复制到手机私有目录。
-val packageOfflineContent by tasks.registering(Sync::class) {
+val packageContentDatabase by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.file("backend/data/ming_history.sqlite3"))
-    into(layout.buildDirectory.dir("generated/offlineContentAssets"))
+    into(layout.buildDirectory.dir("generated/contentDatabaseAssets"))
     rename { "ming_history.sqlite3" }
 }
 
@@ -52,7 +52,7 @@ tasks.configureEach {
     val packagesAppAssets = name.startsWith("merge") && name.endsWith("Assets")
     val inspectsReleaseAssets = name == "generateReleaseLintVitalReportModel" ||
         name == "lintVitalAnalyzeRelease"
-    if (packagesAppAssets || inspectsReleaseAssets) dependsOn(packageOfflineContent)
+    if (packagesAppAssets || inspectsReleaseAssets) dependsOn(packageContentDatabase)
 }
 
 dependencies {

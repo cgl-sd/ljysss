@@ -237,12 +237,6 @@ private fun searchCatalog(repository: MingRepository, rawQuery: String): List<Se
         repository.specialItems().forEach { item ->
             add(SearchResult("special:${item.id}", "典章", item.name, text("${item.category}｜${item.era}｜${item.description}"), "${item.name} ${item.category} ${item.era} ${item.description}", SearchDestination(2, worldSection = "典章", worldCategory = item.category)))
         }
-        profileSearchEntries.forEach { entry -> add(entry) }
     }
     return results.filter { it.haystack.lowercase().contains(query) }.take(80)
 }
-
-private val profileSearchEntries = listOf(
-    SearchResult("profile:desk", "我的", "我的书案", "登录后可同步收藏、阅读进度与自建专题。", "我的 书案 收藏 阅读进度 自建专题", SearchDestination(3)),
-    SearchResult("profile:database", "我的", "本地资料库", "人物、事件与分栏资料已随应用安装。", "我的 本地资料库 离线 人物 事件 分栏资料", SearchDestination(3)),
-)

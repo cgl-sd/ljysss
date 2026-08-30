@@ -45,12 +45,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
-import com.ljyss.data.OfflineMingRepository
-import com.ljyss.data.SeedMingRepository
+import com.ljyss.data.BundledMingRepository
 import com.ljyss.ui.people.PeopleScreen
 import com.ljyss.ui.profile.ProfileScreen
 import com.ljyss.ui.search.GlobalSearchScreen
@@ -79,13 +77,13 @@ class MainActivity : ComponentActivity() {
                 if (currentRepository != null) {
                     TwoCapitalsApp(repository = currentRepository)
                 } else {
-                    OfflineContentState(contentLoadError)
+                    ContentLibraryState(contentLoadError)
                 }
             }
         }
-        // 只读取 APK 内置的发布数据库；FastAPI 仅用于内容编辑和开发调试，不参与阅读启动。
+        // 阅读端只读取随应用交付的统一资料库；FastAPI 仅用于内容编辑和开发调试。
         Thread {
-            runCatching { OfflineMingRepository.load(applicationContext) }
+            runCatching { BundledMingRepository.load(applicationContext) }
                 .onSuccess { local -> runOnUiThread { repository = local } }
                 .onFailure { error -> runOnUiThread { contentLoadError = error.message ?: "资料库无法打开" } }
         }.start()
@@ -93,11 +91,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun OfflineContentState(error: String?) {
+private fun ContentLibraryState(error: String?) {
     Surface(modifier = Modifier.fillMaxSize(), color = XuanPaper) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(32.dp)) {
             Text(
-                text = error ?: "正在准备本地史料库…",
+                text = error ?: "正在打开资料库…",
                 color = if (error == null) InkSoft else Vermilion,
                 fontFamily = FontFamily.Serif,
                 fontSize = 17.sp,
@@ -274,13 +272,5 @@ private fun MingBottomBar(selectedSection: Int, onSectionSelected: (Int) -> Unit
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, heightDp = 840)
-@Composable
-private fun TwoCapitalsAppPreview() {
-    两京一十三省Theme {
-        TwoCapitalsApp(repository = SeedMingRepository)
     }
 }

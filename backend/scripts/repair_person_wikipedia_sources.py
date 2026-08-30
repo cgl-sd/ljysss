@@ -3,7 +3,7 @@
 
 同名页曾把《明史》中的明人接到汉、唐、清等同名者，或接到王爵消歧义页。本脚本
 只处理下方逐条比对过姓名、字、官历或家世的目标；它会更新维基正文、出处链接和
-「生平」首段，不改变人物的其他栏目。不能从离线维基包取到目标页时立即退出，不写入。
+「生平」首段，不改变人物的其他栏目。不能从本地维基数据包取到目标页时立即退出，不写入。
 
     backend/.venv/bin/python backend/scripts/repair_person_wikipedia_sources.py --dry-run
     backend/.venv/bin/python backend/scripts/repair_person_wikipedia_sources.py
@@ -110,7 +110,7 @@ def main(dry_run: bool) -> None:
     fetched = fetch_titles(set(TARGETS.values()))
     missing = sorted(set(TARGETS.values()) - set(fetched))
     if missing:
-        raise SystemExit(f"离线维基包未找到目标条目：{'、'.join(missing)}")
+        raise SystemExit(f"本地维基数据包未找到目标条目：{'、'.join(missing)}")
 
     people = {row["id"] for row in load("person")}
     unknown = sorted(set(TARGETS) - people)

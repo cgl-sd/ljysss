@@ -1,9 +1,9 @@
 # 两京一十三省
 
-明朝历史阅读应用:Android 客户端 + 本地内容服务。
+明朝历史阅读应用：Android 客户端 + 统一内容资料库。
 
-- `app/` — Android 客户端(Kotlin + Jetpack Compose):岁月(事件时间线)、人物(2200 位,六分类)、天下(舆图/机构/典章)、我的。界面按功能分包于 `app/src/main/java/com/ljyss/{ui,domain}/`,`MainActivity.kt` 只留装配与底部导航
-- `backend/` — 内容服务(FastAPI + SQLite):`app/` 服务代码,`data/ming_history.sqlite3` 内容库,`scripts/` 数据管线,`sources/` 原始权威数据包
+- `app/` — Android 客户端（Kotlin + Jetpack Compose）：岁月（事件时间线）、人物（2,157 人、六分类）、天下（舆图／机构／典章）、我的。界面按功能分包于 `app/src/main/java/com/ljyss/{ui,domain}/`，`MainActivity.kt` 只留装配与底部导航。
+- `backend/` — 内容资料库与编辑服务（FastAPI + SQLite）：`app/` 服务代码，`data/content/*.jsonl` 为版本库真相，`data/ming_history.sqlite3` 为可再生构建产物，`scripts/` 为数据管线，`sources/` 为原始权威数据包。
 - `docs/` — 接口契约与界面核对记录
 - `sources/`(见 `backend/sources/`)— 原始权威数据包,详见下文
 
@@ -41,7 +41,7 @@ ctext.org API 需付费认证。
 `backend/data/content/*.jsonl`(按表一行一条,可 diff 可 review);SQLite 本身是本地产物,
 已 gitignore。克隆后无需手工恢复:内容服务启动时发现库缺失会自动从文本重建,也可显式执行
 `scripts/content_store.py import`(文本→库)或 `export`(库→文本,改完内容后提交前跑)。
-下游为 App 的 `/v1/bootstrap` 数据源。
+构建时，同一份 SQLite 资料库会随 Android App 打包；FastAPI 接口用于内容编辑、开发检查与调试，不再作为客户端的回退或替代数据源。
 
 ## 开发
 

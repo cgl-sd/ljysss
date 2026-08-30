@@ -54,7 +54,7 @@ internal fun PersonProfile(
     relations: List<PersonRelation>,
     onOpenPerson: (String) -> Unit,
 ) {
-    // 正常读取服务端预生成栏目；离线种子没有 sections 时回退至摘要生平，
+    // 正常读取资料库预生成栏目；缺少 sections 时回退至摘要生平，
     // 不能让人物详情只剩姓名与画像。
     val sections = person.sections
         .ifEmpty {

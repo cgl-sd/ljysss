@@ -13,8 +13,7 @@ class ContentServiceTest(unittest.TestCase):
         payload = bootstrap_content()
         self.assertEqual(18, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
-        # 748 位精选 + 全量收录的明朝相关人物（明史传主 ∩ 维基），下限 700、上限放开。
-        self.assertGreaterEqual(len(payload["people"]), 700)
+        self.assertGreaterEqual(len(payload["people"]), 2_000)
         # 皇帝不与文臣武将建关系；关系网以家庭、同僚与南明阵营类为主，亲属补录可持续增加。
         self.assertGreaterEqual(len(payload["relationships"]), 30)
         self.assertGreaterEqual(len(payload["institutions"]), 12)
@@ -102,7 +101,7 @@ class ContentServiceTest(unittest.TestCase):
             events_with_background = database.execute(
                 "SELECT COUNT(DISTINCT event_id) FROM event_section WHERE section_key = 'background'"
             ).fetchone()[0]
-        self.assertGreaterEqual(people, 700)
+        self.assertGreaterEqual(people, 2_000)
         self.assertEqual(events, events_with_background)
 
     def test_every_person_has_a_factual_biography(self):

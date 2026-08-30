@@ -47,7 +47,7 @@ data class HistoricalPerson(
     val portraitKey: String? = null,
     /** 内部数据状态；用户端不再区分来源，界面不展示此字段。 */
     val verificationStatus: String = "已校验",
-    /** 服务端按栏目组织的详情正文；离线种子资料为空列表，界面自动降级为 biography 单段。 */
+    /** 详情正文按栏目组织；空列表时界面自动回退为 biography 单段。 */
     val sections: List<PersonSection> = emptyList(),
     /** 面向读者的姓名；宗室女性有可考本名时与档案封号分开保存。 */
     val displayName: String = name,
@@ -113,32 +113,3 @@ data class SpecialItem(
     val era: String,
     val description: String,
 )
-
-enum class MapPeriod(val label: String) {
-    MING("明代"),
-    MODERN("现代"),
-}
-
-data class MapLayer(
-    val id: String,
-    val label: String,
-    val description: String,
-    val enabledByDefault: Boolean,
-)
-
-/** 地图文案与摆放语义属于内容数据；Compose 只负责把语义锚点渲染到当前屏幕。 */
-data class MapLabel(
-    val name: String,
-    val anchor: MapLabelAnchor,
-    val isCapital: Boolean = false,
-)
-
-enum class MapLabelAnchor {
-    NORTH,
-    WEST,
-    CENTRAL,
-    EAST,
-    KOREA,
-    BEIJING,
-    NANJING,
-}

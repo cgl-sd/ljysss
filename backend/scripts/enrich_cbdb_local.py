@@ -93,7 +93,7 @@ def main() -> int:
                 best = (score, c)
         if best and best[0] <= 40:
             resolved[person["id"]] = best[1]
-    print(f"CBDB 人物匹配 {len(resolved)}/748 位。", flush=True)
+    print(f"CBDB 人物匹配 {len(resolved)}/{len(people)} 位。", flush=True)
 
     family_enriched = 0
     life_enriched = 0

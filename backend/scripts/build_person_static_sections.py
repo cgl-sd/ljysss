@@ -333,7 +333,7 @@ def main(dry_run: bool) -> None:
     for annal_id, people_ids in participants_of.items():
         for person_id in people_ids:
             tables["annal_participant"].append({"annal_id": annal_id, "person_id": person_id})
-    # 精选事件的参与人也补进关联表，供文章与后续图表同源使用
+    # 已收录事件的参与人也补进关联表，供文章与后续图表同源使用
     for event in tables["event"]:
         for name in [n for n in (event.get("participants") or "").split("、") if n.strip()]:
             person_id = name_to_id.get(name.strip())

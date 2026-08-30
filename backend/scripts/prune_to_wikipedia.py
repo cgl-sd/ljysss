@@ -142,7 +142,7 @@ def main(dry_run: bool) -> None:
         if not (row.get("content_type") == "person" and row.get("content_id") in doomed)
     ]
     result_by_id = {row["id"]: row for row in results}
-    # audit 为早期未缓存的记录按标题读取了离线维基包；将通过门槛的原文一并落入
+    # audit 为早期未缓存的记录按标题读取了本地维基数据包；将通过门槛的原文一并落入
     # person_wiki，避免下一次只因缓存缺失而重复扫描或失去可复核正文。
     wiki_by_person = {row["person_id"]: row for row in tables["person_wiki"]}
     for person_id in sorted(confirmed - set(wiki_by_person)):
@@ -173,7 +173,7 @@ def main(dry_run: bool) -> None:
             "title": f"维基百科「{wiki['wiki_title']}」",
             "url": wikipedia_url(wiki["wiki_title"]),
             "locator": wiki["wiki_title"],
-            "note": "由已核对的离线维基正文补登记出处",
+            "note": "由已核对的维基正文补登记出处",
         })
         backfilled += 1
 

@@ -194,7 +194,7 @@ def classify(
 
 
 def fetch_missing_wiki_text(wanted_titles: set[str]) -> dict[str, str]:
-    """一次扫描离线维基包，为仅存 URL 的人物补审计文本；不写回内容库。"""
+    """一次扫描本地维基数据包，为仅存 URL 的人物补审计文本；不写回内容库。"""
 
     if not wanted_titles:
         return {}
@@ -267,7 +267,7 @@ def audit(fetch_missing: bool, include_profiles: bool = False):
             if not wiki_by_person.get(person["id"], "")
             for title in wiki_url_by_person.get(person["id"], [])
         }
-        # 早期导入有少量条目只留下了《明史》或百度来源。对这类人用姓名精确查询离线
+        # 早期导入有少量条目只留下了《明史》或百度来源。对这类人用姓名精确查询本地
         # 中文维基包；命中仍须经过下方的同名与朝代检验，不能直接视为通过。
         wanted.update(
             simplify(person["name"])
@@ -347,7 +347,7 @@ def audit(fetch_missing: bool, include_profiles: bool = False):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--no-fetch", action="store_true", help="不扫描离线维基包，只审计现有正文")
+    parser.add_argument("--no-fetch", action="store_true", help="不扫描本地维基数据包，只审计现有正文")
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT, help="JSON 审计报告路径")
     parser.add_argument("--strict", action="store_true", help="存在待核或排除项时以非零状态退出")
     args = parser.parse_args()

@@ -7,9 +7,6 @@ import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionReform
-import com.ljyss.data.model.MapLayer
-import com.ljyss.data.model.MapLabel
-import com.ljyss.data.model.MapPeriod
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.PersonSection
@@ -19,10 +16,10 @@ import com.ljyss.data.model.SpecialItem
 import java.io.File
 
 /**
- * 发布版内容库。APK 内置只读 SQLite，首次启动复制到 App 私有目录后从本机读取；
- * 不依赖开发机上的 FastAPI、adb reverse 或网络。
+ * 统一资料库。APK 内置只读 SQLite，首次启动复制到 App 私有目录后读取；
+ * 不依赖开发机上的 FastAPI 或 adb reverse。
  */
-class OfflineMingRepository private constructor(
+class BundledMingRepository private constructor(
     private val reignData: List<Reign>,
     private val peopleData: List<HistoricalPerson>,
     private val relationData: List<PersonRelation>,
@@ -38,16 +35,12 @@ class OfflineMingRepository private constructor(
     override fun institutions(): List<Institution> = institutionData
     override fun personDetail(id: String): HistoricalPerson? = personById[id]
     override fun specialItems(): List<SpecialItem> = specialData
-    override fun mapLayers(): List<MapLayer> = SeedMingRepository.mapLayers()
-    override fun mapLabels(period: MapPeriod): List<MapLabel> = SeedMingRepository.mapLabels(period)
-    override fun mapTimelineLabels(): List<String> = SeedMingRepository.mapTimelineLabels()
-
     companion object {
         private const val AssetName = "ming_history.sqlite3"
-        private const val Preferences = "offline_content"
+        private const val Preferences = "content_library"
         private const val InstalledVersion = "installed_version"
 
-        fun load(context: Context): OfflineMingRepository {
+        fun load(context: Context): BundledMingRepository {
             val databaseFile = installAsset(context.applicationContext)
             SQLiteDatabase.openDatabase(databaseFile.path, null, SQLiteDatabase.OPEN_READONLY).use { database ->
                 val sections = database.rows(
@@ -122,7 +115,7 @@ class OfflineMingRepository private constructor(
                         events = eventsByReign[row.required("id")].orEmpty(),
                     )
                 }
-                return OfflineMingRepository(
+                return BundledMingRepository(
                     reignData = reigns,
                     peopleData = people,
                     relationData = database.rows(
@@ -181,9 +174,9 @@ class OfflineMingRepository private constructor(
             context.assets.open(AssetName).use { input ->
                 temporary.outputStream().use { output -> input.copyTo(output) }
             }
-            check(temporary.length() > 1_000_000L) { "离线资料库文件不完整" }
-            if (destination.exists()) check(destination.delete()) { "无法更新离线资料库" }
-            check(temporary.renameTo(destination)) { "无法安装离线资料库" }
+            check(temporary.length() > 1_000_000L) { "资料库文件不完整" }
+            if (destination.exists()) check(destination.delete()) { "无法更新资料库" }
+            check(temporary.renameTo(destination)) { "无法安装资料库" }
             preferences.edit().putLong(InstalledVersion, version).apply()
             return destination
         }

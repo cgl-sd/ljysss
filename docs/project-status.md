@@ -11,16 +11,16 @@
 
 - 正式人物：2,157 人；朝代：18 个；事件：76 件；纪年记录：323 条。
 - 人物生平分栏：3,777 条；人物家族记录：2,628 条；人物关系边：99 条。
-- 内容真相保存在 `backend/data/content/*.jsonl`，运行用 SQLite 为可再生的 `backend/data/ming_history.sqlite3`，并会打入 APK 供离线读取。
+- 内容真相保存在 `backend/data/content/*.jsonl`；运行用 SQLite 为可再生的 `backend/data/ming_history.sqlite3`，并作为应用统一资料库打入 APK。
 
 ## 保留的数据与文档
 
 - `backend/sources/` 保存中文维基、CBDB 与《明史》三套权威原始数据包；它们受保护且不可作为清理目标。
-- `docs/` 保存接口契约、内容管线、数据审计、覆盖规划和 UI 核对记录；体积很小，应随 Git 保留。
+- `docs/` 保存接口契约、当前内容范围、数据规则、覆盖规划和 UI 核对记录；体积很小，应随 Git 保留。
 - `tmp/`、根 `build/`、`app/build/` 的中间产物以及 `.gradle/` 均可按需重建，不作为长期项目文件。
 
 ## 发布方式
 
-- 当前调试 APK：`app/build/outputs/apk/debug/app-debug.apk`（约 88MB）。
+- 当前调试 APK：`app/build/outputs/apk/debug/app-debug.apk`（约 74MB）。
 - 当前 release 候选：`app/build/outputs/apk/release/app-release-unsigned.apk`（约 55MB）。生产构建命令为 `./gradlew assembleRelease`；未配置发布签名时生成的是未签名 APK，须先配置自己的 keystore 后才能上架或正式分发。
-- Android 内容服务可由 `cd backend && .venv/bin/uvicorn app.main:app --port 8000` 启动；应用内仍可使用已打包的离线数据库。
+- Android 内容服务可由 `cd backend && .venv/bin/uvicorn app.main:app --port 8000` 启动，用于编辑与开发核对；应用界面直接读取已打包的统一资料库。
