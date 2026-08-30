@@ -162,8 +162,6 @@ internal fun PeopleScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         MingList(contentPadding) {
-            item { MingMasthead() }
-            item { OrnamentalTitle("人物") }
             if (selectedPerson != null) {
                 item {
                     PersonProfile(
@@ -173,6 +171,8 @@ internal fun PeopleScreen(
                     )
                 }
             } else {
+                item { MingMasthead() }
+                item { OrnamentalTitle("人物") }
                 item {
                     PeopleTabRail(
                         selected = selectedTab,
