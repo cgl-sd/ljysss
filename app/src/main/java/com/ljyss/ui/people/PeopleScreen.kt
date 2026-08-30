@@ -78,8 +78,8 @@ internal fun PeopleScreen(
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.DYNASTY) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
-    // 人物页进入后即明确显示洪武朝；年表始终有且只有一个选中朝代。
-    var selectedPeopleReign by rememberSaveable { mutableStateOf("洪武") }
+    // 默认筛选洪武；再次点击当前朝代即可取消筛选、显示当前分类的全部人物。
+    var selectedPeopleReign by rememberSaveable { mutableStateOf<String?>("洪武") }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -116,7 +116,7 @@ internal fun PeopleScreen(
         val keyword = query.trim()
         sortedPeople.filter { person ->
             person.category == selectedCategory &&
-                person.reign.contains(selectedPeopleReign) &&
+                (selectedPeopleReign?.let { person.reign.contains(it) } ?: true) &&
                 (keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword))
         }
     }
@@ -270,7 +270,7 @@ internal fun PeopleScreen(
                         reigns = reigns,
                         selectedReign = selectedPeopleReign,
                         onSelected = { reign ->
-                            selectedPeopleReign = reign
+                            selectedPeopleReign = if (selectedPeopleReign == reign) null else reign
                         },
                     )
                 }
@@ -312,7 +312,7 @@ internal fun PeopleScreen(
 @Composable
 private fun PersonChronologyRail(
     reigns: List<Reign>,
-    selectedReign: String,
+    selectedReign: String?,
     onSelected: (String) -> Unit,
 ) {
     Surface(
