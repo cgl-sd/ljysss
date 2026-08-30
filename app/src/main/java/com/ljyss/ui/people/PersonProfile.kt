@@ -35,6 +35,7 @@ import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
+import com.ljyss.data.model.PersonSection
 import com.ljyss.domain.LifeCollapseCharacterLimit
 import com.ljyss.domain.parseLifeBlocks
 import com.ljyss.domain.parentChildTypes
