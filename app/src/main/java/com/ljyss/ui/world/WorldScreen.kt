@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -172,26 +171,50 @@ private fun AtlasMapPlate(modifier: Modifier = Modifier) {
                     )
                 }
             }
-            AtlasCaption()
-            Row(
+            AtlasInformationPanel(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    .padding(top = 4.dp),
             ) {
-                AtlasInfoCard(
-                    title = "两京",
-                    detail = "北京\n南京",
-                    illustration = R.drawable.atlas_two_capitals_palace,
-                    modifier = Modifier.weight(1f),
-                )
-                AtlasInfoCard(
-                    title = "十三省",
-                    detail = null,
-                    illustration = R.drawable.atlas_thirteen_provinces_landscape,
-                    modifier = Modifier.weight(1f),
-                )
+                AtlasCaption()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    AtlasInfoCard(
+                        title = "两京",
+                        detail = "北京\n南京",
+                        illustration = R.drawable.atlas_two_capitals_palace,
+                        modifier = Modifier.weight(1f),
+                    )
+                    AtlasInfoCard(
+                        title = "十三省",
+                        detail = null,
+                        illustration = R.drawable.atlas_thirteen_provinces_landscape,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
+        }
+    }
+}
+
+/** 图名与说明卡组成独立图例组件，以顶边框与舆图区隔开。 */
+@Composable
+private fun AtlasInformationPanel(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Surface(
+        modifier = modifier,
+        shape = CutCornerShape(7.dp),
+        color = PaperLight.copy(alpha = 0.6f),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.88f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
+        ) {
+            content()
         }
     }
 }
@@ -201,15 +224,14 @@ private fun AtlasCaption() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+            .height(60.dp),
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            painter = painterResource(R.drawable.atlas_title_plaque),
+            painter = painterResource(R.drawable.atlas_title_plaque_full),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillWidth,
+            contentScale = ContentScale.Fit,
         )
         Text(
             "明代两京一十三省舆图",
