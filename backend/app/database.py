@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS person (
     display_name TEXT NOT NULL DEFAULT '',
     title TEXT NOT NULL,
     reign TEXT NOT NULL,
+    archive_start_year INTEGER NOT NULL DEFAULT 0,
     years TEXT NOT NULL,
     category TEXT NOT NULL,
     courtesy_name TEXT NOT NULL DEFAULT '',
@@ -543,6 +544,8 @@ def _migrate_person_columns(connection: sqlite3.Connection) -> None:
         connection.execute("ALTER TABLE person ADD COLUMN verification_status TEXT NOT NULL DEFAULT '未校验'")
     if "display_name" not in columns:
         connection.execute("ALTER TABLE person ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
+    if "archive_start_year" not in columns:
+        connection.execute("ALTER TABLE person ADD COLUMN archive_start_year INTEGER NOT NULL DEFAULT 0")
     connection.execute("UPDATE person SET display_name = name WHERE trim(display_name) = ''")
 
 
@@ -601,9 +604,15 @@ def export_content() -> list[tuple[str, int]]:
             rows = connection.execute(
                 f"SELECT * FROM {table}" + (f" ORDER BY {', '.join(order)}" if order else "")
             ).fetchall()
-            payload = "".join(
-                json.dumps(dict(row), ensure_ascii=False, sort_keys=True) + "\n" for row in rows
-            )
+            serialized_rows = []
+            for row in rows:
+                record = dict(row)
+                # 总档时间只在确有跨年号档案归属时写入内容真相；其余人物走列默认值，
+                # 避免一次新增排序字段让两千余条未改内容产生无意义的版本差异。
+                if table == "person" and record.get("archive_start_year") == 0:
+                    record.pop("archive_start_year")
+                serialized_rows.append(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+            payload = "".join(serialized_rows)
             (CONTENT_DIRECTORY / f"{table}.jsonl").write_text(payload, encoding="utf-8")
             counts.append((table, len(rows)))
     return counts

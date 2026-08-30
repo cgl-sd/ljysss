@@ -108,6 +108,7 @@ class RemoteMingRepository private constructor(
                 name = person.getString("name"),
                 title = person.getString("title"),
                 reign = person.getString("reign"),
+                archiveStartYear = person.optInt("archive_start_year", 0),
                 years = person.getString("years"),
                 note = person.getString("summary"),
                 category = PersonCategory.entries.first { it.label == person.getString("category") },

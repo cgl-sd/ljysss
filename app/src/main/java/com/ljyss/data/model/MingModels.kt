@@ -51,6 +51,8 @@ data class HistoricalPerson(
     val sections: List<PersonSection> = emptyList(),
     /** 面向读者的姓名；宗室女性有可考本名时与档案封号分开保存。 */
     val displayName: String = name,
+    /** 仅在跨年号总档（目前为南明）中使用的首次活动年份；0 表示未设。 */
+    val archiveStartYear: Int = 0,
 )
 
 /** 人物详情结构化栏目：life／family／relations／events，按服务端 position 排序。 */

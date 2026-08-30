@@ -10,9 +10,11 @@ internal fun personBirthYear(person: HistoricalPerson): Int =
 internal val personEraOrder = listOf(
     "洪武", "建文", "永乐", "洪熙", "宣德", "正统", "景泰", "天顺", "成化",
     "弘治", "正德", "嘉靖", "隆庆", "万历", "泰昌", "天启", "崇祯",
+    "南明",
 )
 
 internal fun personChronologyRank(person: HistoricalPerson): Int =
+    if (person.reign.contains("南明")) personEraOrder.indexOf("南明") else
     personEraOrder.indexOfFirst { era -> person.reign.contains(era) }.let { index ->
         if (index >= 0) index else Int.MAX_VALUE
     }
@@ -44,7 +46,18 @@ internal fun orderedPeopleForCards(
     people: List<HistoricalPerson>,
     selectedReign: String? = null,
 ): List<HistoricalPerson> = people.sortedWith(
-    if (selectedReign == null) chronologicalPersonCardComparator else rankedPersonCardComparator,
+    when (selectedReign) {
+        null -> chronologicalPersonCardComparator
+        "南明" -> southMingChronologicalComparator
+        else -> rankedPersonCardComparator
+    },
+)
+
+/** 南明为多政权并行的总档，档内人物一律按首次任事年份阅读，不另按帝号切段。 */
+private val southMingChronologicalComparator: Comparator<HistoricalPerson> = compareBy<HistoricalPerson>(
+    { it.archiveStartYear.takeIf { year -> year > 0 } ?: Int.MAX_VALUE },
+    { personCardRank(it) },
+    { it.displayName },
 )
 
 private fun personCardRank(person: HistoricalPerson): Int = when (person.category) {

@@ -64,7 +64,7 @@ class OfflineMingRepository private constructor(
                 }
                 val people = database.rows(
                     """
-                    SELECT id, name, display_name, title, reign, years, category, courtesy_name,
+                    SELECT id, name, display_name, title, reign, archive_start_year, years, category, courtesy_name,
                            summary, biography, family_summary, portrait_key
                     FROM person ORDER BY reign, name
                     """.trimIndent(),
@@ -75,6 +75,7 @@ class OfflineMingRepository private constructor(
                         displayName = row.value("display_name").ifBlank { row.required("name") },
                         title = row.required("title"),
                         reign = row.required("reign"),
+                        archiveStartYear = row.int("archive_start_year"),
                         years = row.required("years"),
                         note = row.required("summary"),
                         biography = row.required("biography"),

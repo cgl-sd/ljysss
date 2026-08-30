@@ -33,10 +33,10 @@ class PersonOrderTest {
     }
 
     @Test
-    fun `年号次序表覆盖十七朝且首尾固定`() {
-        assertEquals(17, personEraOrder.size)
+    fun `年号次序表覆盖十七朝与南明总档且首尾固定`() {
+        assertEquals(18, personEraOrder.size)
         assertEquals("洪武", personEraOrder.first())
-        assertEquals("崇祯", personEraOrder.last())
+        assertEquals("南明", personEraOrder.last())
     }
 
     @Test
@@ -50,6 +50,17 @@ class PersonOrderTest {
     @Test
     fun `年号表之外的人物排到末位`() {
         assertEquals(Int.MAX_VALUE, personChronologyRank(person("", "1500—1560")))
+    }
+
+    @Test
+    fun `南明总档按首次活动年份排列而不按帝号拆段`() {
+        val people = listOf(
+            person("崇祯、南明", "1607—1645", "史可法").copy(archiveStartYear = 1644),
+            person("万历、南明", "1604—1646", "朱聿键").copy(category = PersonCategory.EMPERORS, archiveStartYear = 1645),
+            person("明代、南明", "1623—1662", "朱由榔").copy(category = PersonCategory.EMPERORS, archiveStartYear = 1646),
+        )
+
+        assertEquals(listOf("史可法", "朱聿键", "朱由榔"), orderedPeopleForCards(people, "南明").map { it.name })
     }
 
     @Test
