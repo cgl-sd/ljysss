@@ -50,7 +50,6 @@ import com.ljyss.data.model.PeopleTab
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.Reign
 import com.ljyss.domain.parentChildTypes
-import com.ljyss.domain.personBirthYear
 import com.ljyss.domain.orderedPeopleForCards
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
