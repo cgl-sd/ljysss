@@ -122,7 +122,15 @@ private val appSections = listOf(
         iconSize = 20.dp,
         selectedIconSize = 23.dp,
     ),
-    AppSection(label = "我的", iconRes = R.drawable.nav_profile_woodblock, activeColor = Vermilion),
+    AppSection(
+        label = "我的",
+        iconRes = R.drawable.nav_profile_woodblock,
+        activeColor = Vermilion,
+        // 头像图案几乎占满原始画布；缩小画框后才与其余木刻图标的可见笔画等大，
+        // 同时给下方文字留下稳定间距。
+        iconSize = 19.dp,
+        selectedIconSize = 21.dp,
+    ),
 )
 
 @Composable
