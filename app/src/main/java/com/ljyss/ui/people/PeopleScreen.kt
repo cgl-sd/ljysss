@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -84,6 +85,8 @@ internal fun PeopleScreen(
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     var expandedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var returnListOffset by rememberSaveable { mutableStateOf(0) }
     var relationView by rememberSaveable { mutableStateOf(RelationView.PERSON) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
@@ -94,6 +97,7 @@ internal fun PeopleScreen(
     }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
+    val peopleListState = rememberLazyListState()
     var profileDetail by remember(selectedPerson?.id) { mutableStateOf(selectedPerson) }
     LaunchedEffect(selectedPerson?.id) {
         val person = selectedPerson
@@ -119,6 +123,21 @@ internal fun PeopleScreen(
     fun returnFromProfile() {
         selectedPersonName = null
         personStack = emptyList()
+    }
+
+    fun openProfileFromBrowse(name: String) {
+        returnListIndex = peopleListState.firstVisibleItemIndex
+        returnListOffset = peopleListState.firstVisibleItemScrollOffset
+        selectedPersonName = name
+        personStack = emptyList()
+    }
+
+    LaunchedEffect(selectedPersonName) {
+        val index = returnListIndex
+        if (selectedPersonName == null && index != null) {
+            peopleListState.scrollToItem(index, returnListOffset)
+            returnListIndex = null
+        }
     }
 
     // 人物详情内跳转另一人物时保留来路，返回键与页内返回逐层回退，最后才退出详情。
@@ -160,7 +179,7 @@ internal fun PeopleScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        MingList(contentPadding) {
+        MingList(contentPadding, state = peopleListState) {
             if (selectedPerson != null) {
                 item {
                     PersonProfile(
@@ -197,13 +216,11 @@ internal fun PeopleScreen(
                         people = allPeople.filter { it.reign.contains(selectedReign.title) },
                         expandedEventId = expandedArchiveEventId,
                         onPersonSelected = { person ->
-                            selectedPersonName = person.name
-                            personStack = emptyList()
+                            openProfileFromBrowse(person.name)
                         },
                         onOpenPerson = { name ->
                             if (allPeople.any { it.name == name }) {
-                                selectedPersonName = name
-                                personStack = emptyList()
+                                openProfileFromBrowse(name)
                             }
                         },
                         onEventSelected = { event ->
@@ -245,8 +262,7 @@ internal fun PeopleScreen(
                             children = childrenByPerson[person.name].orEmpty(),
                             expanded = false,
                             onClick = {
-                                selectedPersonName = person.name
-                                personStack = emptyList()
+                                openProfileFromBrowse(person.name)
                             },
                         )
                     }

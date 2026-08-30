@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +30,10 @@ import com.ljyss.ui.theme.XuanPaper
 @Composable
 internal fun MingList(
     contentPadding: PaddingValues,
+    state: LazyListState? = null,
     content: LazyListScope.() -> Unit,
 ) {
+    val listState = state ?: rememberLazyListState()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -41,6 +45,7 @@ internal fun MingList(
             bottom = contentPadding.calculateBottomPadding() + 20.dp,
         ),
         verticalArrangement = Arrangement.spacedBy(14.dp),
+        state = listState,
         content = content,
     )
 }
