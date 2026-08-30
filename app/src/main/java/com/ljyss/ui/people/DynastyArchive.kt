@@ -56,7 +56,7 @@ internal fun DynastyArchive(
     onEventSelected: (HistoricalEvent) -> Unit,
 ) {
     val groups = PersonCategory.entries.map { category ->
-        category to orderedPeopleForCards(people.filter { it.category == category })
+        category to orderedPeopleForCards(people.filter { it.category == category }, reign.title)
     }
 
     Card(

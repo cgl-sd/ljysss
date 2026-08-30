@@ -99,7 +99,7 @@ class PersonOrderTest {
         )
 
         assertEquals(listOf("首辅", "永乐尚书", "嘉靖尚书", "侍郎"),
-            orderedPeopleForCards(ministers).map { it.name })
+            orderedPeopleForCards(ministers, "洪武").map { it.name })
     }
 
     @Test
@@ -111,7 +111,19 @@ class PersonOrderTest {
         )
 
         assertEquals(listOf("洪武公", "永乐国公", "洪武侯"),
-            orderedPeopleForCards(generals).map { it.name })
+            orderedPeopleForCards(generals, "洪武").map { it.name })
+    }
+
+    @Test
+    fun `未选年号时先按朝代同朝才按官职排序`() {
+        val people = listOf(
+            person("嘉靖", "1500—1560", "嘉靖首辅").copy(title = "内阁首辅"),
+            person("洪武", "1320—1380", "洪武侍郎").copy(title = "兵部侍郎"),
+            person("洪武", "1330—1390", "洪武尚书").copy(title = "兵部尚书"),
+        )
+
+        assertEquals(listOf("洪武尚书", "洪武侍郎", "嘉靖首辅"),
+            orderedPeopleForCards(people).map { it.name })
     }
 
     private val seedComparator =

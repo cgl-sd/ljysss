@@ -90,10 +90,6 @@ internal fun PeopleScreen(
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
-    // 两个入口必须共用人物卡排序；搜索与切类目仅做线性过滤。
-    val sortedPeople = remember(repository) {
-        orderedPeopleForCards(allPeople)
-    }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
     val selectedArchiveEvent = allEvents.firstOrNull { it.id == selectedArchiveEventId }
@@ -112,13 +108,14 @@ internal fun PeopleScreen(
             .groupBy { it.fromName }
             .mapValues { entry -> entry.value.map { it.toName } }
     }
-    val people = remember(sortedPeople, selectedCategory, selectedPeopleReign, query) {
+    val people = remember(allPeople, selectedCategory, selectedPeopleReign, query) {
         val keyword = query.trim()
-        sortedPeople.filter { person ->
+        val filtered = allPeople.filter { person ->
             person.category == selectedCategory &&
                 (selectedPeopleReign?.let { person.reign.contains(it) } ?: true) &&
                 (keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword))
         }
+        orderedPeopleForCards(filtered, selectedPeopleReign)
     }
 
     fun returnFromProfile() {

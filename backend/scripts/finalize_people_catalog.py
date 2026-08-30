@@ -93,6 +93,47 @@ OFFICIAL_APPOINTMENT = re.compile(
     r"[^。！？\n]{0,24}" + OFFICIAL_ROLE.pattern
 )
 LITERATI_TO_OFFICIAL = {"taozongyi"}
+# 文苑展示称号只接受传主本人的文艺／学术身份。批量抽取过的科举句、亲属关系与
+# 旁人官职均不再沿用；这些字段以本地中文维基导语、《明史》传文为逐项依据。
+LITERATI_TITLE_OVERRIDES = {
+    "zhangfengyi": "戏曲家",
+    "gaobing": "文学评论家",
+    "xiezhen": "诗人",
+    "tanyuanchun": "文学家",
+    "tangyin": "书画家",
+    "wangzhideng": "书画家",
+    "yuyunwen": "书法家",
+    "shenmingchen": "诗人",
+    "xufuzuo": "戏曲家",
+    "shenzhou": "吴门画派创始人",
+    "huyinglin": "文献学家",
+    "huangchunyao": "古文家",
+    "huangshengceng": "农学家",
+    "chengjiasui": "画家",
+    "loujian": "诗文家",
+    "tangshisheng": "诗人",
+    "wangchong": "书画家",
+    "zhaojie": "诗人",
+    "wangzhenqing": "诗人",
+    "zhaofang": "经学家",
+}
+# 这些人有可核验的官职或职掌，不因其文艺成就留在文苑。值为详情和卡片共用的正式称号。
+LITERATI_OFFICIAL_OVERRIDES = {
+    "xuzhenqing": "大理寺左寺副",
+    "lishizhen": "太医院院判",
+    "wuyingji": "池州推官",
+    "chenxianzhang": "翰林院检讨",
+    "huanghui": "少詹事兼侍读学士",
+    "chenjitai": "行人司行人",
+    "wangfu": "中书舍人",
+    "songke": "凤翔府同知",
+    "wanglv": "秦王府医正",
+    "lixiyan": "左春坊右赞善",
+    "qianchun": "江阴知县",
+}
+# 无正式文艺／学术称号且不应以科举、孝义、道士或婚姻身份占据文苑的条目，直接下架。
+LITERATI_EXCLUDED_IDS = {"wangdao", "zhangzhong"}
+EXCLUDED_IDS |= LITERATI_EXCLUDED_IDS
 
 
 def load(name: str) -> list[dict]:
@@ -201,6 +242,10 @@ def choose_source_title(person: dict, wiki: str) -> str:
 
 def canonical_title(person: dict, wiki: str, baseline_title: str | None = None) -> str:
     name = person["name"].strip()
+    if person["id"] in LITERATI_OFFICIAL_OVERRIDES:
+        return LITERATI_OFFICIAL_OVERRIDES[person["id"]]
+    if person["id"] in LITERATI_TITLE_OVERRIDES:
+        return LITERATI_TITLE_OVERRIDES[person["id"]]
     if person["id"] in EMPEROR_TITLES:
         return EMPEROR_TITLES[person["id"]]
     raw_old = person.get("title", "") if baseline_title is None else baseline_title
@@ -240,6 +285,8 @@ def corrected_category(person: dict, wiki: str, title: str, baseline_category: s
 
     if person["id"] in EMPEROR_TITLES or title == "皇太子":
         return "帝王"
+    if person["id"] in LITERATI_OFFICIAL_OVERRIDES:
+        return "朝臣"
     # 原名录的六分类是人物自身身份的基线；本轮只按可证明的储君和高阶官职作迁移。
     # 不再扫描全文，以免亲属的后妃、王爵、军职改变传主分类。
     if OFFICIAL_ROLE.search(title):
@@ -273,6 +320,22 @@ def has_ming_anchor(references: list[dict], person_id: str, mingshi_ids: set[str
     )
 
 
+def validate_literati(people: list[dict]) -> list[str]:
+    """文苑只发布未任官且第二行是明确文艺／学术身份的人物。"""
+
+    issues: list[str] = []
+    forbidden = re.compile(r"(?:士$|进士|進士|举人|舉人|驸马|駙馬|公主|皇后|中举|中舉|年少)")
+    for person in people:
+        if person["category"] != "文苑":
+            continue
+        title = person["title"]
+        if person["id"] not in LITERATI_TITLE_OVERRIDES:
+            issues.append(f"{person['id']}（文苑缺少核验文艺／学术称号）")
+        if OFFICIAL_ROLE.search(title) or forbidden.search(title) or not title.endswith(("家", "人")):
+            issues.append(f"{person['id']}（文苑称号不合格：{title}）")
+    return issues
+
+
 def finalize(apply: bool, baseline: Path | None = None) -> tuple[int, list[str]]:
     names = [
         "person_category", "person_section_definition", "person", "person_wiki", "person_mingshi",
@@ -280,8 +343,10 @@ def finalize(apply: bool, baseline: Path | None = None) -> tuple[int, list[str]]
         "event_participant", "annal_participant", "person_cbdb",
     ]
     tables = {name: load(name) for name in names}
-    baseline_titles = {}
-    baseline_categories = {}
+    # 在文本清理前锁定已审核的人物基线。normalize_tables 会从叙事文字推断分类，
+    # 不能让其中出现的“诗人”等身份反向把已有官员改回文苑。
+    baseline_titles = {row["id"]: row.get("title", "") for row in tables["person"]}
+    baseline_categories = {row["id"]: row.get("category", "") for row in tables["person"]}
     if baseline:
         baseline_rows = [json.loads(line) for line in baseline.read_text(encoding="utf-8").splitlines() if line.strip()]
         baseline_titles = {row["id"]: row.get("title", "") for row in baseline_rows}
@@ -323,6 +388,8 @@ def finalize(apply: bool, baseline: Path | None = None) -> tuple[int, list[str]]
             unresolved.append(f"{person['id']}（缺少生平）")
         if re.search(r"[A-Za-z]|[?]|[（(]\s*[）)]", body):
             unresolved.append(f"{person['id']}（生平有英文、问号或空括号）")
+
+    unresolved.extend(validate_literati(tables["person"]))
 
     published_ids = {person["id"] for person in tables["person"] if person["id"] not in EXCLUDED_IDS}
     # 以人物表为唯一发布名录，级联剔除已移出人物的正文、关系、家族和参与记录，

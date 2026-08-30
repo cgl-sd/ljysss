@@ -22,15 +22,30 @@ internal fun personChronologyRank(person: HistoricalPerson): Int =
  * 不同先后。资料没有逐条保存任官月日时，以人物资料中最早出现的年号作为同级先后；
  * 生年和姓名仅用于保持结果稳定，不改变已知的官职／爵位顺序。
  */
-internal val personCardComparator: Comparator<HistoricalPerson> = compareBy<HistoricalPerson>(
+private val rankedPersonCardComparator: Comparator<HistoricalPerson> = compareBy<HistoricalPerson>(
     { personCardRank(it) },
     { personChronologyRank(it) },
     { personBirthYear(it) },
     { it.displayName },
 )
 
-internal fun orderedPeopleForCards(people: List<HistoricalPerson>): List<HistoricalPerson> =
-    people.sortedWith(personCardComparator)
+private val chronologicalPersonCardComparator: Comparator<HistoricalPerson> = compareBy<HistoricalPerson>(
+    { personChronologyRank(it) },
+    { personCardRank(it) },
+    { personBirthYear(it) },
+    { it.displayName },
+)
+
+/**
+ * 未选年号时先按朝代浏览，同朝内才比较官职或爵等；选定某朝时，所有卡片已是同一朝，
+ * 因而直接按官职／爵等排序。朝代档案与人物页调用同一入口。
+ */
+internal fun orderedPeopleForCards(
+    people: List<HistoricalPerson>,
+    selectedReign: String? = null,
+): List<HistoricalPerson> = people.sortedWith(
+    if (selectedReign == null) chronologicalPersonCardComparator else rankedPersonCardComparator,
+)
 
 private fun personCardRank(person: HistoricalPerson): Int = when (person.category) {
     PersonCategory.COURT -> when {
