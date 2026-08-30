@@ -52,6 +52,61 @@ class PersonProfileNormalizationTest(unittest.TestCase):
         self.assertNotIn("甲书", result)
         self.assertNotIn("评价", result)
 
+    def test_media_nested_headings_and_family_lists_do_not_reopen_life(self):
+        source = "人物在任时整饬政务。\n影视形象\n电视剧\n某剧由演员饰演。\n家庭成员\n子\n甲。\n女\n乙。\n参考资料\n《明史》。"
+        result = NORMALIZE.clean_wikipedia_bio(source)
+        self.assertEqual(result, "人物在任时整饬政务。")
+
+    def test_embedded_family_and_works_sentences_are_removed_semantically(self):
+        source = "人物是某帝第三子。人物早年入仕。其父为某官。著有《甲集》。后因政绩升任尚书。"
+        result = NORMALIZE.clean_wikipedia_bio(source)
+        self.assertEqual(result, "人物早年入仕。\n\n后因政绩升任尚书。")
+
+    def test_crown_prince_accession_is_not_mistaken_for_family_succession(self):
+        result = NORMALIZE.clean_wikipedia_bio("皇帝去世后，太子嗣位，改元建文。")
+        self.assertEqual(result, "皇帝去世后，太子嗣位，改元建文。")
+
+    def test_genealogical_list_is_removed_even_without_a_family_heading(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物曾祖父甲、祖父乙、父亲丙，家族世代务农。人物后来从军立功。")
+        self.assertEqual(result, "人物后来从军立功。")
+
+    def test_in_law_title_is_treated_as_family_information(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物同时也是皇帝的国丈。人物随后出征北方。")
+        self.assertEqual(result, "人物随后出征北方。")
+
+    def test_family_clause_is_removed_without_losing_same_sentence_biography(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物，某帝第三子，后继王位并镇守边地。")
+        self.assertEqual(result, "人物，后继王位并镇守边地。")
+
+    def test_category_fragment_left_after_family_removal_is_not_shown(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物，明朝政治人物，某官之弟。后任知县。")
+        self.assertEqual(result, "人物\n\n后任知县。")
+
+    def test_long_non_narrative_section_label_starts_a_skip_section(self):
+        source = "人物从政有绩。\n关于人物生母争议中\n这段材料不应展示。\n参考资料\n《明史》。"
+        result = NORMALIZE.clean_wikipedia_bio(source)
+        self.assertEqual(result, "人物从政有绩。")
+
+    def test_modern_life_text_is_converted_to_simplified_chinese(self):
+        source = "人物為明朝官員，歷任禮部尚書。\n早年\n其後參與政務。"
+        result = NORMALIZE.clean_wikipedia_bio(source)
+        self.assertIn("人物为明朝官员", result)
+        self.assertIn("其后参与政务", result)
+        self.assertNotIn("為", result)
+
+    def test_simplification_preserves_the_qianqing_palace_proper_noun(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物上疏乾清宫火灾，歷陳政事。")
+        self.assertIn("乾清宫", result)
+        self.assertIn("历陈政事", result)
+
+    def test_inline_evaluation_is_removed_but_identity_is_kept(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物，明代书法家，被皇帝誉为“第一人”。1403年入朝任职。")
+        self.assertEqual(result, "人物，明代书法家。\n\n1403年入朝任职。")
+
+    def test_parenthesized_see_also_line_is_not_shown_in_life(self):
+        result = NORMALIZE.clean_wikipedia_bio("人物生平（参看人物墓）。\n（参看人物墓）")
+        self.assertEqual(result, "人物生平。")
+
     def test_reference_and_family_subsections_are_not_kept_as_life_content(self):
         source = "人物入仕有政绩。\n兄弟\n甲、乙。\n年号\n干定。\n参考书目\n《明史》。"
         result = NORMALIZE.clean_wikipedia_bio(source)

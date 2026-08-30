@@ -22,18 +22,23 @@ class LifeTextTest {
     }
 
     @Test
-    fun `短行带句读或冒号时不判为小标题`() {
+    fun `只有叙事性短行才判为小标题`() {
         assertTrue(parseLifeBlocks("早年经历").single().isHeader)
         assertFalse(parseLifeBlocks("早年经历。").single().isHeader)
         assertFalse(parseLifeBlocks("字号：某某").single().isHeader)
         assertFalse(parseLifeBlocks("他自号「六一」").single().isHeader)
         assertFalse(parseLifeBlocks("此事尚待考；").single().isHeader)
+        assertFalse(parseLifeBlocks("影视作品").single().isHeader)
+        assertFalse(parseLifeBlocks("家庭成员").single().isHeader)
+        assertFalse(parseLifeBlocks("生平经历").single().isHeader)
     }
 
     @Test
-    fun `十八字是无句读短行判为标题的边界`() {
-        assertTrue(parseLifeBlocks("字".repeat(18)).single().isHeader)
+    fun `未知短行不因字数而变成黑色标题`() {
+        assertFalse(parseLifeBlocks("字".repeat(18)).single().isHeader)
         assertFalse(parseLifeBlocks("字".repeat(19)).single().isHeader)
+        assertTrue(parseLifeBlocks("概览").single().isHeader)
+        assertTrue(parseLifeBlocks("嘉靖年间").single().isHeader)
     }
 
     @Test
