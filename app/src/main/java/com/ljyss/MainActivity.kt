@@ -1,7 +1,6 @@
 package com.ljyss
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -49,7 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
-import com.ljyss.data.RemoteMingRepository
+import com.ljyss.data.OfflineMingRepository
 import com.ljyss.data.SeedMingRepository
 import com.ljyss.ui.people.PeopleScreen
 import com.ljyss.ui.profile.ProfileScreen
@@ -65,43 +64,42 @@ import com.ljyss.ui.timeline.TimelineScreen
 import com.ljyss.ui.world.WorldScreen
 
 class MainActivity : ComponentActivity() {
-    private var repository by mutableStateOf<MingRepository>(SeedMingRepository)
-
-    @Volatile
-    private var lastFetchFailed = false
+    private var repository by mutableStateOf<MingRepository?>(null)
+    private var contentLoadError by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             两京一十三省Theme {
-                TwoCapitalsApp(repository = repository)
+                val currentRepository = repository
+                if (currentRepository != null) {
+                    TwoCapitalsApp(repository = currentRepository)
+                } else {
+                    OfflineContentState(contentLoadError)
+                }
             }
         }
-        // 本地开发通过 `adb reverse tcp:8000 tcp:8000` 连接电脑上的内容服务；失败时保持离线资料。
-        if (BuildConfig.DEBUG) {
-            loadRemoteContent()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 启动时内容服务未连接的，回到前台自动重试，避免长期停留在离线种子资料。
-        if (BuildConfig.DEBUG && lastFetchFailed) {
-            loadRemoteContent()
-        }
-    }
-
-    private fun loadRemoteContent() {
+        // 只读取 APK 内置的发布数据库；FastAPI 仅用于内容编辑和开发调试，不参与阅读启动。
         Thread {
-            lastFetchFailed = true
-            runCatching { RemoteMingRepository.load("http://127.0.0.1:8000") }
-                .onSuccess { remote ->
-                    lastFetchFailed = false
-                    runOnUiThread { repository = remote }
-                }
-                .onFailure { error -> Log.w("MingContent", "使用离线资料：内容服务未连接", error) }
+            runCatching { OfflineMingRepository.load(applicationContext) }
+                .onSuccess { local -> runOnUiThread { repository = local } }
+                .onFailure { error -> runOnUiThread { contentLoadError = error.message ?: "资料库无法打开" } }
         }.start()
+    }
+}
+
+@Composable
+private fun OfflineContentState(error: String?) {
+    Surface(modifier = Modifier.fillMaxSize(), color = XuanPaper) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(32.dp)) {
+            Text(
+                text = error ?: "正在准备本地史料库…",
+                color = if (error == null) InkSoft else Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 17.sp,
+            )
+        }
     }
 }
 
