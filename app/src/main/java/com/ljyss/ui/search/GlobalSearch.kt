@@ -3,6 +3,7 @@ package com.ljyss.ui.search
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,14 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,33 +78,28 @@ fun GlobalSearchDialog(
     val resultListState = rememberLazyListState()
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.88f),
-            shape = CutCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92f),
+            shape = RoundedCornerShape(18.dp),
             color = PaperLight,
-            border = BorderStroke(1.25.dp, LineGold),
+            border = BorderStroke(1.dp, LineGold),
         ) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("全局搜索", modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("全卷检索", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                        Text("寻阅明代档案", color = Ink, fontFamily = FontFamily.Serif, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                    }
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Outlined.Close, contentDescription = "关闭搜索", tint = InkSoft)
                     }
                 }
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = CutCornerShape(7.dp),
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = Vermilion) },
-                    placeholder = { Text("搜索姓名、年号、官职、事件、机构、典章或全文", fontFamily = FontFamily.Serif) },
-                )
+                SearchField(query = query, onQueryChange = { query = it })
                 if (query.isBlank()) {
-                    Text("输入关键词后，可跨人物、岁月、天下与我的资料检索。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                    SearchBlankState()
                 } else if (results.isEmpty()) {
-                    Text("未找到相符内容。可尝试姓名、年号、官职或机构名称。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                    SearchEmptyState()
                 } else {
-                    Text("找到 ${results.size} 条结果", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                    Text("检得 ${results.size} 条", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     LazyColumn(
                         modifier = Modifier.weight(1f).mingScrollbar(resultListState),
                         state = resultListState,
@@ -122,18 +118,69 @@ fun GlobalSearchDialog(
 }
 
 @Composable
-private fun SearchResultCard(result: SearchResult, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clip(CutCornerShape(7.dp)).clickable(onClick = onClick),
-        shape = CutCornerShape(7.dp),
-        border = BorderStroke(1.dp, LineGold),
-        colors = CardDefaults.cardColors(containerColor = PaperShade),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = PaperShade.copy(alpha = 0.52f),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.82f)),
     ) {
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(result.kind, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            Text(result.title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text(result.excerpt, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Row(
+            modifier = Modifier.padding(horizontal = 13.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.Search, contentDescription = null, tint = Vermilion, modifier = Modifier.padding(end = 9.dp))
+            Box(modifier = Modifier.weight(1f).padding(vertical = 10.dp)) {
+                if (query.isBlank()) {
+                    Text("姓名、年号、官职、事件、机构或典章", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                }
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    textStyle = TextStyle(color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchBlankState() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("一卷可查人物、岁月与天下万象。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            listOf("人物", "年号", "大事", "机构", "典章").forEach { label ->
+                Surface(shape = CutCornerShape(4.dp), color = PaperShade.copy(alpha = 0.74f), border = BorderStroke(1.dp, LineGold.copy(alpha = 0.7f))) {
+                    Text(label, modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp), color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchEmptyState() {
+    Text("未寻得相符条目。可尝试姓名、年号、官职或机构名称。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+}
+
+@Composable
+private fun SearchResultCard(result: SearchResult, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().clip(CutCornerShape(6.dp)).clickable(onClick = onClick),
+        shape = CutCornerShape(6.dp),
+        color = PaperShade.copy(alpha = 0.68f),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.78f)),
+    ) {
+        Row(modifier = Modifier.padding(horizontal = 11.dp, vertical = 10.dp), verticalAlignment = Alignment.Top) {
+            Surface(shape = CutCornerShape(3.dp), color = Vermilion) {
+                Text(result.kind, modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp), color = PaperLight, fontFamily = FontFamily.Serif, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+            Column(modifier = Modifier.padding(start = 10.dp).weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(result.title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                Text(result.excerpt, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
 }

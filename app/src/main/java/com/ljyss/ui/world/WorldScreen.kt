@@ -157,9 +157,6 @@ internal fun WorldScreen(
                         }
                     }
                 }
-                item {
-                    SourceNote("舆图为经确认的明代两京十三省参考图；右下角按钮叠加现代区划对照（临时示意），后续以真实现代图层替换。")
-                }
             }
             WorldSection.INSTITUTIONS -> {
                 item {
