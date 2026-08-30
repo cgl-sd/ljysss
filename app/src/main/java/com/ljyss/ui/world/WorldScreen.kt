@@ -145,7 +145,7 @@ internal fun WorldScreen(
     }
 }
 
-/** 保持原始舆图不变，以大幅纸本装帧让地图而非附属说明成为视觉主体。 */
+/** 保持原始舆图不变，并以图名、两京和十三省题签完成整张图的阅读落点。 */
 @Composable
 private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Unit) {
     Surface(
@@ -164,7 +164,7 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(570.dp)
+                        .height(390.dp)
                         .padding(4.dp)
                         .clip(CutCornerShape(4.dp))
                         .background(XuanPaper),
@@ -174,7 +174,7 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                         contentDescription = "明代两京十三省地图",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        alignment = Alignment.Center,
+                        alignment = Alignment.TopCenter,
                     )
                     if (modernOverlayEnabled) {
                         Image(
@@ -182,7 +182,7 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                             contentDescription = "现代区划对照图已叠加",
                             modifier = Modifier.fillMaxSize().alpha(0.68f),
                             contentScale = ContentScale.Crop,
-                            alignment = Alignment.Center,
+                            alignment = Alignment.TopCenter,
                         )
                     }
                     Surface(
@@ -197,6 +197,66 @@ private fun AtlasMapPlate(modernOverlayEnabled: Boolean, onLayerToggle: () -> Un
                     }
                 }
             }
+            AtlasCaption()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                AtlasInfoCard(
+                    title = "两京",
+                    detail = "北京  ·  南京",
+                    modifier = Modifier.weight(1f),
+                )
+                AtlasInfoCard(
+                    title = "十三省",
+                    detail = "明代地方建置",
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AtlasCaption() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 9.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("◇", color = Brass, fontSize = 12.sp)
+            Text(
+                "  明代两京一十三省舆图  ",
+                color = Ink,
+                fontFamily = FontFamily.Serif,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text("◇", color = Brass, fontSize = 12.sp)
+        }
+        Text("两京十三省 · 明代行政版图", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp)
+    }
+}
+
+@Composable
+private fun AtlasInfoCard(title: String, detail: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.height(72.dp),
+        shape = CutCornerShape(6.dp),
+        color = PaperShade.copy(alpha = 0.42f),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.8f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            Text(detail, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
         }
     }
 }
