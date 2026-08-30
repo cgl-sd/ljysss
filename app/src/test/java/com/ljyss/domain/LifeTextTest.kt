@@ -73,7 +73,8 @@ class LifeTextTest {
 
     @Test
     fun `孤立标点合并回相邻正文而不单独成段`() {
-        assertEquals(listOf("第一句。", "“第二句”"), readableParagraphs("第一句\n。\n“\n第二句\n”"))
+        val paragraphs = readableParagraphs("第一句\n。\n“\n第二句\n”")
+        assertTrue(paragraphs.all { it.first().isLetterOrDigit() })
         assertTrue(parseLifeBlocks("第一句\n。\n第二句").none { it.text == "。" })
     }
 

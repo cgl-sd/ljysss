@@ -346,7 +346,7 @@ private fun CategoryRail(selectedCategory: PersonCategory, onSelected: (PersonCa
                 border = BorderStroke(1.dp, if (selected) Vermilion else LineGold),
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
@@ -356,13 +356,6 @@ private fun CategoryRail(selectedCategory: PersonCategory, onSelected: (PersonCa
                         fontSize = 20.sp,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = category.subtitle,
-                        color = if (selected) PaperLight.copy(alpha = 0.85f) else InkSoft,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 10.sp,
-                        lineHeight = 13.sp,
                     )
                 }
             }

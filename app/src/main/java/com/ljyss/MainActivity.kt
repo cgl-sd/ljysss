@@ -118,19 +118,11 @@ private val appSections = listOf(
     AppSection(
         label = "天下",
         vectorIcon = Icons.Outlined.Public,
-        activeColor = Celadon,
+        activeColor = Vermilion,
         iconSize = 20.dp,
         selectedIconSize = 23.dp,
     ),
-    AppSection(
-        label = "我的",
-        iconRes = R.drawable.nav_profile_woodblock,
-        activeColor = Brass,
-        // 头像原图的有效笔画范围比其他木刻图标更大；不改资源，仅按其
-        // 实际留白校准到与时间、人物图标相同的视觉尺寸。
-        iconSize = 19.dp,
-        selectedIconSize = 21.dp,
-    ),
+    AppSection(label = "我的", iconRes = R.drawable.nav_profile_woodblock, activeColor = Vermilion),
 )
 
 @Composable

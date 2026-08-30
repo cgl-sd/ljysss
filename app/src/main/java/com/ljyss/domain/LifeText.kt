@@ -76,7 +76,21 @@ internal fun readableParagraphs(text: String): List<String> {
         }
         if (buffer.isNotEmpty()) paragraphs += buffer
     }
-    return paragraphs
+    return mergeLeadingParagraphPunctuation(paragraphs)
+}
+
+/** 段首的孤立引号、句读归入上段末尾，保证每一段从正文文字开始。 */
+private fun mergeLeadingParagraphPunctuation(paragraphs: List<String>): List<String> {
+    val result = mutableListOf<String>()
+    for (paragraph in paragraphs) {
+        val leading = LeadingParagraphPunctuation.find(paragraph)?.value.orEmpty()
+        val body = paragraph.removePrefix(leading)
+        if (leading.isNotEmpty() && result.isNotEmpty()) {
+            result[result.lastIndex] += leading
+        }
+        if (body.isNotBlank()) result += body
+    }
+    return result
 }
 
 /**
@@ -136,3 +150,4 @@ private fun addUniversalInnerHeadings(blocks: List<LifeBlock>): List<LifeBlock> 
 
 private val StandalonePunctuation = Regex("^[、，。！？；：…“”‘’（）()《》〈〉【】〔〕·—–－〜～「」『』\\-]+$")
 private val OpeningPunctuation = Regex("^[“‘（(《〈【〔「『]+$")
+private val LeadingParagraphPunctuation = Regex("^[、，。！？；：…“”‘’（）()《》〈〉【】〔〕·—–－〜～「」『』\\-]+")

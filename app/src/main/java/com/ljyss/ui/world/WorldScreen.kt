@@ -190,7 +190,7 @@ private fun WorldSectionRail(selected: WorldSection, onSelected: (WorldSection) 
                         .weight(1f)
                         .clip(CutCornerShape(5.dp))
                         .clickable { onSelected(section) }
-                        .background(if (active) Celadon else Color.Transparent)
+                        .background(if (active) Vermilion else Color.Transparent)
                         .padding(vertical = 10.dp),
                     color = if (active) PaperLight else Ink,
                     textAlign = TextAlign.Center,
