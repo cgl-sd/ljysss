@@ -81,6 +81,7 @@ internal fun PeopleScreen(
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.DYNASTY) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     var selectedReignTitle by rememberSaveable { mutableStateOf("洪武") }
+    var selectedPeopleReign by rememberSaveable { mutableStateOf<String?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -117,6 +118,7 @@ internal fun PeopleScreen(
         val keyword = query.trim()
         sortedPeople.filter { person ->
             person.category == selectedCategory &&
+                (selectedPeopleReign?.let { person.reign.contains(it) } ?: true) &&
                 (keyword.isBlank() || person.name.contains(keyword) || person.title.contains(keyword) || person.reign.contains(keyword))
         }
     }
@@ -265,7 +267,16 @@ internal fun PeopleScreen(
                         },
                     )
                 }
-                item { PersonChronologyRail(reigns) }
+                item {
+                    PersonChronologyRail(
+                        reigns = reigns,
+                        selectedReign = selectedPeopleReign,
+                        onSelected = { reign ->
+                            // 再点已选年号即回到全体，横向拖动不影响点击命中。
+                            selectedPeopleReign = if (selectedPeopleReign == reign) null else reign
+                        },
+                    )
+                }
                 if (people.isEmpty()) {
                     item { SourceNote("没有相符人物。可搜索姓名、身份或年号。") }
                 } else {
@@ -302,7 +313,11 @@ internal fun PeopleScreen(
 }
 
 @Composable
-private fun PersonChronologyRail(reigns: List<Reign>) {
+private fun PersonChronologyRail(
+    reigns: List<Reign>,
+    selectedReign: String?,
+    onSelected: (String) -> Unit,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = PaperLight.copy(alpha = 0.62f),
@@ -313,7 +328,12 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("人物年表", color = Ink, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(8.dp))
-                Text("按所处时代排序", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+                Text(
+                    selectedReign?.let { "已筛选：$it（再点取消）" } ?: "点击年号筛选人物",
+                    color = Vermilion,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 13.sp,
+                )
             }
             LazyRow(
                 modifier = Modifier
@@ -323,17 +343,28 @@ private fun PersonChronologyRail(reigns: List<Reign>) {
             ) {
                 items(reigns, key = { it.title }) { reign ->
                     val firstYear = reign.yearRange.substringBefore("—")
+                    val selected = reign.title == selectedReign
                     Row(
+                        modifier = Modifier
+                            .clip(CutCornerShape(4.dp))
+                            .clickable { onSelected(reign.title) }
+                            .padding(horizontal = 2.dp, vertical = 3.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Surface(
                             modifier = Modifier.size(if (reign.title == "洪武") 8.dp else 6.dp),
                             shape = RoundedCornerShape(50),
-                            color = if (reign.title == "洪武") Vermilion else Brass,
+                            color = if (selected || reign.title == "洪武") Vermilion else Brass,
                         ) {}
                         Column {
-                            Text(reign.title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                reign.title,
+                                color = if (selected) Vermilion else Ink,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
                             Text(firstYear, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 9.sp)
                         }
                         HorizontalDivider(modifier = Modifier.width(14.dp), color = Brass, thickness = 1.dp)

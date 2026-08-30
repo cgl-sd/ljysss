@@ -81,6 +81,18 @@ SOURCE_TITLE_OVERRIDES = {
 # 原始名录中混入的非人物/非明条目，或虽为明人却没有可核验正式第二行名号的条目。
 # 发布库不以“明朝人物”“义士”等泛称补位，直接移出。
 EXCLUDED_IDS = {"luanfeng", "wangmiaofeng", "wude", "zhangying", "zhengzunqian"}
+# 文苑仅保留未任官、以文艺或学术成就为主的人物；凡有可核验仕履即归朝臣。
+OFFICIAL_ROLE = re.compile(
+    r"(?:大学士|尚书|尚書|侍郎|御史|知府|知县|知縣|主事|员外郎|員外郎|郎中|通判|知州|"
+    r"布政使|按察使|副使|参政|參政|参议|參議|学正|學正|教授|教谕|教諭|训导|訓導|"
+    r"知事|长史|長史|典史|寺卿|少卿|司直|编修|編修|检讨|檢討|翰林|祭酒|给事中|給事中|"
+    r"都督|指挥使|指揮使|千户|千戶)"
+)
+OFFICIAL_APPOINTMENT = re.compile(
+    r"(?:授|任|历任|歷任|历官|歷官|官至|仕至|出任|担任|擔任|拜|擢|迁|遷|升|改任|起用)"
+    r"[^。！？\n]{0,24}" + OFFICIAL_ROLE.pattern
+)
+LITERATI_TO_OFFICIAL = {"taozongyi"}
 
 
 def load(name: str) -> list[dict]:
@@ -230,7 +242,12 @@ def corrected_category(person: dict, wiki: str, title: str, baseline_category: s
         return "帝王"
     # 原名录的六分类是人物自身身份的基线；本轮只按可证明的储君和高阶官职作迁移。
     # 不再扫描全文，以免亲属的后妃、王爵、军职改变传主分类。
-    if re.search(r"(?:首辅|首輔|大学士|大學士|尚书|尚書|侍郎|都御史|总督|總督|巡抚|巡撫|御史|知府|知县|知縣|学士|學士|编修|編修|主事|员外郎|員外郎|通判|知州)", title):
+    if OFFICIAL_ROLE.search(title):
+        return "朝臣"
+    if baseline_category == "文苑" and (
+        person["id"] in LITERATI_TO_OFFICIAL
+        or OFFICIAL_APPOINTMENT.search(NORMALIZE.simplify_modern_text(wiki))
+    ):
         return "朝臣"
     if baseline_category in {"帝王", "内廷", "宗藩", "朝臣", "将帅", "文苑"}:
         return baseline_category

@@ -42,9 +42,9 @@ import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
-private val ArchiveEventCardHeight = 144.dp
-private val ArchivePersonCardWidth = 88.dp
-private val ArchivePersonCardHeight = 64.dp
+private val ArchiveEventCardHeight = 108.dp
+private val ArchivePersonCardWidth = 78.dp
+private val ArchivePersonCardHeight = 55.dp
 
 @Composable
 internal fun DynastyArchive(
@@ -114,8 +114,8 @@ private fun ArchiveEventCard(
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.75f)),
     ) {
         Column(
-            modifier = Modifier.padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             Text(
                 "${event.year ?: ""} ${event.month} · ${event.title.ifBlank { "事件待补题" }}",
@@ -131,8 +131,8 @@ private fun ArchiveEventCard(
                 color = InkSoft,
                 fontFamily = FontFamily.Serif,
                 fontSize = 14.sp,
-                lineHeight = 20.sp,
-                maxLines = 3,
+                lineHeight = 18.sp,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             ArchiveParticipants(event.participants, onOpenPerson)
@@ -192,12 +192,12 @@ private fun ArchiveGroup(
                         color = PaperShade,
                         border = BorderStroke(1.dp, LineGold),
                     ) {
-                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) {
+                        Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)) {
                             Text(
                                 person.displayName,
                                 color = Ink,
                                 fontFamily = FontFamily.Serif,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -206,7 +206,7 @@ private fun ArchiveGroup(
                                 archiveRoleLabel(person),
                                 color = InkSoft,
                                 fontFamily = FontFamily.Serif,
-                                fontSize = 11.sp,
+                                fontSize = 10.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
