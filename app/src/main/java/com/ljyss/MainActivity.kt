@@ -9,6 +9,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -108,29 +109,15 @@ private data class AppSection(
     val iconRes: Int? = null,
     val vectorIcon: ImageVector? = null,
     val activeColor: Color,
-    val iconSize: androidx.compose.ui.unit.Dp = 24.dp,
-    val selectedIconSize: androidx.compose.ui.unit.Dp = 26.dp,
 )
+
+private val BottomNavigationIconSize = 24.dp
 
 private val appSections = listOf(
     AppSection(label = "岁月", iconRes = R.drawable.nav_timeline_woodblock, activeColor = Vermilion),
     AppSection(label = "人物", iconRes = R.drawable.nav_people_woodblock, activeColor = Vermilion),
-    AppSection(
-        label = "天下",
-        vectorIcon = Icons.Outlined.Public,
-        activeColor = Vermilion,
-        iconSize = 20.dp,
-        selectedIconSize = 23.dp,
-    ),
-    AppSection(
-        label = "我的",
-        iconRes = R.drawable.nav_profile_woodblock,
-        activeColor = Vermilion,
-        // 头像图案几乎占满原始画布；缩小画框后才与其余木刻图标的可见笔画等大，
-        // 同时给下方文字留下稳定间距。
-        iconSize = 17.dp,
-        selectedIconSize = 18.dp,
-    ),
+    AppSection(label = "天下", vectorIcon = Icons.Outlined.Public, activeColor = Vermilion),
+    AppSection(label = "我的", iconRes = R.drawable.nav_profile_woodblock, activeColor = Vermilion),
 )
 
 @Composable
@@ -197,24 +184,27 @@ private fun MingBottomBar(selectedSection: Int, onSectionSelected: (Int) -> Unit
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                 ) {
-                    val iconSize = if (selected) section.selectedIconSize else section.iconSize
-                    when {
-                        section.vectorIcon != null -> Icon(
-                            imageVector = section.vectorIcon,
-                            contentDescription = section.label,
-                            modifier = Modifier.size(iconSize),
-                            tint = tint,
-                        )
+                    // 四项一律占用同一个 24dp 画框，选中仅改变颜色，绝不改变大小或位置。
+                    Box(
+                        modifier = Modifier.size(BottomNavigationIconSize),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        when {
+                            section.vectorIcon != null -> Icon(
+                                imageVector = section.vectorIcon,
+                                contentDescription = section.label,
+                                modifier = Modifier.fillMaxSize(),
+                                tint = tint,
+                            )
 
-                        section.iconRes != null -> Image(
-                            painter = painterResource(section.iconRes),
-                            contentDescription = section.label,
-                            // Keep the remaining woodblock icons within a consistent, smaller
-                            // optical frame so their labels remain fully unobscured.
-                            modifier = Modifier.size(iconSize),
-                            contentScale = ContentScale.Inside,
-                            colorFilter = ColorFilter.tint(tint),
-                        )
+                            section.iconRes != null -> Image(
+                                painter = painterResource(section.iconRes),
+                                contentDescription = section.label,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Inside,
+                                colorFilter = ColorFilter.tint(tint),
+                            )
+                        }
                     }
                     Text(
                         text = section.label,
