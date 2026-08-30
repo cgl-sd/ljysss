@@ -49,7 +49,10 @@ val packageOfflineContent by tasks.registering(Sync::class) {
 }
 
 tasks.configureEach {
-    if (name.startsWith("merge") && name.endsWith("Assets")) dependsOn(packageOfflineContent)
+    val packagesAppAssets = name.startsWith("merge") && name.endsWith("Assets")
+    val inspectsReleaseAssets = name == "generateReleaseLintVitalReportModel" ||
+        name == "lintVitalAnalyzeRelease"
+    if (packagesAppAssets || inspectsReleaseAssets) dependsOn(packageOfflineContent)
 }
 
 dependencies {

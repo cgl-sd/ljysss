@@ -1,0 +1,26 @@
+# 项目状态
+
+## 当前交付
+
+- Android 客户端已完成四个主页面：岁月、人物、天下、我的；底部导航、全局搜索与页面返回状态已接入。
+- 岁月页按朝代组织档案、人物与本朝大事；南明作为独立时段按时间顺序展示。
+- 人物页提供朝代档案、六分类人物库与关系视图；人物详情展示称号、纪年、生平、家族、关系及相关事件（无内容栏目隐藏）。
+- 天下页已完成舆图、机构、典章三栏；舆图采用完整省域地图、居中题签与“两京／十三省”说明组件。
+
+## 内容库快照
+
+- 正式人物：2,157 人；朝代：18 个；事件：76 件；纪年记录：323 条。
+- 人物生平分栏：3,777 条；人物家族记录：2,628 条；人物关系边：99 条。
+- 内容真相保存在 `backend/data/content/*.jsonl`，运行用 SQLite 为可再生的 `backend/data/ming_history.sqlite3`，并会打入 APK 供离线读取。
+
+## 保留的数据与文档
+
+- `backend/sources/` 保存中文维基、CBDB 与《明史》三套权威原始数据包；它们受保护且不可作为清理目标。
+- `docs/` 保存接口契约、内容管线、数据审计、覆盖规划和 UI 核对记录；体积很小，应随 Git 保留。
+- `tmp/`、根 `build/`、`app/build/` 的中间产物以及 `.gradle/` 均可按需重建，不作为长期项目文件。
+
+## 发布方式
+
+- 当前调试 APK：`app/build/outputs/apk/debug/app-debug.apk`（约 88MB）。
+- 当前 release 候选：`app/build/outputs/apk/release/app-release-unsigned.apk`（约 55MB）。生产构建命令为 `./gradlew assembleRelease`；未配置发布签名时生成的是未签名 APK，须先配置自己的 keystore 后才能上架或正式分发。
+- Android 内容服务可由 `cd backend && .venv/bin/uvicorn app.main:app --port 8000` 启动；应用内仍可使用已打包的离线数据库。

@@ -11,7 +11,7 @@ class ContentServiceTest(unittest.TestCase):
 
     def test_bootstrap_has_the_reading_domains(self):
         payload = bootstrap_content()
-        self.assertEqual(17, len(payload["reigns"]))
+        self.assertEqual(18, len(payload["reigns"]))
         self.assertGreaterEqual(len(payload["events"]), 47)
         # 748 位精选 + 全量收录的明朝相关人物（明史传主 ∩ 维基），下限 700、上限放开。
         self.assertGreaterEqual(len(payload["people"]), 700)
