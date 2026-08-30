@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
@@ -126,6 +127,9 @@ private fun TwoCapitalsApp(repository: MingRepository) {
     var selectedSection by rememberSaveable { mutableIntStateOf(0) }
     var searchOpen by rememberSaveable { mutableStateOf(false) }
     var searchDestination by remember { mutableStateOf<SearchDestination?>(null) }
+    var focusPerson by remember { mutableStateOf<String?>(null) }
+    var personReturnSection by rememberSaveable { mutableStateOf<Int?>(null) }
+    val sectionStateHolder = rememberSaveableStateHolder()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -133,38 +137,53 @@ private fun TwoCapitalsApp(repository: MingRepository) {
         bottomBar = {
             MingBottomBar(
                 selectedSection = selectedSection,
-                onSectionSelected = { selectedSection = it },
+                onSectionSelected = { destination ->
+                    if (destination != selectedSection) {
+                        focusPerson = null
+                        personReturnSection = null
+                        searchDestination = null
+                    }
+                    selectedSection = destination
+                },
             )
         },
     ) { innerPadding ->
-        var focusPerson by remember { mutableStateOf<String?>(null) }
-        when (selectedSection) {
-            0 -> TimelineScreen(
-                repository = repository,
-                contentPadding = innerPadding,
-                searchDestination = searchDestination,
-                onSearchDestinationConsumed = { searchDestination = null },
-                onSearch = { searchOpen = true },
-                onOpenPerson = { name ->
-                    focusPerson = name
-                    selectedSection = 1
-                },
-            )
-            1 -> PeopleScreen(
-                repository = repository,
-                contentPadding = innerPadding,
-                focusPerson = focusPerson,
-                onFocusConsumed = { focusPerson = null },
-                onSearch = { searchOpen = true },
-            )
-            2 -> WorldScreen(
-                repository = repository,
-                contentPadding = innerPadding,
-                searchDestination = searchDestination,
-                onSearchDestinationConsumed = { searchDestination = null },
-                onSearch = { searchOpen = true },
-            )
-            else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
+        sectionStateHolder.SaveableStateProvider("section-$selectedSection") {
+            when (selectedSection) {
+                0 -> TimelineScreen(
+                    repository = repository,
+                    contentPadding = innerPadding,
+                    searchDestination = searchDestination,
+                    onSearchDestinationConsumed = { searchDestination = null },
+                    onSearch = { searchOpen = true },
+                    onOpenPerson = { name ->
+                        personReturnSection = selectedSection
+                        focusPerson = name
+                        selectedSection = 1
+                    },
+                )
+                1 -> PeopleScreen(
+                    repository = repository,
+                    contentPadding = innerPadding,
+                    focusPerson = focusPerson,
+                    onFocusConsumed = { focusPerson = null },
+                    onProfileExit = {
+                        personReturnSection?.let { origin ->
+                            personReturnSection = null
+                            selectedSection = origin
+                        }
+                    },
+                    onSearch = { searchOpen = true },
+                )
+                2 -> WorldScreen(
+                    repository = repository,
+                    contentPadding = innerPadding,
+                    searchDestination = searchDestination,
+                    onSearchDestinationConsumed = { searchDestination = null },
+                    onSearch = { searchOpen = true },
+                )
+                else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
+            }
         }
         if (searchOpen) {
             GlobalSearchDialog(
@@ -172,6 +191,8 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                 onDismiss = { searchOpen = false },
                 onNavigate = { destination ->
                     searchOpen = false
+                    if (destination.personName != null) personReturnSection = selectedSection
+                    else personReturnSection = null
                     selectedSection = destination.sectionIndex
                     focusPerson = destination.personName
                     searchDestination = destination.takeIf { it.reignTitle != null || it.worldSection != null }

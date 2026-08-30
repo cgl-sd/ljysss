@@ -70,6 +70,7 @@ internal fun PeopleScreen(
     contentPadding: PaddingValues,
     focusPerson: String? = null,
     onFocusConsumed: () -> Unit = {},
+    onProfileExit: () -> Unit = {},
     onSearch: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.PEOPLE) }
@@ -112,6 +113,7 @@ internal fun PeopleScreen(
     fun returnFromProfile() {
         selectedPersonName = null
         personStack = emptyList()
+        onProfileExit()
     }
 
     fun openProfileFromBrowse(name: String) {

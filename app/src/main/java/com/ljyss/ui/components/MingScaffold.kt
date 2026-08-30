@@ -15,6 +15,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -37,7 +41,8 @@ internal fun MingList(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(XuanPaper),
+            .background(XuanPaper)
+            .mingScrollbar(listState),
         contentPadding = PaddingValues(
             start = 18.dp,
             top = 44.dp,
@@ -47,6 +52,36 @@ internal fun MingList(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         state = listState,
         content = content,
+    )
+}
+
+/** 所有纵向可滚动页面共用的右侧位置条；内容不足一屏时自动隐藏。 */
+internal fun Modifier.mingScrollbar(state: LazyListState): Modifier = drawWithContent {
+    drawContent()
+    val layout = state.layoutInfo
+    val visibleItems = layout.visibleItemsInfo
+    val viewport = (layout.viewportEndOffset - layout.viewportStartOffset).toFloat()
+    if (visibleItems.isEmpty() || viewport <= 0f || layout.totalItemsCount <= visibleItems.size) return@drawWithContent
+
+    val averageItemSize = visibleItems.sumOf { it.size }.toFloat() / visibleItems.size
+    val estimatedContentSize = averageItemSize * layout.totalItemsCount
+    if (estimatedContentSize <= viewport) return@drawWithContent
+
+    val trackTop = layout.viewportStartOffset.toFloat().coerceAtLeast(0f)
+    val trackBottom = layout.viewportEndOffset.toFloat().coerceAtMost(size.height)
+    val trackHeight = (trackBottom - trackTop).coerceAtLeast(0f)
+    if (trackHeight <= 0f) return@drawWithContent
+
+    val thumbHeight = (viewport * viewport / estimatedContentSize)
+        .coerceIn(32.dp.toPx(), trackHeight)
+    val maxScroll = (estimatedContentSize - viewport).coerceAtLeast(1f)
+    val currentScroll = state.firstVisibleItemIndex * averageItemSize + state.firstVisibleItemScrollOffset
+    val thumbTop = trackTop + (trackHeight - thumbHeight) * (currentScroll / maxScroll).coerceIn(0f, 1f)
+    drawRoundRect(
+        color = Vermilion.copy(alpha = 0.55f),
+        topLeft = Offset(size.width - 6.dp.toPx(), thumbTop),
+        size = Size(3.dp.toPx(), thumbHeight),
+        cornerRadius = CornerRadius(2.dp.toPx()),
     )
 }
 

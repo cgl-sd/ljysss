@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -43,6 +44,7 @@ import com.ljyss.ui.theme.LineGold
 import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
+import com.ljyss.ui.components.mingScrollbar
 
 /** 搜索结果的去向。sectionIndex 与底部四页保持同一顺序。 */
 data class SearchDestination(
@@ -72,6 +74,7 @@ fun GlobalSearchDialog(
 ) {
     var query by remember { mutableStateOf("") }
     val results = remember(repository, query) { searchCatalog(repository, query) }
+    val resultListState = rememberLazyListState()
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.88f),
@@ -101,7 +104,11 @@ fun GlobalSearchDialog(
                     Text("未找到相符内容。可尝试姓名、年号、官职或机构名称。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
                 } else {
                     Text("找到 ${results.size} 条结果", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp)
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).mingScrollbar(resultListState),
+                        state = resultListState,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         items(results, key = { it.id }) { result ->
                             SearchResultCard(result) {
                                 onNavigate(result.destination)

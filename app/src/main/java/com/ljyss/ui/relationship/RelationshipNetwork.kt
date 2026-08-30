@@ -231,8 +231,8 @@ internal fun RelationViewRail(selected: RelationView, onSelected: (RelationView)
                     .clip(CutCornerShape(6.dp))
                     .clickable { onSelected(view) },
                 shape = CutCornerShape(6.dp),
-                color = if (active) Celadon else PaperLight,
-                border = BorderStroke(1.dp, if (active) Celadon else LineGold),
+                color = if (active) Vermilion else PaperLight,
+                border = BorderStroke(1.dp, if (active) Vermilion else LineGold),
             ) {
                 Text(
                     text = view.label,

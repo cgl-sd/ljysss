@@ -162,7 +162,6 @@ internal fun WorldScreen(
                 }
             }
             WorldSection.INSTITUTIONS -> {
-                item { InstitutionIntro() }
                 item {
                     WorldCategoryRail(institutionGroups, selectedInstitutionGroup) { selectedInstitutionGroup = it }
                 }
@@ -295,11 +294,6 @@ private fun SpecialItemCard(item: SpecialItem) {
             Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, textAlign = TextAlign.Justify)
         }
     }
-}
-
-@Composable
-private fun InstitutionIntro() {
-    SourceNote("机构收录有固定职掌、人员与沿革的办事主体；选择分类查看。制度、器物与宫阙另收于“典章”，同名内容不重复建档。")
 }
 
 @Composable
