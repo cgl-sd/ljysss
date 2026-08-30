@@ -108,7 +108,7 @@ internal fun WorldScreen(
             WorldSection.MAP -> {
                 item {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        AtlasMapPlate(modifier = Modifier.fillMaxWidth(0.86f))
+                        AtlasMapPlate(modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
@@ -159,13 +159,13 @@ private fun AtlasMapPlate(modifier: Modifier = Modifier) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(692f / 920f)
+                        .aspectRatio(692f / 820f)
                         .padding(4.dp)
                         .clip(CutCornerShape(4.dp))
                         .background(XuanPaper),
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.world_atlas_plate),
+                        painter = painterResource(R.drawable.world_atlas_wide),
                         contentDescription = "明代两京十三省地图",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,
@@ -176,7 +176,7 @@ private fun AtlasMapPlate(modifier: Modifier = Modifier) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                    .padding(horizontal = 8.dp, vertical = 7.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 AtlasInfoCard(
@@ -201,7 +201,7 @@ private fun AtlasCaption() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(54.dp)
+            .height(48.dp)
             .padding(horizontal = 8.dp, vertical = 3.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -224,7 +224,7 @@ private fun AtlasCaption() {
 @Composable
 private fun AtlasInfoCard(title: String, detail: String?, illustration: Int, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier.height(78.dp),
+        modifier = modifier.height(72.dp),
         shape = CutCornerShape(6.dp),
         color = PaperShade.copy(alpha = 0.42f),
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.8f)),
