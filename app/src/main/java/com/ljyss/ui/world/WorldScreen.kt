@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -26,6 +27,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -489,22 +492,25 @@ private fun SpecialDetailScreen(
                 colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = .96f)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(item.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        listOf(item.category, item.era).filter { it.isNotBlank() }.joinToString("｜"),
+                        color = Vermilion,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                     SpecialCover(item)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(item.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-                        Seal(item.category)
+                    val sections = item.sections.sortedBy { it.position }.filter { it.content.isNotBlank() }
+                    if (sections.isEmpty()) {
+                        CatalogArticleSection("概览", item.description)
+                    } else {
+                        sections.forEach { section -> SpecialTextSection(section.title, section.content) }
                     }
-                    Text(item.era, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Justify)
+                    if (item.people.isNotEmpty()) SpecialPeopleSection(item.people, onOpenPerson)
                 }
             }
-        }
-        items(item.sections.sortedBy { it.position }, key = { it.key }) { section ->
-            SpecialTextSection(section.title, section.content)
-        }
-        if (item.people.isNotEmpty()) {
-            item { SpecialPeopleSection(item.people, onOpenPerson) }
         }
     }
 }
@@ -517,46 +523,71 @@ private fun SpecialCover(item: SpecialItem) {
         contentDescription = "${item.name}专题示意图",
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp)
+            .height(108.dp)
             .clip(CutCornerShape(7.dp)),
         contentScale = ContentScale.Crop,
     )
 }
 
+/** 机构、典章沿用事件详情页的无嵌套卡片正文：标题、分隔线和自然段连续阅读。 */
 @Composable
-private fun SpecialTextSection(title: String, content: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 24.sp, textAlign = TextAlign.Justify)
-        }
+private fun CatalogArticleSection(title: String, content: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        CatalogArticleHeading(title)
+        Text(
+            content,
+            color = InkSoft,
+            fontFamily = FontFamily.Serif,
+            fontSize = 15.sp,
+            lineHeight = 26.sp,
+            textAlign = TextAlign.Justify,
+        )
     }
 }
 
 @Composable
+private fun CatalogArticleHeading(title: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+    }
+}
+
+@Composable
+private fun SpecialTextSection(title: String, content: String) {
+    CatalogArticleSection(title, content)
+}
+
+@Composable
 private fun SpecialPeopleSection(people: List<SpecialPerson>, onOpenPerson: (String) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        CatalogArticleHeading("相关人物")
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
             people.forEach { person ->
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).clickable { onOpenPerson(person.name) }.padding(vertical = 5.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                Surface(
+                    modifier = Modifier
+                        .clip(CutCornerShape(4.dp))
+                        .clickable { onOpenPerson(person.name) },
+                    shape = CutCornerShape(4.dp),
+                    color = Vermilion.copy(alpha = 0.08f),
+                    border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
                 ) {
-                    Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
+                    Column(modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp)) {
+                        Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        if (person.title.isNotBlank() || person.role.isNotBlank()) {
+                            Text(
+                                listOf(person.title, person.role).filter { it.isNotBlank() }.joinToString(" · "),
+                                color = InkSoft,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -652,61 +683,49 @@ private fun InstitutionDetailScreen(
                 colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = .96f)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(institution.name, color = Ink, fontFamily = FontFamily.Serif, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        listOf(institution.category, institution.activeReigns).filter { it.isNotBlank() }.joinToString("｜"),
+                        color = Vermilion,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                     WorldAssetImage(
                         asset = institution.imageAsset,
                         contentDescription = "${institution.name}示意图",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(150.dp)
+                            .height(108.dp)
                             .clip(CutCornerShape(7.dp)),
                         contentScale = ContentScale.Crop,
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(institution.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 27.sp, fontWeight = FontWeight.Bold)
-                        Seal(institution.category)
+                    val sections = institution.sections.sortedBy { it.position }.filter { it.content.isNotBlank() }
+                    if (sections.isEmpty()) {
+                        CatalogArticleSection("概览", institution.function)
+                    } else {
+                        sections.forEach { section -> InstitutionTextSection(section.title, section.content) }
                     }
-                    Text(institution.activeReigns, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text(institution.function, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Justify)
+                    if (institution.promotionTracks.isNotEmpty()) InstitutionPromotionGuide(institution.promotionTracks)
+                    if (institution.reforms.isNotEmpty()) {
+                        InstitutionTextSection(
+                            title = "沿革与变动",
+                            content = institution.reforms.joinToString("\n\n") { reform ->
+                                "${reform.year} · ${reform.title}\n${reform.description}"
+                            },
+                        )
+                    }
+                    if (institution.people.isNotEmpty()) InstitutionPeopleSection(institution.people, onOpenPerson)
                 }
             }
-        }
-        items(institution.sections.sortedBy { it.position }, key = { it.key }) { section ->
-            InstitutionTextSection(section.title, section.content)
-        }
-        if (institution.promotionTracks.isNotEmpty()) {
-            item { InstitutionPromotionGuide(institution.promotionTracks) }
-        }
-        if (institution.reforms.isNotEmpty()) {
-            item {
-                InstitutionTextSection(
-                    title = "沿革与变动",
-                    content = institution.reforms.joinToString("\n\n") { reform ->
-                        "${reform.year} · ${reform.title}\n${reform.description}"
-                    },
-                )
-            }
-        }
-        if (institution.people.isNotEmpty()) {
-            item { InstitutionPeopleSection(institution.people, onOpenPerson) }
         }
     }
 }
 
 @Composable
 private fun InstitutionTextSection(title: String, content: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 24.sp, textAlign = TextAlign.Justify)
-        }
-    }
+    CatalogArticleSection(title, content)
 }
 
 @Composable
@@ -738,22 +757,34 @@ private fun InstitutionPromotionGuide(tracks: List<InstitutionPromotionTrack>) {
 
 @Composable
 private fun InstitutionPeopleSection(people: List<InstitutionPerson>, onOpenPerson: (String) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        CatalogArticleHeading("相关人物")
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
             people.forEach { person ->
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).clickable { onOpenPerson(person.name) }.padding(vertical = 5.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                Surface(
+                    modifier = Modifier
+                        .clip(CutCornerShape(4.dp))
+                        .clickable { onOpenPerson(person.name) },
+                    shape = CutCornerShape(4.dp),
+                    color = Vermilion.copy(alpha = 0.08f),
+                    border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
                 ) {
-                    Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
+                    Column(modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp)) {
+                        Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        if (person.title.isNotBlank() || person.role.isNotBlank()) {
+                            Text(
+                                listOf(person.title, person.role).filter { it.isNotBlank() }.joinToString(" · "),
+                                color = InkSoft,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
                 }
             }
         }
