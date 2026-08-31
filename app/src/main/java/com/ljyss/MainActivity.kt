@@ -195,6 +195,11 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                         searchDestination = searchDestination,
                         onSearchDestinationConsumed = { searchDestination = null },
                         onSearch = { searchOpen = true },
+                        onOpenPerson = { name ->
+                            personReturnSection = selectedSection
+                            focusPerson = name
+                            selectedSection = 1
+                        },
                     )
                     else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
                 }

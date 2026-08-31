@@ -34,6 +34,8 @@ CONTENT_TABLES = [
     "institution",
     "institution_promotion",
     "institution_reform",
+    "institution_section",
+    "institution_person",
     "special_item",
     "person_mingshi",
     "person_wiki",
@@ -55,6 +57,8 @@ CONTENT_ORDER = {
     "annal_participant": ("annal_id", "person_id"),
     "institution_promotion": ("institution_id", "position"),
     "institution_reform": ("institution_id", "position"),
+    "institution_section": ("institution_id", "position"),
+    "institution_person": ("institution_id", "position"),
 }
 
 # 人物分类和详情栏目都是内容模型的一部分，而不是前端散落的字面量。person 表仍保留
@@ -311,6 +315,30 @@ CREATE TABLE IF NOT EXISTS institution_reform (
     description TEXT NOT NULL,
     PRIMARY KEY(institution_id, position)
 );
+
+-- 机构详情由稳定的正文分栏组成；正文和代表人物都保留各自来源登记，前端不显示审核状态。
+CREATE TABLE IF NOT EXISTS institution_section (
+    institution_id TEXT NOT NULL REFERENCES institution(id) ON DELETE CASCADE,
+    section_key TEXT NOT NULL CHECK(section_key IN ('duty', 'structure', 'operation', 'evolution')),
+    title TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    source_id TEXT NOT NULL REFERENCES source(id),
+    PRIMARY KEY(institution_id, section_key)
+);
+CREATE INDEX IF NOT EXISTS institution_section_by_institution_position
+    ON institution_section(institution_id, position);
+
+CREATE TABLE IF NOT EXISTS institution_person (
+    institution_id TEXT NOT NULL REFERENCES institution(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    role TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    source_id TEXT NOT NULL REFERENCES source(id),
+    PRIMARY KEY(institution_id, person_id)
+);
+CREATE INDEX IF NOT EXISTS institution_person_by_institution_position
+    ON institution_person(institution_id, position);
 
 -- 天下页的“典章”科普：宫殿、器物与制度名物，与机构分列。
 CREATE TABLE IF NOT EXISTS special_item (

@@ -16,7 +16,7 @@ class ContentServiceTest(unittest.TestCase):
         self.assertGreaterEqual(len(payload["people"]), 2_000)
         # 皇帝不与文臣武将建关系；关系网以家庭、同僚与南明阵营类为主，亲属补录可持续增加。
         self.assertGreaterEqual(len(payload["relationships"]), 30)
-        self.assertGreaterEqual(len(payload["institutions"]), 12)
+        self.assertGreaterEqual(len(payload["institutions"]), 20)
 
     def test_bootstrap_people_expose_structured_sections(self):
         payload = bootstrap_content()
@@ -203,6 +203,14 @@ class ContentServiceTest(unittest.TestCase):
         self.assertIn("王命旗牌", names)
         for item in specials:
             self.assertTrue(item["description"].strip())
+
+    def test_institution_details_have_structured_sections_and_valid_person_links(self):
+        payload = bootstrap_content()
+        institutions = {item["id"]: item for item in payload["institutions"]}
+        cabinet = institutions["grand-secretariat"]
+        self.assertEqual(["duty", "structure", "operation", "evolution"], [item["section_key"] for item in cabinet["sections"]])
+        self.assertIn("杨士奇", {item["name"] for item in cabinet["people"]})
+        self.assertIn("京军三大营", {item["name"] for item in institutions.values()})
 
     def test_emperors_have_no_minister_or_general_relations(self):
         from app.database import connect

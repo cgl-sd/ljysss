@@ -6,7 +6,9 @@ import android.database.sqlite.SQLiteDatabase
 import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.Institution
+import com.ljyss.data.model.InstitutionPerson
 import com.ljyss.data.model.InstitutionReform
+import com.ljyss.data.model.InstitutionSection
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.PersonSection
@@ -115,6 +117,35 @@ class BundledMingRepository private constructor(
                         events = eventsByReign[row.required("id")].orEmpty(),
                     )
                 }
+                val institutionSections = database.rows(
+                    "SELECT institution_id, section_key, title, content, position FROM institution_section ORDER BY institution_id, position"
+                ).groupBy { it.required("institution_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        InstitutionSection(
+                            key = it.required("section_key"),
+                            title = it.required("title"),
+                            content = it.required("content"),
+                            position = it.int("position"),
+                        )
+                    }
+                }
+                val institutionPeople = database.rows(
+                    """
+                    SELECT ip.institution_id, p.id, p.name, p.title, ip.role
+                    FROM institution_person AS ip
+                    JOIN person AS p ON p.id = ip.person_id
+                    ORDER BY ip.institution_id, ip.position
+                    """.trimIndent(),
+                ).groupBy { it.required("institution_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        InstitutionPerson(
+                            id = it.required("id"),
+                            name = it.required("name"),
+                            title = it.required("title"),
+                            role = it.required("role"),
+                        )
+                    }
+                }
                 return BundledMingRepository(
                     reignData = reigns,
                     peopleData = people,
@@ -154,6 +185,8 @@ class BundledMingRepository private constructor(
                             ).map {
                                 InstitutionReform(it.required("year"), it.required("title"), it.required("description"))
                             },
+                            sections = institutionSections[id].orEmpty(),
+                            people = institutionPeople[id].orEmpty(),
                         )
                     },
                     specialData = database.rows(

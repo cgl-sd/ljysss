@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
 import com.ljyss.R
 import com.ljyss.data.model.Institution
+import com.ljyss.data.model.InstitutionPerson
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
@@ -69,6 +70,7 @@ internal fun WorldScreen(
     searchDestination: SearchDestination? = null,
     onSearchDestinationConsumed: () -> Unit = {},
     onSearch: () -> Unit = {},
+    onOpenPerson: (String) -> Unit = {},
 ) {
     var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
     val institutions = remember(repository) { repository.institutions() }
@@ -81,6 +83,7 @@ internal fun WorldScreen(
     }
     var selectedInstitutionGroup by rememberSaveable { mutableStateOf("中央政务") }
     var selectedRelicGroup by rememberSaveable { mutableStateOf("制度法令") }
+    var selectedInstitutionId by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(searchDestination) {
         val destination = searchDestination ?: return@LaunchedEffect
         destination.worldSection?.let { label ->
@@ -91,6 +94,17 @@ internal fun WorldScreen(
             relicGroups.firstOrNull { category in it.categories }?.let { selectedRelicGroup = it.label }
         }
         onSearchDestinationConsumed()
+    }
+
+    val selectedInstitution = institutions.firstOrNull { it.id == selectedInstitutionId }
+    if (worldSection == WorldSection.INSTITUTIONS && selectedInstitution != null) {
+        InstitutionDetailScreen(
+            institution = selectedInstitution,
+            contentPadding = contentPadding,
+            onBack = { selectedInstitutionId = null },
+            onOpenPerson = onOpenPerson,
+        )
+        return
     }
 
     MingList(contentPadding) {
@@ -119,7 +133,7 @@ internal fun WorldScreen(
                 val selectedGroup = institutionGroups.firstOrNull { it.label == selectedInstitutionGroup } ?: institutionGroups.firstOrNull()
                 val filteredInstitutions = selectedGroup?.let { group -> institutions.filter { it.category in group.categories } }.orEmpty()
                 items(filteredInstitutions, key = { it.id }) { institution ->
-                    InstitutionCard(institution)
+                    InstitutionCard(institution, onOpen = { selectedInstitutionId = institution.id })
                 }
             }
             WorldSection.RELICS -> {
@@ -384,33 +398,134 @@ private fun SpecialItemCard(item: SpecialItem) {
 }
 
 @Composable
-private fun InstitutionCard(institution: Institution) {
+private fun InstitutionCard(institution: Institution, onOpen: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.25.dp, LineGold),
         colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = .96f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(institution.name, color = Ink, modifier = Modifier.weight(1f), fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
                 Seal(institution.category)
             }
             Text(institution.activeReigns, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(institution.function, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp)
-            Text("晋升导览", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                items(institution.promotionPath) { step ->
-                    Surface(shape = CutCornerShape(4.dp), color = PaperShade, border = BorderStroke(1.dp, LineGold)) {
-                        Text(step, modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp), color = Ink, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+            Text(institution.function, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, maxLines = 2)
+            Text("查看机构详解", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+/** 详情页只读取资料库正文；晋升链明确标作常见仕途，不伪装成全员适用的定制。 */
+@Composable
+private fun InstitutionDetailScreen(
+    institution: Institution,
+    contentPadding: PaddingValues,
+    onBack: () -> Unit,
+    onOpenPerson: (String) -> Unit,
+) {
+    MingList(contentPadding) {
+        item {
+            Text(
+                text = "返回机构",
+                modifier = Modifier.clickable(onClick = onBack).padding(vertical = 4.dp),
+                color = Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = CutCornerShape(10.dp),
+                border = BorderStroke(1.3.dp, LineGold),
+                colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = .96f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(institution.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                        Seal(institution.category)
                     }
+                    Text(institution.activeReigns, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(institution.function, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Justify)
                 }
             }
-            if (institution.reforms.isNotEmpty()) {
-                Text("制度变革", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                institution.reforms.forEach { reform ->
-                    Text("${reform.year} · ${reform.title}：${reform.description}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp, lineHeight = 21.sp)
+        }
+        items(institution.sections.sortedBy { it.position }, key = { it.key }) { section ->
+            InstitutionTextSection(section.title, section.content)
+        }
+        if (institution.promotionPath.isNotEmpty()) {
+            item { InstitutionPromotionGuide(institution.promotionPath) }
+        }
+        if (institution.reforms.isNotEmpty()) {
+            item {
+                InstitutionTextSection(
+                    title = "沿革与变动",
+                    content = institution.reforms.joinToString("\n\n") { reform ->
+                        "${reform.year} · ${reform.title}\n${reform.description}"
+                    },
+                )
+            }
+        }
+        if (institution.people.isNotEmpty()) {
+            item { InstitutionPeopleSection(institution.people, onOpenPerson) }
+        }
+        item { SourceNote("内容据随应用发布的《明史》与《明实录》资料索引整理。") }
+    }
+}
+
+@Composable
+private fun InstitutionTextSection(title: String, content: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 24.sp, textAlign = TextAlign.Justify)
+        }
+    }
+}
+
+@Composable
+private fun InstitutionPromotionGuide(path: List<String>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        InstitutionTextSection(title = "常见仕途导览", content = "此处呈现与本机构相关的常见任用或升迁轨迹，不是所有官员必须经历的法定阶梯。")
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            items(path) { step ->
+                Surface(shape = CutCornerShape(4.dp), color = PaperShade, border = BorderStroke(1.dp, LineGold)) {
+                    Text(step, modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp), color = Ink, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InstitutionPeopleSection(people: List<InstitutionPerson>, onOpenPerson: (String) -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            people.forEach { person ->
+                Column(
+                    modifier = Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).clickable { onOpenPerson(person.name) }.padding(vertical = 5.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
                 }
             }
         }

@@ -97,12 +97,30 @@ data class Institution(
     val function: String,
     val promotionPath: List<String>,
     val reforms: List<InstitutionReform>,
+    val sections: List<InstitutionSection> = emptyList(),
+    val people: List<InstitutionPerson> = emptyList(),
 )
 
 data class InstitutionReform(
     val year: String,
     val title: String,
     val description: String,
+)
+
+/** 机构详情的固定阅读分栏；内容与人物条目一样来自随 APK 发布的资料库。 */
+data class InstitutionSection(
+    val key: String,
+    val title: String,
+    val content: String,
+    val position: Int,
+)
+
+/** 机构代表人物：只收录已在正式人物库中、并可直接跳转的实体。 */
+data class InstitutionPerson(
+    val id: String,
+    val name: String,
+    val title: String,
+    val role: String,
 )
 
 /** 天下页“典章”科普条目：宫殿、器物与制度名物。 */

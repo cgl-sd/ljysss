@@ -14,3 +14,7 @@
 {"active_reigns": "洪武至崇祯", "category": "监察司法", "function": "监察百官、纠劾违法失职，设御史巡按各地；与六科给事中共同构成监察渠道。", "id": "censorate", "name": "都察院", "source_id": "mingshi-editorial-v1"}
 {"active_reigns": "洪武至崇祯", "category": "监察司法", "function": "大理寺参与重大案件的复核，与刑部、都察院构成三法司会审等司法程序；审判、监察和皇帝诏狱并非同一套权力逻辑。", "id": "dali-temple", "name": "大理寺与三法司", "source_id": "mingshi-editorial-v1"}
 {"active_reigns": "洪武至崇祯", "category": "监察司法", "function": "吏、户、礼、兵、刑、工六科分察六部奏章与政务，具有封驳、纠劾等职能；实际权力需同都察院、内阁和皇帝裁决一并理解。", "id": "six-bureaus", "name": "六科给事中", "source_id": "mingshi-editorial-v1"}
+{"active_reigns": "永乐至崇祯（名称与编制多次调整）", "category": "军事卫所", "function": "五军营、三千营、神机营合称京军三大营，是明代京师宿卫与征战的重要军营体系。", "id": "three-major-camps", "name": "京军三大营", "source_id": "mingshi-editorial-v1"}
+{"active_reigns": "洪武至崇祯", "category": "教育礼制", "function": "府、州、县学构成地方官学网络，负责生员教育、祭祀礼仪与地方人才培养，并与科举取士相衔接。", "id": "prefectural-schools", "name": "府州县学", "source_id": "mingshi-editorial-v1"}
+{"active_reigns": "洪武至崇祯", "category": "中央政务", "function": "詹事府辅导皇太子及东宫事务，兼有讲读、礼仪和属官统辖等职能；太子不常设时，其实际活动会相应变化。", "id": "heir-apparent-household", "name": "詹事府", "source_id": "mingshi-editorial-v1"}
+{"active_reigns": "洪武至崇祯", "category": "教育礼制", "function": "太常寺掌国家祭祀、礼乐及相关礼仪事务，与礼部共同构成明代礼制运行的重要部分。", "id": "court-of-imperial-sacrifices", "name": "太常寺", "source_id": "mingshi-editorial-v1"}

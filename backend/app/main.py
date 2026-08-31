@@ -291,6 +291,25 @@ def list_institutions() -> list[dict]:
             """,
             (institution["id"],),
         )
+        institution["sections"] = records(
+            """
+            SELECT section_key, title, content, position
+            FROM institution_section
+            WHERE institution_id = ?
+            ORDER BY position
+            """,
+            (institution["id"],),
+        )
+        institution["people"] = records(
+            """
+            SELECT p.id, p.name, p.title, ip.role
+            FROM institution_person AS ip
+            JOIN person AS p ON p.id = ip.person_id
+            WHERE ip.institution_id = ?
+            ORDER BY ip.position
+            """,
+            (institution["id"],),
+        )
     return institutions
 
 
