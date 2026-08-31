@@ -18,3 +18,5 @@
 {"active_reigns": "洪武至崇祯", "category": "教育与专门", "function": "府、州、县学构成地方官学网络，负责生员教育、祭祀礼仪与地方人才培养，并与科举取士相衔接。", "id": "prefectural-schools", "name": "府州县学", "source_id": "mingshi-editorial-v1"}
 {"active_reigns": "洪武至崇祯", "category": "教育与专门", "function": "詹事府辅导皇太子及东宫事务，兼有讲读、礼仪和属官统辖等职能；太子不常设时，其实际活动会相应变化。", "id": "heir-apparent-household", "name": "詹事府", "source_id": "mingshi-editorial-v1"}
 {"active_reigns": "洪武至崇祯", "category": "教育与专门", "function": "太常寺掌国家祭祀、礼乐及相关礼仪事务，与礼部共同构成明代礼制运行的重要部分。", "id": "court-of-imperial-sacrifices", "name": "太常寺", "source_id": "mingshi-editorial-v1"}
+{"active_reigns":"洪武至崇祯","category":"地方治理","function":"府、州、县是内地常设地方行政层级。知府、知州、知县分别管理辖境内的钱粮、户籍、诉讼、治安与教化等事务，并受三司、巡按御史及督抚差遣的节制。","id":"prefecture-county-government","name":"府、州、县与地方衙门","source_id":"mingshi-editorial-v1"}
+{"active_reigns":"洪武至崇祯","category":"地方治理","function":"明廷在西南及部分边地沿用或授予土司官号，以宣慰、宣抚、安抚、长官等司统辖当地事务；朝贡、袭替、征调与改土归流构成中央维系边地的不同方式。","id":"tusi-frontier-governance","name":"土司与西南边地治理","source_id":"mingshi-editorial-v1"}

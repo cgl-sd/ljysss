@@ -20,3 +20,5 @@
 {"institution_id":"jinyiwei","person_id":"lubing","position":0,"role":"锦衣卫都指挥使","source_id":"mingshi-editorial-v1"}
 {"institution_id":"clan-court","person_id":"zhuquan","position":0,"role":"宗室、宁王","source_id":"mingshi-editorial-v1"}
 {"institution_id":"censorate","person_id":"haorui","position":0,"role":"右佥都御史","source_id":"mingshi-editorial-v1"}
+{"institution_id":"prefecture-county-government","person_id":"haorui","position":0,"role":"淳安县知县等地方官","source_id":"mingshi-editorial-v1"}
+{"institution_id":"tusi-frontier-governance","person_id":"qinliangyu","position":0,"role":"石柱土司领袖","source_id":"mingshi-editorial-v1"}

@@ -27,7 +27,7 @@ class WorldCatalogTests(unittest.TestCase):
             categories,
         )
         self.assertTrue(
-            {"国子监", "翰林院", "钦天监", "太医院", "京军三大营", "府州县学", "詹事府", "太常寺"}
+            {"国子监", "翰林院", "钦天监", "太医院", "京军三大营", "府州县学", "詹事府", "太常寺", "府、州、县与地方衙门", "土司与西南边地治理"}
             <= {row["name"] for row in institutions}
         )
         self.assertEqual({"制度", "器物", "宫陵"}, {row["category"] for row in specials})
