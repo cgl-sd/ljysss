@@ -60,24 +60,46 @@ import kotlin.math.sin
 internal fun RelationshipNetwork(
     relations: List<PersonRelation>,
     events: List<HistoricalEvent>,
-    onOpenEvent: (String) -> Unit,
 ) {
-    val focusNames = remember(relations) {
+    val relationNames = remember(relations) {
         relations
             .flatMap { listOf(it.fromName, it.toName) }
             .distinct()
             .sorted()
     }
     val defaultFocus = remember(relations) {
-        focusNames.maxByOrNull { name -> relations.count { it.fromName == name || it.toName == name } }.orEmpty()
+        relationNames.maxByOrNull { name -> relations.count { it.fromName == name || it.toName == name } }.orEmpty()
     }
     var selectedFocus by rememberSaveable { mutableStateOf(defaultFocus) }
-    val activeFocus = selectedFocus.takeIf { it in focusNames } ?: defaultFocus
-    val focusedRelations = relations.filter { it.fromName == activeFocus || it.toName == activeFocus }
-    val neighbours = focusedRelations.map { relation ->
-        if (relation.fromName == activeFocus) relation.toName else relation.fromName
-    }.distinct()
+    var selectedEventId by rememberSaveable { mutableStateOf<String?>(null) }
+    val selectedEvent = events.firstOrNull { it.id == selectedEventId }
+    val eventPeople = selectedEvent?.participants?.distinct().orEmpty()
+    val focusNames = eventPeople.takeIf { it.isNotEmpty() } ?: relationNames
+    val activeFocus = selectedFocus.takeIf { it in focusNames } ?: focusNames.firstOrNull().orEmpty()
+    val scopedRelations = if (selectedEvent == null) {
+        relations
+    } else {
+        relations.filter { it.fromName in eventPeople && it.toName in eventPeople }
+    }
+    // 画布仍以人物为节点；事件筛选下先保留该事件的全部人物，即使他们之间没有可考直接关系。
+    val neighbours = if (selectedEvent == null) {
+        scopedRelations.mapNotNull { relation ->
+            when {
+                relation.fromName == activeFocus -> relation.toName
+                relation.toName == activeFocus -> relation.fromName
+                else -> null
+            }
+        }.distinct()
+    } else {
+        eventPeople.filter { it != activeFocus }
+    }
+    val focusedRelations = scopedRelations.filter { it.fromName == activeFocus || it.toName == activeFocus }
     val legend = focusedRelations.map { it.type }.distinct().map { it to it.label }
+    val networkHeight = when {
+        neighbours.isEmpty() -> 152.dp
+        neighbours.size > 6 -> 360.dp
+        else -> 280.dp
+    }
     val eventThreads = remember(activeFocus, events) {
         events
             .filter { activeFocus in it.participants }
@@ -94,7 +116,11 @@ internal fun RelationshipNetwork(
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
             Text(
-                "以人物为节点展开直接关联；事件只作为人物互动发生的线索。节点位置只为阅读布局，不代表地理位置或政治距离。",
+                if (selectedEvent == null) {
+                    "以人物为节点展开直接关联；事件只作为人物互动发生的线索。节点位置只为阅读布局，不代表地理位置或政治距离。"
+                } else {
+                    "已按「${selectedEvent.title}」筛选：只显示该事件涉及的人物；连线只表示这些人物已有的直接关系。再次点选该事件可取消筛选。"
+                },
                 color = InkSoft,
                 fontFamily = FontFamily.Serif,
                 fontSize = 14.sp,
@@ -128,7 +154,7 @@ internal fun RelationshipNetwork(
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (neighbours.size > 6) 360.dp else 280.dp)
+                    .height(networkHeight)
                     .clip(CutCornerShape(8.dp))
                     .background(XuanPaper),
             ) {
@@ -173,6 +199,17 @@ internal fun RelationshipNetwork(
                             ),
                     )
                 }
+                if (neighbours.isEmpty() && selectedEvent != null) {
+                    Text(
+                        "当前事件仅收录这一位可核对的人物，未据此推断额外关系。",
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp),
+                        color = InkSoft,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 12.sp,
+                    )
+                }
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -186,24 +223,28 @@ internal fun RelationshipNetwork(
                 }
             }
             if (eventThreads.isNotEmpty()) {
-                Text("关联事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(if (selectedEvent == null) "关联事件" else "事件筛选", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     contentPadding = PaddingValues(horizontal = 1.dp),
                 ) {
                     items(eventThreads, key = { it.id }) { event ->
+                        val isSelected = event.id == selectedEventId
                         Surface(
                             modifier = Modifier
-                                .clickable { onOpenEvent(event.id) }
+                                .clickable {
+                                    selectedEventId = if (isSelected) null else event.id
+                                    if (!isSelected) selectedFocus = event.participants.firstOrNull().orEmpty()
+                                }
                                 .clip(CutCornerShape(5.dp)),
                             shape = CutCornerShape(5.dp),
-                            color = PaperShade,
-                            border = BorderStroke(1.dp, LineGold),
+                            color = if (isSelected) Vermilion.copy(alpha = 0.1f) else PaperShade,
+                            border = BorderStroke(1.dp, if (isSelected) Vermilion else LineGold),
                         ) {
                             Text(
                                 text = "${event.year ?: ""} · ${event.title}",
                                 modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp),
-                                color = Ink,
+                                color = if (isSelected) Vermilion else Ink,
                                 fontFamily = FontFamily.Serif,
                                 fontSize = 13.sp,
                             )
@@ -212,7 +253,11 @@ internal fun RelationshipNetwork(
                 }
             }
             Text(
-                "已建立 ${relations.size} 条关系；当前显示“$activeFocus”关联的 ${focusedRelations.size} 条，并串联 ${eventThreads.size} 件相关事件。",
+                if (selectedEvent == null) {
+                    "已建立 ${relations.size} 条关系；当前显示“$activeFocus”关联的 ${focusedRelations.size} 条，并串联 ${eventThreads.size} 件相关事件。"
+                } else {
+                    "该事件涉及 ${eventPeople.size} 位已编人物；其中可直接连线的关系 ${scopedRelations.size} 条。"
+                },
                 color = Vermilion,
                 fontFamily = FontFamily.Serif,
                 fontSize = 13.sp,

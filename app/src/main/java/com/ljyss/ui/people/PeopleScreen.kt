@@ -249,7 +249,7 @@ internal fun PeopleScreen(
                             }
                         }
                         PeopleTab.RELATIONSHIPS -> {
-                            item { RelationshipNetwork(relations, allEvents, ::openRelatedEvent) }
+                            item { RelationshipNetwork(relations, allEvents) }
                             item { RelationshipLedger(relations) }
                         }
                     }

@@ -287,6 +287,20 @@ def event_people(event_id: str) -> list[dict]:
     )
 
 
+def content_references(content_type: str, content_id: str, section_key: str) -> list[dict]:
+    """Reader-facing sources; unlike source.review_status these contain no editorial state."""
+
+    return records(
+        """
+        SELECT title, url, locator, note
+        FROM content_reference
+        WHERE content_type = ? AND content_id = ? AND section_key = ?
+        ORDER BY position
+        """,
+        (content_type, content_id, section_key),
+    )
+
+
 @app.get("/v1/events/{event_id}/sections")
 def get_event_sections(event_id: str) -> list[dict]:
     if not record("SELECT id FROM event WHERE id = ?", (event_id,)):
@@ -368,6 +382,7 @@ def list_institutions() -> list[dict]:
             """,
             (institution["id"],),
         )
+        institution["readings"] = content_references("institution", institution["id"], "reading")
     return institutions
 
 
@@ -396,6 +411,8 @@ def list_specials() -> list[dict]:
             """,
             (special["id"],),
         )
+        special["readings"] = content_references("special", special["id"], "reading")
+        special["image"] = content_references("special", special["id"], "image")[:1]
     return specials
 
 

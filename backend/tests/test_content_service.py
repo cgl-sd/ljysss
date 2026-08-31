@@ -117,6 +117,17 @@ class ContentServiceTest(unittest.TestCase):
         self.assertNotIn("review_status", payload["institutions"][0])
         self.assertNotIn("review_status", get_source("mingshi-events-v1"))
 
+    def test_world_detail_payloads_include_reader_sources_without_audit_state(self):
+        from app.main import list_institutions, list_specials
+
+        institutions = list_institutions()
+        specials = list_specials()
+        self.assertTrue(all(item["readings"] for item in institutions))
+        self.assertTrue(all(item["readings"] and item["image"] for item in specials))
+        self.assertTrue(
+            all("review_status" not in reference for item in institutions + specials for reference in item["readings"])
+        )
+
     def test_every_person_and_event_has_a_uniform_profile_template(self):
         from app.database import connect
 

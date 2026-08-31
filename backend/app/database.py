@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS event_section (
 
 CREATE TABLE IF NOT EXISTS content_reference (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content_type TEXT NOT NULL CHECK(content_type IN ('person', 'event')),
+    content_type TEXT NOT NULL CHECK(content_type IN ('person', 'event', 'institution', 'special')),
     content_id TEXT NOT NULL,
     section_key TEXT NOT NULL,
     position INTEGER NOT NULL DEFAULT 0,

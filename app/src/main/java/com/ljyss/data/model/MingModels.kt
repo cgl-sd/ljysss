@@ -124,6 +124,8 @@ data class Institution(
     val reforms: List<InstitutionReform>,
     val sections: List<InstitutionSection> = emptyList(),
     val people: List<InstitutionPerson> = emptyList(),
+    /** 资料库登记的延伸阅读；不是用户端审核标签。 */
+    val readings: List<ReadingReference> = emptyList(),
 )
 
 data class InstitutionPromotionTrack(
@@ -162,6 +164,18 @@ data class SpecialItem(
     val description: String,
     val sections: List<SpecialSection> = emptyList(),
     val people: List<SpecialPerson> = emptyList(),
+    /** 可追溯的文字资料条目。 */
+    val readings: List<ReadingReference> = emptyList(),
+    /** 当前封面图的来源与许可登记；可为空，以免把示意图误标为文物实拍。 */
+    val imageReference: ReadingReference? = null,
+)
+
+/** 机构与典章共用的出处／延伸阅读元数据。 */
+data class ReadingReference(
+    val title: String,
+    val url: String = "",
+    val locator: String = "",
+    val note: String = "",
 )
 
 /** 典章详情的通用阅读分栏：释义、形制、使用与历史脉络。 */

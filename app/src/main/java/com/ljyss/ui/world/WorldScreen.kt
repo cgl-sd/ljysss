@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +51,7 @@ import com.ljyss.R
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
 import com.ljyss.data.model.InstitutionPromotionTrack
+import com.ljyss.data.model.ReadingReference
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.ui.components.MingList
@@ -428,7 +430,7 @@ private fun SpecialDetailScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                    SpecialCover(item.category)
+                    SpecialCover(item.name, item.category)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(item.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                         Seal(item.category)
@@ -444,12 +446,18 @@ private fun SpecialDetailScreen(
         if (item.people.isNotEmpty()) {
             item { SpecialPeopleSection(item.people, onOpenPerson) }
         }
+        if (item.readings.isNotEmpty()) {
+            item { ExtendedReadingSection(item.readings) }
+        }
+        item.imageReference?.let { reference ->
+            item { ImageAttributionSection(reference) }
+        }
     }
 }
 
 /** 三类典章使用无文字的专题示意图；不以生成画面冒充具体文物或建筑实拍。 */
 @Composable
-private fun SpecialCover(category: String) {
+private fun SpecialCover(name: String, category: String) {
     val illustration = when (category) {
         "制度" -> R.drawable.special_cover_law
         "器物" -> R.drawable.special_cover_artifact
@@ -457,7 +465,7 @@ private fun SpecialCover(category: String) {
     }
     Image(
         painter = painterResource(illustration),
-        contentDescription = "${category}专题示意图",
+        contentDescription = "${name}专题示意图",
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
@@ -572,6 +580,9 @@ private fun InstitutionDetailScreen(
         if (institution.people.isNotEmpty()) {
             item { InstitutionPeopleSection(institution.people, onOpenPerson) }
         }
+        if (institution.readings.isNotEmpty()) {
+            item { ExtendedReadingSection(institution.readings) }
+        }
     }
 }
 
@@ -637,6 +648,67 @@ private fun InstitutionPeopleSection(people: List<InstitutionPerson>, onOpenPers
                     Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
                 }
+            }
+        }
+    }
+}
+
+/** 正文后的资料入口；只展示书目与定位，不显示编辑审核状态。 */
+@Composable
+private fun ExtendedReadingSection(references: List<ReadingReference>) {
+    val uriHandler = LocalUriHandler.current
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Text("延伸阅读", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            references.forEach { reference ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(reference.title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    reference.locator.takeIf { it.isNotBlank() }?.let { locator ->
+                        Text(locator, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
+                    }
+                    if (reference.url.isNotBlank()) {
+                        Text(
+                            "打开原文 ↗",
+                            color = Vermilion,
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(CutCornerShape(3.dp))
+                                .clickable { uriHandler.openUri(reference.url) }
+                                .padding(vertical = 3.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 专题封面均为应用内插绘；明确说明其性质与许可，避免被误解为文物实拍。 */
+@Composable
+private fun ImageAttributionSection(reference: ReadingReference) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("图像说明", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            Text(reference.title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            reference.locator.takeIf { it.isNotBlank() }?.let { locator ->
+                Text(locator, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
+            }
+            reference.note.takeIf { it.isNotBlank() }?.let { note ->
+                Text(note, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
             }
         }
     }
