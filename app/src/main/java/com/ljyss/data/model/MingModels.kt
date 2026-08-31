@@ -14,6 +14,8 @@ data class HistoricalEvent(
     val description: String,
     val place: String,
     val sourceLabel: String,
+    /** 事件的卷次或资料定位；与来源名称分开保存，避免只显示笼统资料库名称。 */
+    val sourceLocator: String = "",
     val id: String = "",
     val year: Int? = null,
     /** 结束年份；单年事件与 year 相同。 */

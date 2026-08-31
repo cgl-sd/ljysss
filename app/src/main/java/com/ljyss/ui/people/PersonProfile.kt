@@ -106,8 +106,9 @@ internal fun PersonProfile(
                     "relations" -> if (person.category != PersonCategory.EMPERORS) {
                         ArticleSection(section.title, body, relationNames, onOpenPerson)
                     }
-                    // 有正式事件实体时，以可跳转反链取代旧正文；无反链才保留原有叙述。
-                    "events" -> if (person.relatedEvents.isEmpty()) ProfileSection(section.title, readableParagraphs(body))
+                    // 相关事件只认 event_participant 的正式反链。旧正文来自早期自动抽取，
+                    // 不能在无反链时回退展示，以免把无关的编年句误作人物经历。
+                    "events" -> Unit
                     // 其余键属于内部标记（如资料状态），不作为栏目呈现。
                 }
             }

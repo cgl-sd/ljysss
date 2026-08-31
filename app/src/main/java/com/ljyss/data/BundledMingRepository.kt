@@ -114,6 +114,16 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
+                val eventSourceLocators = database.rows(
+                    """
+                    SELECT content_id, locator
+                    FROM content_reference
+                    WHERE content_type = 'event' AND section_key = 'source'
+                    ORDER BY content_id, position
+                    """.trimIndent(),
+                ).groupBy { it.required("content_id") }.mapValues { (_, rows) ->
+                    rows.firstOrNull()?.value("locator").orEmpty()
+                }
                 val participantsByEvent = database.rows(
                     """
                     SELECT ep.event_id, p.name
@@ -148,6 +158,7 @@ class BundledMingRepository private constructor(
                                 ?: row.value("participants").split("、").filter { it.isNotBlank() },
                             consequence = row.required("consequence"),
                             sourceLabel = row.required("source_title"),
+                            sourceLocator = eventSourceLocators[row.required("id")].orEmpty(),
                             sections = eventSections[row.required("id")].orEmpty(),
                         )
                     }

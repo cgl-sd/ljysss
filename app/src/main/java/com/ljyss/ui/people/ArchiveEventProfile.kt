@@ -96,7 +96,12 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             if (event.sections.isEmpty()) {
                 event.consequence.takeIf { it.isNotBlank() }?.let { EventArticleSection("影响", it) }
             }
-            Text("出处：${event.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp)
+            Text(
+                "出处：${event.sourceLocator.ifBlank { event.sourceLabel }}",
+                color = Brass,
+                fontFamily = FontFamily.Serif,
+                fontSize = 13.sp,
+            )
         }
     }
 }

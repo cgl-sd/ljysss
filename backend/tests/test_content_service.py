@@ -196,6 +196,32 @@ class ContentServiceTest(unittest.TestCase):
             ).fetchall()
         self.assertEqual([], missing, "关联人物必须在事件的五个阅读分栏中具名出现")
 
+    def test_formal_event_links_have_a_traceable_source_and_no_legacy_fallback(self):
+        """双向跳转只使用具名、可定位来源的正式事件关系。"""
+        from app.database import connect
+        from app.main import get_person
+
+        with connect() as database:
+            missing_sources = database.execute(
+                """
+                SELECT e.id
+                FROM event AS e
+                LEFT JOIN content_reference AS cr
+                  ON cr.content_type = 'event'
+                 AND cr.content_id = e.id
+                 AND cr.section_key = 'source'
+                WHERE cr.content_id IS NULL OR trim(cr.locator) = ''
+                ORDER BY e.id
+                """
+            ).fetchall()
+            old_event_section = database.execute(
+                "SELECT person_id FROM person_section WHERE section_key = 'events' LIMIT 1"
+            ).fetchone()
+        self.assertEqual([], missing_sources, "每件正式事件都应登记可定位的来源入口")
+        self.assertIsNotNone(old_event_section, "保留旧数据以便编辑审计，接口不应把它当关联事件")
+        profile = get_person(old_event_section[0])
+        self.assertFalse(any(section["section_key"] == "events" for section in profile["sections"]))
+
     def test_major_event_people_are_bidirectionally_reachable(self):
         from app.main import get_event
 

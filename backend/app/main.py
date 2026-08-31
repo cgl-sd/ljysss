@@ -144,6 +144,17 @@ def get_event(event_id: str) -> dict:
     )
     if not item:
         raise HTTPException(status_code=404, detail="未找到该事件")
+    source = record(
+        """
+        SELECT locator
+        FROM content_reference
+        WHERE content_type = 'event' AND content_id = ? AND section_key = 'source'
+        ORDER BY position
+        LIMIT 1
+        """,
+        (event_id,),
+    )
+    item["source_locator"] = source["locator"] if source else ""
     item["sections"] = get_event_sections(event_id)
     item["people"] = event_people(event_id)
     return item
@@ -229,7 +240,9 @@ def get_person(person_id: str) -> dict:
         """
         SELECT section_key, title, position, content
         FROM person_section
-        WHERE person_id = ?
+        -- 相关事件只从 event_participant 这张正式关系表提供；历史自动抽取的
+        -- person_section.events 不向 API 暴露，避免客户端误将编年残句当作关联。
+        WHERE person_id = ? AND section_key <> 'events'
         ORDER BY position
         """,
         (person_id,),

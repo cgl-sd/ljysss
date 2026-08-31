@@ -233,7 +233,7 @@ private fun EventRow(
                     )
                 }
                 Text(
-                    text = "出处：${event.sourceLabel}",
+                    text = "出处：${event.sourceLocator.ifBlank { event.sourceLabel }}",
                     color = Brass,
                     fontFamily = FontFamily.Serif,
                     fontSize = 13.sp,
