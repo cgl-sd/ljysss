@@ -9,8 +9,8 @@
 
 ## 内容库快照
 
-- 正式人物：2,158 人；朝代：18 个；精选事件：100 件、183 条人物—事件关联；纪年记录：323 条。
-- 天下资料：机构 22 条、典章 22 条；两类详情均具备四个结构化阅读分栏和人物跳转。
+- 正式人物：2,158 人；朝代：18 个；精选事件：161 件、623 条人物—事件关联；纪年记录：323 条。
+- 天下资料：机构 37 条、典章 48 条；两类详情均具备四个结构化阅读分栏和人物跳转，每条绑定唯一专属示意图资源。
 - 人物生平分栏：3,779 条；人物家族记录：2,628 条；人物关系边：99 条。
 - 内容真相保存在 `backend/data/content/*.jsonl`；运行用 SQLite 为可再生的 `backend/data/ming_history.sqlite3`，并作为应用统一资料库打入 APK。
 
@@ -22,6 +22,6 @@
 
 ## 发布方式
 
-- 当前调试 APK：`app/build/outputs/apk/debug/app-debug.apk`（约 81MB；会随本地尚未提交的画像资源变化）。
+- 当前调试 APK：`app/build/outputs/apk/debug/app-debug.apk`（约 65MB；包含当前统一 SQLite 与逐条天下资源）。
 - 当前 release 候选：`app/build/outputs/apk/release/app-release-unsigned.apk`（约 55MB）。生产构建命令为 `./gradlew assembleRelease`；未配置发布签名时生成的是未签名 APK，须先配置自己的 keystore 后才能上架或正式分发。
 - Android 内容服务可由 `cd backend && .venv/bin/uvicorn app.main:app --port 8000` 启动，用于编辑与开发核对；应用界面直接读取已打包的统一资料库。
