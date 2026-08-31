@@ -1,5 +1,6 @@
 package com.ljyss.ui.world
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,6 +48,7 @@ import com.ljyss.R
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
 import com.ljyss.data.model.SpecialItem
+import com.ljyss.data.model.SpecialPerson
 import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
@@ -84,6 +86,7 @@ internal fun WorldScreen(
     var selectedInstitutionGroup by rememberSaveable { mutableStateOf("中央政务") }
     var selectedRelicGroup by rememberSaveable { mutableStateOf("制度法令") }
     var selectedInstitutionId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedSpecialId by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(searchDestination) {
         val destination = searchDestination ?: return@LaunchedEffect
         destination.worldSection?.let { label ->
@@ -97,11 +100,24 @@ internal fun WorldScreen(
     }
 
     val selectedInstitution = institutions.firstOrNull { it.id == selectedInstitutionId }
+    val selectedSpecial = specials.firstOrNull { it.id == selectedSpecialId }
+    BackHandler(enabled = selectedInstitution != null || selectedSpecial != null) {
+        if (selectedInstitution != null) selectedInstitutionId = null else selectedSpecialId = null
+    }
     if (worldSection == WorldSection.INSTITUTIONS && selectedInstitution != null) {
         InstitutionDetailScreen(
             institution = selectedInstitution,
             contentPadding = contentPadding,
             onBack = { selectedInstitutionId = null },
+            onOpenPerson = onOpenPerson,
+        )
+        return
+    }
+    if (worldSection == WorldSection.RELICS && selectedSpecial != null) {
+        SpecialDetailScreen(
+            item = selectedSpecial,
+            contentPadding = contentPadding,
+            onBack = { selectedSpecialId = null },
             onOpenPerson = onOpenPerson,
         )
         return
@@ -146,7 +162,7 @@ internal fun WorldScreen(
                     val selectedGroup = relicGroups.firstOrNull { it.label == selectedRelicGroup } ?: relicGroups.firstOrNull()
                     val filteredSpecials = selectedGroup?.let { group -> specials.filter { it.category in group.categories } }.orEmpty()
                     items(filteredSpecials, key = { it.id }) { item ->
-                        SpecialItemCard(item)
+                        SpecialItemCard(item, onOpen = { selectedSpecialId = item.id })
                     }
                 }
             }
@@ -378,21 +394,128 @@ private fun WorldSectionRail(selected: WorldSection, onSelected: (WorldSection) 
 }
 
 @Composable
-private fun SpecialItemCard(item: SpecialItem) {
+private fun SpecialItemCard(item: SpecialItem, onOpen: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.25.dp, LineGold),
         colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.96f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(item.name, color = Ink, modifier = Modifier.weight(1f), fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
                 Seal(item.category)
             }
             Text(item.era, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, textAlign = TextAlign.Justify)
+            Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, textAlign = TextAlign.Justify, maxLines = 3)
+            Text("查看典章详解", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun SpecialDetailScreen(
+    item: SpecialItem,
+    contentPadding: PaddingValues,
+    onBack: () -> Unit,
+    onOpenPerson: (String) -> Unit,
+) {
+    MingList(contentPadding) {
+        item {
+            Text(
+                text = "返回典章",
+                modifier = Modifier.clickable(onClick = onBack).padding(vertical = 4.dp),
+                color = Vermilion,
+                fontFamily = FontFamily.Serif,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = CutCornerShape(10.dp),
+                border = BorderStroke(1.3.dp, LineGold),
+                colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = .96f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    SpecialCover(item.category)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(item.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                        Seal(item.category)
+                    }
+                    Text(item.era, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Justify)
+                }
+            }
+        }
+        items(item.sections.sortedBy { it.position }, key = { it.key }) { section ->
+            SpecialTextSection(section.title, section.content)
+        }
+        if (item.people.isNotEmpty()) {
+            item { SpecialPeopleSection(item.people, onOpenPerson) }
+        }
+        item { SourceNote("内容据随应用发布的明代制度与文物资料索引整理。") }
+    }
+}
+
+/** 三类典章使用无文字的专题示意图；不以生成画面冒充具体文物或建筑实拍。 */
+@Composable
+private fun SpecialCover(category: String) {
+    val illustration = when (category) {
+        "制度" -> R.drawable.special_cover_law
+        "器物" -> R.drawable.special_cover_artifact
+        else -> R.drawable.special_cover_palace
+    }
+    Image(
+        painter = painterResource(illustration),
+        contentDescription = "${category}专题示意图",
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp)
+            .clip(CutCornerShape(7.dp)),
+        contentScale = ContentScale.Crop,
+    )
+}
+
+@Composable
+private fun SpecialTextSection(title: String, content: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 24.sp, textAlign = TextAlign.Justify)
+        }
+    }
+}
+
+@Composable
+private fun SpecialPeopleSection(people: List<SpecialPerson>, onOpenPerson: (String) -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            people.forEach { person ->
+                Column(
+                    modifier = Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).clickable { onOpenPerson(person.name) }.padding(vertical = 5.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
+                }
+            }
         }
     }
 }

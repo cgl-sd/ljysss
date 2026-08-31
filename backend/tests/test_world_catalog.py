@@ -57,3 +57,25 @@ class WorldCatalogTests(unittest.TestCase):
             self.assertIn(row["person_id"], people)
             self.assertIn(row["source_id"], sources)
             self.assertTrue(row["role"].strip())
+
+    def test_every_special_has_readable_sections_and_valid_person_links(self):
+        specials = {row["id"] for row in load_rows("special_item")}
+        people = {row["id"] for row in load_rows("person")}
+        sources = {row["id"] for row in load_rows("source")}
+        sections_by_item = {}
+        for section in load_rows("special_section"):
+            self.assertIn(section["special_item_id"], specials)
+            self.assertIn(section["source_id"], sources)
+            self.assertGreaterEqual(len(section["content"].strip()), 50)
+            sections_by_item.setdefault(section["special_item_id"], []).append(section)
+        self.assertEqual(specials, set(sections_by_item))
+        for item_id, rows in sections_by_item.items():
+            self.assertEqual(
+                ["meaning", "form", "practice", "legacy"],
+                [row["section_key"] for row in sorted(rows, key=lambda row: row["position"])],
+                item_id,
+            )
+        for row in load_rows("special_person"):
+            self.assertIn(row["special_item_id"], specials)
+            self.assertIn(row["person_id"], people)
+            self.assertIn(row["source_id"], sources)

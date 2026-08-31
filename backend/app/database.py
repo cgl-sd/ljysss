@@ -37,6 +37,8 @@ CONTENT_TABLES = [
     "institution_section",
     "institution_person",
     "special_item",
+    "special_section",
+    "special_person",
     "person_mingshi",
     "person_wiki",
     "person_cbdb",
@@ -59,6 +61,8 @@ CONTENT_ORDER = {
     "institution_reform": ("institution_id", "position"),
     "institution_section": ("institution_id", "position"),
     "institution_person": ("institution_id", "position"),
+    "special_section": ("special_item_id", "position"),
+    "special_person": ("special_item_id", "position"),
 }
 
 # 人物分类和详情栏目都是内容模型的一部分，而不是前端散落的字面量。person 表仍保留
@@ -350,6 +354,30 @@ CREATE TABLE IF NOT EXISTS special_item (
     position INTEGER NOT NULL DEFAULT 0,
     source_id TEXT NOT NULL REFERENCES source(id)
 );
+
+-- 典章同样使用稳定正文分栏；机构、制度、器物和宫陵不再只是一张摘要卡片。
+CREATE TABLE IF NOT EXISTS special_section (
+    special_item_id TEXT NOT NULL REFERENCES special_item(id) ON DELETE CASCADE,
+    section_key TEXT NOT NULL CHECK(section_key IN ('meaning', 'form', 'practice', 'legacy')),
+    title TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    source_id TEXT NOT NULL REFERENCES source(id),
+    PRIMARY KEY(special_item_id, section_key)
+);
+CREATE INDEX IF NOT EXISTS special_section_by_item_position
+    ON special_section(special_item_id, position);
+
+CREATE TABLE IF NOT EXISTS special_person (
+    special_item_id TEXT NOT NULL REFERENCES special_item(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    role TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    source_id TEXT NOT NULL REFERENCES source(id),
+    PRIMARY KEY(special_item_id, person_id)
+);
+CREATE INDEX IF NOT EXISTS special_person_by_item_position
+    ON special_person(special_item_id, position);
 
 -- 维基百科条目全文（hf-mirror 数据包提取，t2s 规范化）。
 CREATE TABLE IF NOT EXISTS person_wiki (

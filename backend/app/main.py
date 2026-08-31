@@ -317,7 +317,28 @@ def list_institutions() -> list[dict]:
 def list_specials() -> list[dict]:
     """天下页“典章”科普：宫殿、器物与制度名物。"""
 
-    return records("SELECT id, name, category, era, description FROM special_item ORDER BY position")
+    specials = records("SELECT id, name, category, era, description FROM special_item ORDER BY position")
+    for special in specials:
+        special["sections"] = records(
+            """
+            SELECT section_key, title, content, position
+            FROM special_section
+            WHERE special_item_id = ?
+            ORDER BY position
+            """,
+            (special["id"],),
+        )
+        special["people"] = records(
+            """
+            SELECT p.id, p.name, p.title, sp.role
+            FROM special_person AS sp
+            JOIN person AS p ON p.id = sp.person_id
+            WHERE sp.special_item_id = ?
+            ORDER BY sp.position
+            """,
+            (special["id"],),
+        )
+    return specials
 
 
 @app.get("/v1/sources/{source_id}")

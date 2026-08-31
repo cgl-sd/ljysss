@@ -15,6 +15,8 @@ import com.ljyss.data.model.PersonSection
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Reign
 import com.ljyss.data.model.SpecialItem
+import com.ljyss.data.model.SpecialPerson
+import com.ljyss.data.model.SpecialSection
 import java.io.File
 
 /**
@@ -146,6 +148,35 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
+                val specialSections = database.rows(
+                    "SELECT special_item_id, section_key, title, content, position FROM special_section ORDER BY special_item_id, position"
+                ).groupBy { it.required("special_item_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        SpecialSection(
+                            key = it.required("section_key"),
+                            title = it.required("title"),
+                            content = it.required("content"),
+                            position = it.int("position"),
+                        )
+                    }
+                }
+                val specialPeople = database.rows(
+                    """
+                    SELECT sp.special_item_id, p.id, p.name, p.title, sp.role
+                    FROM special_person AS sp
+                    JOIN person AS p ON p.id = sp.person_id
+                    ORDER BY sp.special_item_id, sp.position
+                    """.trimIndent(),
+                ).groupBy { it.required("special_item_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        SpecialPerson(
+                            id = it.required("id"),
+                            name = it.required("name"),
+                            title = it.required("title"),
+                            role = it.required("role"),
+                        )
+                    }
+                }
                 return BundledMingRepository(
                     reignData = reigns,
                     peopleData = people,
@@ -192,7 +223,16 @@ class BundledMingRepository private constructor(
                     specialData = database.rows(
                         "SELECT id, name, category, era, description FROM special_item ORDER BY position"
                     ).map { row ->
-                        SpecialItem(row.required("id"), row.required("name"), row.required("category"), row.required("era"), row.required("description"))
+                        val id = row.required("id")
+                        SpecialItem(
+                            id = id,
+                            name = row.required("name"),
+                            category = row.required("category"),
+                            era = row.required("era"),
+                            description = row.required("description"),
+                            sections = specialSections[id].orEmpty(),
+                            people = specialPeople[id].orEmpty(),
+                        )
                     },
                 )
             }

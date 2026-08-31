@@ -130,4 +130,22 @@ data class SpecialItem(
     val category: String,
     val era: String,
     val description: String,
+    val sections: List<SpecialSection> = emptyList(),
+    val people: List<SpecialPerson> = emptyList(),
+)
+
+/** 典章详情的通用阅读分栏：释义、形制、使用与历史脉络。 */
+data class SpecialSection(
+    val key: String,
+    val title: String,
+    val content: String,
+    val position: Int,
+)
+
+/** 与典章直接相关、可跳转到正式人物库的实体。 */
+data class SpecialPerson(
+    val id: String,
+    val name: String,
+    val title: String,
+    val role: String,
 )

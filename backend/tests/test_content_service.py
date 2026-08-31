@@ -197,12 +197,22 @@ class ContentServiceTest(unittest.TestCase):
     def test_world_page_special_items_are_served(self):
         payload = bootstrap_content()
         specials = payload["specials"]
-        self.assertGreaterEqual(len(specials), 8)
+        self.assertGreaterEqual(len(specials), 22)
         names = {item["name"] for item in specials}
         self.assertIn("尚方宝剑", names)
         self.assertIn("王命旗牌", names)
         for item in specials:
             self.assertTrue(item["description"].strip())
+
+    def test_special_details_have_sections_and_person_links(self):
+        specials = {item["id"]: item for item in bootstrap_content()["specials"]}
+        palace = specials["beijing-gugong"]
+        self.assertEqual(
+            ["meaning", "form", "practice", "legacy"],
+            [section["section_key"] for section in palace["sections"]],
+        )
+        self.assertIn("朱棣", {person["name"] for person in palace["people"]})
+        self.assertIn("一条鞭法", {item["name"] for item in specials.values()})
 
     def test_institution_details_have_structured_sections_and_valid_person_links(self):
         payload = bootstrap_content()
