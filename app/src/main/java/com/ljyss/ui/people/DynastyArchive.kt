@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,7 +44,6 @@ import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
 
-private val ArchiveEventCardHeight = 116.dp
 private val ArchivePersonCardWidth = 78.dp
 private val ArchivePersonCardHeight = 55.dp
 
@@ -134,7 +134,7 @@ private fun ArchiveEventCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(ArchiveEventCardHeight)
+            .heightIn(min = 76.dp)
             .clip(CutCornerShape(6.dp))
             .clickable(onClick = onClick),
         color = XuanPaper.copy(alpha = 0.68f),
@@ -144,8 +144,8 @@ private fun ArchiveEventCard(
         Row {
             Box(modifier = Modifier.width(3.dp).fillMaxHeight().background(Vermilion.copy(alpha = 0.82f)))
             Column(
-                modifier = Modifier.weight(1f).padding(horizontal = 11.dp, vertical = 9.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
+                modifier = Modifier.weight(1f).padding(horizontal = 11.dp, vertical = 7.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
             Text(
                 "${event.year ?: ""} ${event.month} · ${event.title.ifBlank { "事件待补题" }}",
@@ -173,7 +173,10 @@ private fun ArchiveEventCard(
 
 @Composable
 private fun ArchiveParticipants(participants: List<String>, onOpenPerson: (String) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text("相关人物：", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 13.sp)
         if (participants.isEmpty()) {
             Text("待补充", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp)

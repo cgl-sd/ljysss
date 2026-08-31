@@ -15,7 +15,6 @@ import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.PersonSection
 import com.ljyss.data.model.RelationshipType
-import com.ljyss.data.model.ReadingReference
 import com.ljyss.data.model.Reign
 import com.ljyss.data.model.RelatedEvent
 import com.ljyss.data.model.SpecialItem
@@ -115,16 +114,6 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
-                val eventSourceLocators = database.rows(
-                    """
-                    SELECT content_id, locator
-                    FROM content_reference
-                    WHERE content_type = 'event' AND section_key = 'source'
-                    ORDER BY content_id, position
-                    """.trimIndent(),
-                ).groupBy { it.required("content_id") }.mapValues { (_, rows) ->
-                    rows.firstOrNull()?.value("locator").orEmpty()
-                }
                 val participantsByEvent = database.rows(
                     """
                     SELECT ep.event_id, p.name
@@ -138,8 +127,7 @@ class BundledMingRepository private constructor(
                 val eventsByReign = database.rows(
                     """
                     SELECT e.id, e.reign_id, e.year, e.end_year, e.month, e.title, e.event_type,
-                           e.summary, e.detail, e.place, e.participants, e.consequence,
-                           s.title AS source_title
+                           e.summary, e.detail, e.place, e.participants, e.consequence
                     FROM event AS e JOIN source AS s ON s.id = e.source_id
                     ORDER BY e.year, e.id
                     """.trimIndent(),
@@ -158,8 +146,6 @@ class BundledMingRepository private constructor(
                             participants = participantsByEvent[row.required("id")]
                                 ?: row.value("participants").split("、").filter { it.isNotBlank() },
                             consequence = row.required("consequence"),
-                            sourceLabel = row.required("source_title"),
-                            sourceLocator = eventSourceLocators[row.required("id")].orEmpty(),
                             sections = eventSections[row.required("id")].orEmpty(),
                         )
                     }
@@ -236,25 +222,6 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
-                val contentReferences = database.rows(
-                    """
-                    SELECT content_type, content_id, section_key, title, url, locator, note
-                    FROM content_reference
-                    WHERE content_type IN ('institution', 'special')
-                    ORDER BY content_type, content_id, section_key, position
-                    """.trimIndent(),
-                )
-                val institutionReadings = contentReferences
-                    .filter { it.required("content_type") == "institution" && it.required("section_key") == "reading" }
-                    .groupBy { it.required("content_id") }
-                    .mapValues { (_, rows) -> rows.map(::readingReference) }
-                val specialReadings = contentReferences
-                    .filter { it.required("content_type") == "special" && it.required("section_key") == "reading" }
-                    .groupBy { it.required("content_id") }
-                    .mapValues { (_, rows) -> rows.map(::readingReference) }
-                val specialImageReferences = contentReferences
-                    .filter { it.required("content_type") == "special" && it.required("section_key") == "image" }
-                    .associate { it.required("content_id") to readingReference(it) }
                 return BundledMingRepository(
                     reignData = reigns,
                     peopleData = people,
@@ -299,7 +266,6 @@ class BundledMingRepository private constructor(
                             },
                             sections = institutionSections[id].orEmpty(),
                             people = institutionPeople[id].orEmpty(),
-                            readings = institutionReadings[id].orEmpty(),
                         )
                     },
                     specialData = database.rows(
@@ -314,8 +280,6 @@ class BundledMingRepository private constructor(
                             description = row.required("description"),
                             sections = specialSections[id].orEmpty(),
                             people = specialPeople[id].orEmpty(),
-                            readings = specialReadings[id].orEmpty(),
-                            imageReference = specialImageReferences[id],
                         )
                     },
                 )
@@ -345,13 +309,6 @@ private data class SqlRow(private val values: Map<String, String>) {
     fun required(column: String): String = value(column)
     fun int(column: String): Int = value(column).toInt()
 }
-
-private fun readingReference(row: SqlRow) = ReadingReference(
-    title = row.required("title"),
-    url = row.value("url"),
-    locator = row.value("locator"),
-    note = row.value("note"),
-)
 
 private fun SQLiteDatabase.rows(sql: String, arguments: Array<String> = emptyArray()): List<SqlRow> =
     rawQuery(sql, arguments).use { cursor ->

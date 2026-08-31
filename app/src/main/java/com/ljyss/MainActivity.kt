@@ -113,6 +113,10 @@ private data class AppSection(
 
 private val BottomNavigationIconSize = 24.dp
 
+/** Root-level destination for a person profile. Keeping the id here avoids the list-screen
+ * intermediate state and makes every cross-feature person link use the same route. */
+private data class PersonDestination(val personId: String, val returnSection: Int)
+
 private val appSections = listOf(
     AppSection(label = "岁月", iconRes = R.drawable.nav_timeline_woodblock, activeColor = Vermilion),
     AppSection(label = "人物", iconRes = R.drawable.nav_people_woodblock, activeColor = Vermilion),
@@ -125,9 +129,18 @@ private fun TwoCapitalsApp(repository: MingRepository) {
     var selectedSection by rememberSaveable { mutableIntStateOf(0) }
     var searchOpen by rememberSaveable { mutableStateOf(false) }
     var searchDestination by remember { mutableStateOf<SearchDestination?>(null) }
-    var focusPerson by remember { mutableStateOf<String?>(null) }
+    var personDestination by remember { mutableStateOf<PersonDestination?>(null) }
     var personReturnSection by rememberSaveable { mutableStateOf<Int?>(null) }
+    val peopleByName = remember(repository) { repository.allPeople().associateBy { it.name } }
     val sectionStateHolder = rememberSaveableStateHolder()
+
+    fun openPerson(name: String) {
+        val person = peopleByName[name] ?: return
+        personDestination = PersonDestination(person.id, selectedSection)
+        personReturnSection = selectedSection
+        selectedSection = 1
+        searchDestination = null
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -138,7 +151,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                     selectedSection = selectedSection,
                     onSectionSelected = { destination ->
                         if (destination != selectedSection) {
-                            focusPerson = null
+                            personDestination = null
                             personReturnSection = null
                             searchDestination = null
                         }
@@ -154,10 +167,12 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                 onDismiss = { searchOpen = false },
                 onNavigate = { destination ->
                     searchOpen = false
-                    if (destination.personName != null) personReturnSection = selectedSection
-                    else personReturnSection = null
-                    selectedSection = destination.sectionIndex
-                    focusPerson = destination.personName
+                    destination.personName?.let(::openPerson)
+                        ?: run {
+                            personDestination = null
+                            personReturnSection = null
+                            selectedSection = destination.sectionIndex
+                        }
                     searchDestination = destination.takeIf { it.reignTitle != null || it.worldSection != null }
                 },
             )
@@ -170,22 +185,17 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                         searchDestination = searchDestination,
                         onSearchDestinationConsumed = { searchDestination = null },
                         onSearch = { searchOpen = true },
-                        onOpenPerson = { name ->
-                            personReturnSection = selectedSection
-                            focusPerson = name
-                            selectedSection = 1
-                        },
+                        onOpenPerson = ::openPerson,
                     )
                     1 -> PeopleScreen(
                         repository = repository,
                         contentPadding = innerPadding,
-                        focusPerson = focusPerson,
-                        onFocusConsumed = { focusPerson = null },
+                        focusPersonId = personDestination?.personId,
+                        onFocusConsumed = { personDestination = null },
                         onProfileExit = {
-                            personReturnSection?.let { origin ->
-                                personReturnSection = null
-                                selectedSection = origin
-                            }
+                            personReturnSection?.let { origin -> selectedSection = origin }
+                            personReturnSection = null
+                            personDestination = null
                         },
                         onSearch = { searchOpen = true },
                     )
@@ -195,11 +205,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                         searchDestination = searchDestination,
                         onSearchDestinationConsumed = { searchDestination = null },
                         onSearch = { searchOpen = true },
-                        onOpenPerson = { name ->
-                            personReturnSection = selectedSection
-                            focusPerson = name
-                            selectedSection = 1
-                        },
+                        onOpenPerson = ::openPerson,
                     )
                     else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
                 }

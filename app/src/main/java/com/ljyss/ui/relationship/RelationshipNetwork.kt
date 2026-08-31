@@ -60,6 +60,7 @@ import kotlin.math.sin
 internal fun RelationshipNetwork(
     relations: List<PersonRelation>,
     events: List<HistoricalEvent>,
+    onOpenPerson: (String) -> Unit = {},
 ) {
     val relationNames = remember(relations) {
         relations
@@ -185,6 +186,7 @@ internal fun RelationshipNetwork(
                     name = activeFocus,
                     emphasized = true,
                     modifier = Modifier.align(Alignment.Center),
+                    onClick = { onOpenPerson(activeFocus) },
                 )
                 neighbours.forEachIndexed { index, name ->
                     val angle = -Math.PI / 2 + (Math.PI * 2 * index / neighbours.size.coerceAtLeast(1))
@@ -197,6 +199,7 @@ internal fun RelationshipNetwork(
                                 x = maxWidth / 2 + maxWidth * .39f * cos(angle).toFloat() - 30.dp,
                                 y = maxHeight / 2 + maxHeight * .36f * sin(angle).toFloat() - 16.dp,
                             ),
+                        onClick = { onOpenPerson(name) },
                     )
                 }
                 if (neighbours.isEmpty() && selectedEvent != null) {
@@ -279,9 +282,14 @@ private fun relationshipColor(type: RelationshipType): Color = when (type) {
 }
 
 @Composable
-internal fun RelationshipNode(name: String, emphasized: Boolean, modifier: Modifier = Modifier) {
+internal fun RelationshipNode(
+    name: String,
+    emphasized: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onClick),
         shape = CutCornerShape(5.dp),
         color = if (emphasized) Celadon else PaperLight,
         border = BorderStroke(1.dp, if (emphasized) Celadon else Brass),

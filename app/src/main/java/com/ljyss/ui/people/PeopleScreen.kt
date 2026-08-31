@@ -53,7 +53,6 @@ import com.ljyss.ui.relationship.RelationshipNetwork
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.timeline.ReignRail
-import com.ljyss.ui.components.SourceNote
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
@@ -65,7 +64,7 @@ import com.ljyss.ui.theme.Vermilion
 internal fun PeopleScreen(
     repository: MingRepository,
     contentPadding: PaddingValues,
-    focusPerson: String? = null,
+    focusPersonId: String? = null,
     onFocusConsumed: () -> Unit = {},
     onProfileExit: () -> Unit = {},
     onSearch: () -> Unit = {},
@@ -84,7 +83,10 @@ internal fun PeopleScreen(
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
-    val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
+    // A root destination is rendered immediately; the local selection is filled by the effect
+    // below for subsequent profile-to-profile navigation and back-stack handling.
+    val focusedPerson = focusPersonId?.let { id -> allPeople.firstOrNull { it.id == id } }
+    val selectedPerson = focusedPerson ?: allPeople.firstOrNull { it.name == selectedPersonName }
     val selectedRelatedEvent = allEvents.firstOrNull { it.id == selectedRelatedEventId }
     val peopleListState = rememberLazyListState()
     val eventDetailListState = rememberLazyListState()
@@ -164,9 +166,9 @@ internal fun PeopleScreen(
     }
 
     // 岁月事件里的参与人物点击后跳转至对应人物详情。
-    LaunchedEffect(focusPerson) {
-        if (focusPerson != null) {
-            allPeople.firstOrNull { it.name == focusPerson }?.let { person ->
+    LaunchedEffect(focusPersonId) {
+        if (focusPersonId != null) {
+            allPeople.firstOrNull { it.id == focusPersonId }?.let { person ->
                 selectedTab = PeopleTab.PEOPLE
                 selectedCategory = person.category
                 selectedPersonName = person.name
@@ -234,7 +236,9 @@ internal fun PeopleScreen(
                                 )
                             }
                             if (people.isEmpty()) {
-                                item { SourceNote("该分类在当前年号下暂无人物；再次点选当前年号可查看全部。") }
+                                item {
+                                    Text("当前筛选下暂无人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                                }
                             } else {
                                 items(people, key = { it.name }) { person ->
                                     PersonCard(
@@ -249,7 +253,15 @@ internal fun PeopleScreen(
                             }
                         }
                         PeopleTab.RELATIONSHIPS -> {
-                            item { RelationshipNetwork(relations, allEvents) }
+                            item {
+                                RelationshipNetwork(
+                                    relations,
+                                    allEvents,
+                                    onOpenPerson = { name ->
+                                        if (selectedPersonName == null) openProfileFromBrowse(name) else openRelatedPerson(name)
+                                    },
+                                )
+                            }
                             item { RelationshipLedger(relations) }
                         }
                     }

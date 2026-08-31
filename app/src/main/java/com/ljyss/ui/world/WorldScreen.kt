@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -51,14 +50,12 @@ import com.ljyss.R
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
 import com.ljyss.data.model.InstitutionPromotionTrack
-import com.ljyss.data.model.ReadingReference
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.components.Seal
-import com.ljyss.ui.components.SourceNote
 import com.ljyss.ui.search.SearchDestination
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Celadon
@@ -158,7 +155,9 @@ internal fun WorldScreen(
             }
             WorldSection.RELICS -> {
                 if (specials.isEmpty()) {
-                    item { SourceNote("暂无典章资料。") }
+                    item {
+                        Text("暂无典章资料。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                    }
                 } else {
                     item {
                         WorldCategoryRail(relicGroups, selectedRelicGroup) { selectedRelicGroup = it }
@@ -446,12 +445,6 @@ private fun SpecialDetailScreen(
         if (item.people.isNotEmpty()) {
             item { SpecialPeopleSection(item.people, onOpenPerson) }
         }
-        if (item.readings.isNotEmpty()) {
-            item { ExtendedReadingSection(item.readings) }
-        }
-        item.imageReference?.let { reference ->
-            item { ImageAttributionSection(reference) }
-        }
     }
 }
 
@@ -580,9 +573,6 @@ private fun InstitutionDetailScreen(
         if (institution.people.isNotEmpty()) {
             item { InstitutionPeopleSection(institution.people, onOpenPerson) }
         }
-        if (institution.readings.isNotEmpty()) {
-            item { ExtendedReadingSection(institution.readings) }
-        }
     }
 }
 
@@ -648,67 +638,6 @@ private fun InstitutionPeopleSection(people: List<InstitutionPerson>, onOpenPers
                     Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
                 }
-            }
-        }
-    }
-}
-
-/** 正文后的资料入口；只展示书目与定位，不显示编辑审核状态。 */
-@Composable
-private fun ExtendedReadingSection(references: List<ReadingReference>) {
-    val uriHandler = LocalUriHandler.current
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            Text("延伸阅读", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            references.forEach { reference ->
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(reference.title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                    reference.locator.takeIf { it.isNotBlank() }?.let { locator ->
-                        Text(locator, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
-                    }
-                    if (reference.url.isNotBlank()) {
-                        Text(
-                            "打开原文 ↗",
-                            color = Vermilion,
-                            fontFamily = FontFamily.Serif,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clip(CutCornerShape(3.dp))
-                                .clickable { uriHandler.openUri(reference.url) }
-                                .padding(vertical = 3.dp),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** 专题封面均为应用内插绘；明确说明其性质与许可，避免被误解为文物实拍。 */
-@Composable
-private fun ImageAttributionSection(reference: ReadingReference) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
-        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("图像说明", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            Text(reference.title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            reference.locator.takeIf { it.isNotBlank() }?.let { locator ->
-                Text(locator, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
-            }
-            reference.note.takeIf { it.isNotBlank() }?.let { note ->
-                Text(note, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
             }
         }
     }

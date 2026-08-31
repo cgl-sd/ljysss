@@ -107,10 +107,11 @@ def list_events(
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     events = records(
         f"""
-        SELECT e.*, r.title AS reign_title, s.title AS source_title
+        SELECT e.id, e.reign_id, e.year, e.end_year, e.month, e.title, e.event_type,
+               e.summary, e.detail, e.place, e.participants, e.consequence,
+               r.title AS reign_title
         FROM event AS e
         JOIN reign AS r ON r.id = e.reign_id
-        JOIN source AS s ON s.id = e.source_id
         {where}
         ORDER BY e.year, e.id
         """,
@@ -134,27 +135,17 @@ def list_events(
 def get_event(event_id: str) -> dict:
     item = record(
         """
-        SELECT e.*, r.title AS reign_title, s.title AS source_title, s.citation
+        SELECT e.id, e.reign_id, e.year, e.end_year, e.month, e.title, e.event_type,
+               e.summary, e.detail, e.place, e.participants, e.consequence,
+               r.title AS reign_title
         FROM event AS e
         JOIN reign AS r ON r.id = e.reign_id
-        JOIN source AS s ON s.id = e.source_id
         WHERE e.id = ?
         """,
         (event_id,),
     )
     if not item:
         raise HTTPException(status_code=404, detail="未找到该事件")
-    source = record(
-        """
-        SELECT locator
-        FROM content_reference
-        WHERE content_type = 'event' AND content_id = ? AND section_key = 'source'
-        ORDER BY position
-        LIMIT 1
-        """,
-        (event_id,),
-    )
-    item["source_locator"] = source["locator"] if source else ""
     item["sections"] = get_event_sections(event_id)
     item["people"] = event_people(event_id)
     return item
@@ -177,9 +168,10 @@ def list_people(
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     return records(
         f"""
-        SELECT p.*, s.title AS source_title
+        SELECT p.id, p.name, p.display_name, p.title, p.reign, p.archive_start_year,
+               p.years, p.category, p.courtesy_name, p.summary, p.biography,
+               p.family_summary, p.portrait_key
         FROM person AS p
-        JOIN source AS s ON s.id = p.source_id
         {where}
         ORDER BY p.reign, p.name
         """,
@@ -226,9 +218,10 @@ def list_person_section_definitions() -> list[dict]:
 def get_person(person_id: str) -> dict:
     person = record(
         """
-        SELECT p.*, s.title AS source_title, s.citation
+        SELECT p.id, p.name, p.display_name, p.title, p.reign, p.archive_start_year,
+               p.years, p.category, p.courtesy_name, p.summary, p.biography,
+               p.family_summary, p.portrait_key
         FROM person AS p
-        JOIN source AS s ON s.id = p.source_id
         WHERE p.id = ?
         """,
         (person_id,),
@@ -250,7 +243,8 @@ def get_person(person_id: str) -> dict:
 
     person["relationships"] = records(
         """
-        SELECT pr.*, fp.name AS from_name, tp.name AS to_name
+        SELECT pr.id, pr.from_person_id, pr.to_person_id, pr.relation_type, pr.reign, pr.note,
+               fp.name AS from_name, tp.name AS to_name
         FROM person_relation AS pr
         JOIN person AS fp ON fp.id = pr.from_person_id
         JOIN person AS tp ON tp.id = pr.to_person_id
@@ -287,20 +281,6 @@ def event_people(event_id: str) -> list[dict]:
     )
 
 
-def content_references(content_type: str, content_id: str, section_key: str) -> list[dict]:
-    """Reader-facing sources; unlike source.review_status these contain no editorial state."""
-
-    return records(
-        """
-        SELECT title, url, locator, note
-        FROM content_reference
-        WHERE content_type = ? AND content_id = ? AND section_key = ?
-        ORDER BY position
-        """,
-        (content_type, content_id, section_key),
-    )
-
-
 @app.get("/v1/events/{event_id}/sections")
 def get_event_sections(event_id: str) -> list[dict]:
     if not record("SELECT id FROM event WHERE id = ?", (event_id,)):
@@ -320,11 +300,11 @@ def get_event_sections(event_id: str) -> list[dict]:
 def list_relationships() -> list[dict]:
     return records(
         """
-        SELECT pr.*, fp.name AS from_name, tp.name AS to_name, s.title AS source_title
+        SELECT pr.id, pr.from_person_id, pr.to_person_id, pr.relation_type,
+               pr.reign, pr.note, fp.name AS from_name, tp.name AS to_name
         FROM person_relation AS pr
         JOIN person AS fp ON fp.id = pr.from_person_id
         JOIN person AS tp ON tp.id = pr.to_person_id
-        JOIN source AS s ON s.id = pr.source_id
         ORDER BY pr.reign, pr.id
         """
     )
@@ -334,9 +314,8 @@ def list_relationships() -> list[dict]:
 def list_institutions() -> list[dict]:
     institutions = records(
         """
-        SELECT i.*, s.title AS source_title
+        SELECT i.id, i.name, i.category, i.active_reigns, i.function
         FROM institution AS i
-        JOIN source AS s ON s.id = i.source_id
         ORDER BY i.category, i.id
         """
     )
@@ -382,7 +361,6 @@ def list_institutions() -> list[dict]:
             """,
             (institution["id"],),
         )
-        institution["readings"] = content_references("institution", institution["id"], "reading")
     return institutions
 
 
@@ -411,8 +389,6 @@ def list_specials() -> list[dict]:
             """,
             (special["id"],),
         )
-        special["readings"] = content_references("special", special["id"], "reading")
-        special["image"] = content_references("special", special["id"], "image")[:1]
     return specials
 
 

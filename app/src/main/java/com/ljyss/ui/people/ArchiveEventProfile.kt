@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.model.HistoricalEvent
-import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -102,12 +101,6 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             if (event.sections.isEmpty()) {
                 event.consequence.takeIf { it.isNotBlank() }?.let { EventArticleSection("影响", it) }
             }
-            Text(
-                "出处：${event.sourceLocator.ifBlank { event.sourceLabel }}",
-                color = Brass,
-                fontFamily = FontFamily.Serif,
-                fontSize = 13.sp,
-            )
         }
     }
 }

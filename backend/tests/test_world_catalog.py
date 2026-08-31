@@ -89,31 +89,12 @@ class WorldCatalogTests(unittest.TestCase):
             self.assertIn(row["person_id"], people)
             self.assertIn(row["source_id"], sources)
 
-    def test_world_details_register_reading_and_special_image_rights(self):
-        institutions = {row["id"] for row in load_rows("institution")}
-        specials = {row["id"] for row in load_rows("special_item")}
+    def test_world_details_do_not_publish_reader_references(self):
         references = load_rows("content_reference")
-        institution_readings = {
-            row["content_id"]
-            for row in references
-            if row["content_type"] == "institution" and row["section_key"] == "reading"
-        }
-        special_readings = {
-            row["content_id"]
-            for row in references
-            if row["content_type"] == "special" and row["section_key"] == "reading"
-        }
-        special_images = [
-            row for row in references
-            if row["content_type"] == "special" and row["section_key"] == "image"
-        ]
-        self.assertEqual(institutions, institution_readings)
-        self.assertEqual(specials, special_readings)
-        self.assertEqual(specials, {row["content_id"] for row in special_images})
-        self.assertTrue(all("许可" in row["note"] for row in special_images))
-        readings = [
-            row for row in references
-            if row["section_key"] == "reading" and row["content_type"] in {"institution", "special"}
-        ]
-        self.assertTrue(all(row["url"].startswith("https://") for row in readings))
-        self.assertFalse(any("相关志与本纪" in row["title"] for row in readings))
+        self.assertFalse(
+            any(
+                row["content_type"] in {"institution", "special"}
+                and row["section_key"] in {"reading", "image"}
+                for row in references
+            )
+        )

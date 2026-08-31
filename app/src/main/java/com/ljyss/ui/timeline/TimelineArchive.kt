@@ -232,12 +232,6 @@ private fun EventRow(
                         lineHeight = 21.sp,
                     )
                 }
-                Text(
-                    text = "出处：${event.sourceLocator.ifBlank { event.sourceLabel }}",
-                    color = Brass,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 13.sp,
-                )
             }
         }
     }
