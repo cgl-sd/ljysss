@@ -127,8 +127,26 @@ private fun TwoCapitalsApp(repository: MingRepository) {
     var searchDestination by remember { mutableStateOf<SearchDestination?>(null) }
     var focusPerson by remember { mutableStateOf<String?>(null) }
     var personReturnSection by rememberSaveable { mutableStateOf<Int?>(null) }
-    var returnToPersonAfterEvent by rememberSaveable { mutableStateOf(false) }
+    // 事件可从人物、机构或典章详情进入；返回时回到原详情与其原有滚动位置。
+    var eventReturnSection by rememberSaveable { mutableStateOf<Int?>(null) }
     val sectionStateHolder = rememberSaveableStateHolder()
+
+    fun openEventFrom(section: Int, eventId: String) {
+        val eventReign = repository.reigns().firstOrNull { reign ->
+            reign.events.any { event -> event.id == eventId }
+        }
+        val event = eventReign?.events?.firstOrNull { it.id == eventId }
+        if (eventReign != null && event != null) {
+            eventReturnSection = section
+            searchDestination = SearchDestination(
+                sectionIndex = 0,
+                reignTitle = eventReign.title,
+                year = event.year,
+                eventId = event.id,
+            )
+            selectedSection = 0
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -141,7 +159,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                         if (destination != selectedSection) {
                             focusPerson = null
                             personReturnSection = null
-                            returnToPersonAfterEvent = false
+                            eventReturnSection = null
                             searchDestination = null
                         }
                         selectedSection = destination
@@ -177,10 +195,11 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                             focusPerson = name
                             selectedSection = 1
                         },
-                        returnToPrevious = returnToPersonAfterEvent,
+                        returnToPrevious = eventReturnSection != null,
                         onReturnToPrevious = {
-                            returnToPersonAfterEvent = false
-                            selectedSection = 1
+                            val destination = eventReturnSection
+                            eventReturnSection = null
+                            if (destination != null) selectedSection = destination
                         },
                     )
                     1 -> PeopleScreen(
@@ -194,22 +213,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                                 selectedSection = origin
                             }
                         },
-                        onOpenEvent = { eventId ->
-                            val eventReign = repository.reigns().firstOrNull { reign ->
-                                reign.events.any { event -> event.id == eventId }
-                            }
-                            val event = eventReign?.events?.firstOrNull { it.id == eventId }
-                            if (eventReign != null && event != null) {
-                                returnToPersonAfterEvent = true
-                                searchDestination = SearchDestination(
-                                    sectionIndex = 0,
-                                    reignTitle = eventReign.title,
-                                    year = event.year,
-                                    eventId = event.id,
-                                )
-                                selectedSection = 0
-                            }
-                        },
+                        onOpenEvent = { eventId -> openEventFrom(section = 1, eventId = eventId) },
                         onSearch = { searchOpen = true },
                     )
                     2 -> WorldScreen(
@@ -223,6 +227,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                             focusPerson = name
                             selectedSection = 1
                         },
+                        onOpenEvent = { eventId -> openEventFrom(section = 2, eventId = eventId) },
                     )
                     else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
                 }

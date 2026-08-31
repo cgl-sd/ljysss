@@ -61,6 +61,36 @@ class WorldCatalogTests(unittest.TestCase):
             self.assertIn(row["source_id"], sources)
             self.assertTrue(row["role"].strip())
 
+    def test_world_cross_links_are_source_backed_and_keep_primary_catalogs_separate(self):
+        institutions = {row["id"] for row in load_rows("institution")}
+        specials = {row["id"] for row in load_rows("special_item")}
+        events = {row["id"] for row in load_rows("event")}
+        sources = {row["id"] for row in load_rows("source")}
+
+        institution_events = load_rows("institution_event")
+        self.assertGreaterEqual(len(institution_events), 18)
+        for row in institution_events:
+            self.assertIn(row["institution_id"], institutions)
+            self.assertIn(row["event_id"], events)
+            self.assertIn(row["source_id"], sources)
+            self.assertTrue(row["relation"].strip())
+
+        special_events = load_rows("special_event")
+        self.assertGreaterEqual(len(special_events), 20)
+        for row in special_events:
+            self.assertIn(row["special_item_id"], specials)
+            self.assertIn(row["event_id"], events)
+            self.assertIn(row["source_id"], sources)
+            self.assertTrue(row["relation"].strip())
+
+        special_institutions = load_rows("special_institution")
+        self.assertGreaterEqual(len(special_institutions), 20)
+        for row in special_institutions:
+            self.assertIn(row["special_item_id"], specials)
+            self.assertIn(row["institution_id"], institutions)
+            self.assertIn(row["source_id"], sources)
+            self.assertTrue(row["relation"].strip())
+
     def test_every_special_has_readable_sections_and_valid_person_links(self):
         specials = {row["id"] for row in load_rows("special_item")}
         people = {row["id"] for row in load_rows("person")}

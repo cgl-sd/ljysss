@@ -48,6 +48,8 @@ import com.ljyss.data.MingRepository
 import com.ljyss.R
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
+import com.ljyss.data.model.RelatedEvent
+import com.ljyss.data.model.RelatedInstitution
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.ui.components.MingList
@@ -74,6 +76,7 @@ internal fun WorldScreen(
     onSearchDestinationConsumed: () -> Unit = {},
     onSearch: () -> Unit = {},
     onOpenPerson: (String) -> Unit = {},
+    onOpenEvent: (String) -> Unit = {},
 ) {
     var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
     val institutions = remember(repository) { repository.institutions() }
@@ -111,6 +114,7 @@ internal fun WorldScreen(
             institution = selectedInstitution,
             contentPadding = contentPadding,
             onOpenPerson = onOpenPerson,
+            onOpenEvent = onOpenEvent,
         )
         return
     }
@@ -119,6 +123,7 @@ internal fun WorldScreen(
             item = selectedSpecial,
             contentPadding = contentPadding,
             onOpenPerson = onOpenPerson,
+            onOpenEvent = onOpenEvent,
         )
         return
     }
@@ -415,6 +420,7 @@ private fun SpecialDetailScreen(
     item: SpecialItem,
     contentPadding: PaddingValues,
     onOpenPerson: (String) -> Unit,
+    onOpenEvent: (String) -> Unit,
 ) {
     MingList(contentPadding) {
         item {
@@ -441,6 +447,12 @@ private fun SpecialDetailScreen(
         }
         if (item.people.isNotEmpty()) {
             item { SpecialPeopleSection(item.people, onOpenPerson) }
+        }
+        if (item.events.isNotEmpty()) {
+            item { WorldEventLinksSection(item.events, onOpenEvent) }
+        }
+        if (item.institutions.isNotEmpty()) {
+            item { SpecialInstitutionLinksSection(item.institutions) }
         }
     }
 }
@@ -531,6 +543,7 @@ private fun InstitutionDetailScreen(
     institution: Institution,
     contentPadding: PaddingValues,
     onOpenPerson: (String) -> Unit,
+    onOpenEvent: (String) -> Unit,
 ) {
     MingList(contentPadding) {
         item {
@@ -569,6 +582,9 @@ private fun InstitutionDetailScreen(
         }
         if (institution.people.isNotEmpty()) {
             item { InstitutionPeopleSection(institution.people, onOpenPerson) }
+        }
+        if (institution.events.isNotEmpty()) {
+            item { WorldEventLinksSection(institution.events, onOpenEvent) }
         }
     }
 }
@@ -621,6 +637,61 @@ private fun InstitutionPeopleSection(people: List<InstitutionPerson>, onOpenPers
                 ) {
                     Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Text("${person.title} · ${person.role}", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
+                }
+            }
+        }
+    }
+}
+
+/** 机构、典章共用的事件交叉索引；点击后进入同一套事件详情并按原路返回。 */
+@Composable
+private fun WorldEventLinksSection(events: List<RelatedEvent>, onOpenEvent: (String) -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("相关事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                items(events, key = { it.id }) { event ->
+                    Surface(
+                        modifier = Modifier.clip(CutCornerShape(5.dp)).clickable { onOpenEvent(event.id) },
+                        shape = CutCornerShape(5.dp),
+                        color = Vermilion.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text("${event.year} · ${event.title}", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            event.relation.takeIf { it.isNotBlank() }?.let { relation ->
+                                Text(relation, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp, lineHeight = 18.sp, maxLines = 2)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 典章只展示机构交叉索引，不将机构复制成第二套典章条目。 */
+@Composable
+private fun SpecialInstitutionLinksSection(institutions: List<RelatedInstitution>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.9f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("关联机构", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+            institutions.forEach { institution ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(institution.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(institution.relation, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp, lineHeight = 19.sp)
                 }
             }
         }
