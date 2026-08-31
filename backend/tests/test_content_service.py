@@ -100,6 +100,15 @@ class ContentServiceTest(unittest.TestCase):
             [section["section_key"] for section in event["sections"]],
         )
 
+    def test_public_content_payload_does_not_expose_editorial_review_labels(self):
+        from app.main import get_source
+
+        payload = bootstrap_content()
+        self.assertNotIn("review_status", payload["events"][0])
+        self.assertNotIn("review_status", payload["people"][0])
+        self.assertNotIn("review_status", payload["institutions"][0])
+        self.assertNotIn("review_status", get_source("mingshi-events-v1"))
+
     def test_every_person_and_event_has_a_uniform_profile_template(self):
         from app.database import connect
 

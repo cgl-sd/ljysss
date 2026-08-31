@@ -107,7 +107,7 @@ def list_events(
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     events = records(
         f"""
-        SELECT e.*, r.title AS reign_title, s.title AS source_title, s.review_status
+        SELECT e.*, r.title AS reign_title, s.title AS source_title
         FROM event AS e
         JOIN reign AS r ON r.id = e.reign_id
         JOIN source AS s ON s.id = e.source_id
@@ -133,7 +133,7 @@ def list_events(
 def get_event(event_id: str) -> dict:
     item = record(
         """
-        SELECT e.*, r.title AS reign_title, s.title AS source_title, s.citation, s.review_status
+        SELECT e.*, r.title AS reign_title, s.title AS source_title, s.citation
         FROM event AS e
         JOIN reign AS r ON r.id = e.reign_id
         JOIN source AS s ON s.id = e.source_id
@@ -164,7 +164,7 @@ def list_people(
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     return records(
         f"""
-        SELECT p.*, s.title AS source_title, s.review_status
+        SELECT p.*, s.title AS source_title
         FROM person AS p
         JOIN source AS s ON s.id = p.source_id
         {where}
@@ -213,7 +213,7 @@ def list_person_section_definitions() -> list[dict]:
 def get_person(person_id: str) -> dict:
     person = record(
         """
-        SELECT p.*, s.title AS source_title, s.citation, s.review_status
+        SELECT p.*, s.title AS source_title, s.citation
         FROM person AS p
         JOIN source AS s ON s.id = p.source_id
         WHERE p.id = ?
@@ -266,7 +266,7 @@ def get_event_sections(event_id: str) -> list[dict]:
 def list_relationships() -> list[dict]:
     return records(
         """
-        SELECT pr.*, fp.name AS from_name, tp.name AS to_name, s.title AS source_title, s.review_status
+        SELECT pr.*, fp.name AS from_name, tp.name AS to_name, s.title AS source_title
         FROM person_relation AS pr
         JOIN person AS fp ON fp.id = pr.from_person_id
         JOIN person AS tp ON tp.id = pr.to_person_id
@@ -280,7 +280,7 @@ def list_relationships() -> list[dict]:
 def list_institutions() -> list[dict]:
     institutions = records(
         """
-        SELECT i.*, s.title AS source_title, s.review_status
+        SELECT i.*, s.title AS source_title
         FROM institution AS i
         JOIN source AS s ON s.id = i.source_id
         ORDER BY i.category, i.id
@@ -358,4 +358,6 @@ def get_source(source_id: str) -> dict:
     source = record("SELECT * FROM source WHERE id = ?", (source_id,))
     if not source:
         raise HTTPException(status_code=404, detail="未找到该史料来源")
+    # 编辑阶段的内部标记不属于用户端资料内容。
+    source.pop("review_status", None)
     return source
