@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,10 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
@@ -58,7 +61,6 @@ import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.components.Seal
 import com.ljyss.ui.search.SearchDestination
 import com.ljyss.ui.theme.Brass
-import com.ljyss.ui.theme.Celadon
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -334,6 +336,28 @@ private val specialCategoryDefinitions = listOf(
     WorldCategoryGroup("宫陵", setOf("宫陵")),
 )
 
+/** 资源键由 JSONL 按条目写入；不再按分类复用一张含义不符的占位图。 */
+@Composable
+private fun WorldAssetImage(
+    asset: String,
+    contentDescription: String?,
+    modifier: Modifier,
+    contentScale: ContentScale,
+) {
+    val context = LocalContext.current
+    val resourceId = remember(asset) {
+        context.resources.getIdentifier(asset.substringBefore('.'), "drawable", context.packageName)
+    }
+    if (resourceId != 0) {
+        Image(
+            painter = painterResource(resourceId),
+            contentDescription = contentDescription,
+            modifier = modifier,
+            contentScale = contentScale,
+        )
+    }
+}
+
 @Composable
 private fun WorldCategoryRail(
     groups: List<WorldCategoryGroup>,
@@ -395,20 +419,57 @@ private fun WorldSectionRail(selected: WorldSection, onSelected: (WorldSection) 
 @Composable
 private fun SpecialItemCard(item: SpecialItem, onOpen: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 82.dp)
+            .clickable(onClick = onOpen),
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.25.dp, LineGold),
         colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.96f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(item.name, color = Ink, modifier = Modifier.weight(1f), fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
-                Seal(item.category)
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            WorldAssetImage(
+                asset = item.imageAsset,
+                contentDescription = "${item.name}示意图",
+                modifier = Modifier
+                    .width(74.dp)
+                    .height(68.dp)
+                    .clip(CutCornerShape(5.dp)),
+                contentScale = ContentScale.Crop,
+            )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        item.name,
+                        color = Ink,
+                        modifier = Modifier.weight(1f),
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Seal(item.category)
+                }
+                Text(
+                    item.description,
+                    color = InkSoft,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 14.sp,
+                    lineHeight = 19.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                CatalogMetaLine(
+                    label = if (item.people.isEmpty()) "时代" else "相关人物",
+                    value = if (item.people.isEmpty()) item.era else item.people.joinToString("、") { it.name },
+                )
             }
-            Text(item.era, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(item.description, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, textAlign = TextAlign.Justify, maxLines = 3)
-            Text("查看典章详解", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -429,7 +490,7 @@ private fun SpecialDetailScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                    SpecialCover(item.name, item.category)
+                    SpecialCover(item)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(item.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                         Seal(item.category)
@@ -450,15 +511,10 @@ private fun SpecialDetailScreen(
 
 /** 三类典章使用无文字的专题示意图；不以生成画面冒充具体文物或建筑实拍。 */
 @Composable
-private fun SpecialCover(name: String, category: String) {
-    val illustration = when (category) {
-        "制度" -> R.drawable.special_cover_law
-        "器物" -> R.drawable.special_cover_artifact
-        else -> R.drawable.special_cover_palace
-    }
-    Image(
-        painter = painterResource(illustration),
-        contentDescription = "${name}专题示意图",
+private fun SpecialCover(item: SpecialItem) {
+    WorldAssetImage(
+        asset = item.imageAsset,
+        contentDescription = "${item.name}专题示意图",
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
@@ -510,21 +566,73 @@ private fun SpecialPeopleSection(people: List<SpecialPerson>, onOpenPerson: (Str
 @Composable
 private fun InstitutionCard(institution: Institution, onOpen: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 82.dp)
+            .clickable(onClick = onOpen),
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.25.dp, LineGold),
         colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = .96f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(institution.name, color = Ink, modifier = Modifier.weight(1f), fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
-                Seal(institution.category)
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            WorldAssetImage(
+                asset = institution.imageAsset,
+                contentDescription = "${institution.name}示意图",
+                modifier = Modifier
+                    .width(74.dp)
+                    .height(68.dp)
+                    .clip(CutCornerShape(5.dp)),
+                contentScale = ContentScale.Crop,
+            )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        institution.name,
+                        color = Ink,
+                        modifier = Modifier.weight(1f),
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Seal(institution.category)
+                }
+                Text(
+                    institution.function,
+                    color = InkSoft,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 14.sp,
+                    lineHeight = 19.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                CatalogMetaLine(
+                    label = if (institution.people.isEmpty()) "沿革" else "相关人物",
+                    value = if (institution.people.isEmpty()) institution.activeReigns else institution.people.joinToString("、") { it.name },
+                )
             }
-            Text(institution.activeReigns, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(institution.function, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 23.sp, maxLines = 2)
-            Text("查看机构详解", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun CatalogMetaLine(label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("$label：", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(
+            value,
+            color = InkSoft,
+            fontFamily = FontFamily.Serif,
+            fontSize = 12.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -545,6 +653,15 @@ private fun InstitutionDetailScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    WorldAssetImage(
+                        asset = institution.imageAsset,
+                        contentDescription = "${institution.name}示意图",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .clip(CutCornerShape(7.dp)),
+                        contentScale = ContentScale.Crop,
+                    )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(institution.name, modifier = Modifier.weight(1f), color = Ink, fontFamily = FontFamily.Serif, fontSize = 27.sp, fontWeight = FontWeight.Bold)
                         Seal(institution.category)

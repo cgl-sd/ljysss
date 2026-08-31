@@ -21,7 +21,7 @@ app = FastAPI(
     description="人物、事件、关系、机构与史料来源的本地内容服务。",
     lifespan=lifespan,
 )
-# bootstrap 全量资料约 2MB 文本，gzip 后约 0.4MB；客户端以 Accept-Encoding 声明。
+# bootstrap 全量资料约 15MB 文本，gzip 后约 3.6MB；客户端以 Accept-Encoding 声明。
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
@@ -89,7 +89,8 @@ def bootstrap_content() -> dict:
 @app.get("/v1/events")
 def list_events(
     reign: Optional[str] = None,
-    year: Optional[int] = Query(default=None, ge=1368, le=1662),
+    # 事件库包含明郑及茅麓山等南明遗绪（最晚记至1664），查询范围覆盖正式首版数据。
+    year: Optional[int] = Query(default=None, ge=1367, le=1664),
     q: Optional[str] = None,
 ) -> list[dict]:
     conditions: list[str] = []
@@ -314,7 +315,7 @@ def list_relationships() -> list[dict]:
 def list_institutions() -> list[dict]:
     institutions = records(
         """
-        SELECT i.id, i.name, i.category, i.active_reigns, i.function
+        SELECT i.id, i.name, i.category, i.active_reigns, i.function, i.image_asset
         FROM institution AS i
         ORDER BY i.category, i.id
         """
@@ -368,7 +369,7 @@ def list_institutions() -> list[dict]:
 def list_specials() -> list[dict]:
     """天下页“典章”科普：宫殿、器物与制度名物。"""
 
-    specials = records("SELECT id, name, category, era, description FROM special_item ORDER BY position")
+    specials = records("SELECT id, name, category, era, description, image_asset FROM special_item ORDER BY position")
     for special in specials:
         special["sections"] = records(
             """

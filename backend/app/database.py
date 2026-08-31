@@ -305,6 +305,7 @@ CREATE TABLE IF NOT EXISTS institution (
     category TEXT NOT NULL,
     active_reigns TEXT NOT NULL,
     function TEXT NOT NULL,
+    image_asset TEXT NOT NULL DEFAULT '',
     source_id TEXT NOT NULL REFERENCES source(id)
 );
 
@@ -356,6 +357,7 @@ CREATE TABLE IF NOT EXISTS special_item (
     category TEXT NOT NULL,
     era TEXT NOT NULL,
     description TEXT NOT NULL,
+    image_asset TEXT NOT NULL DEFAULT '',
     position INTEGER NOT NULL DEFAULT 0,
     source_id TEXT NOT NULL REFERENCES source(id)
 );
@@ -431,6 +433,7 @@ def initialize_database() -> None:
         connection.executescript(SCHEMA)
         _migrate_event_columns(connection)
         _migrate_institution_promotion_columns(connection)
+        _migrate_world_image_columns(connection)
         _migrate_person_columns(connection)
         _ensure_person_profile_taxonomy(connection)
         if connection.execute("PRAGMA user_version").fetchone()[0] == _catalog_digest():
@@ -458,6 +461,17 @@ def _migrate_institution_promotion_columns(connection: sqlite3.Connection) -> No
         connection.execute(
             "ALTER TABLE institution_promotion ADD COLUMN track TEXT NOT NULL DEFAULT '常见任用路径'"
         )
+
+
+def _migrate_world_image_columns(connection: sqlite3.Connection) -> None:
+    """为已安装的旧资料库增加逐条机构/典章资源键。"""
+
+    institution_columns = {row[1] for row in connection.execute("PRAGMA table_info(institution)")}
+    if "image_asset" not in institution_columns:
+        connection.execute("ALTER TABLE institution ADD COLUMN image_asset TEXT NOT NULL DEFAULT ''")
+    special_columns = {row[1] for row in connection.execute("PRAGMA table_info(special_item)")}
+    if "image_asset" not in special_columns:
+        connection.execute("ALTER TABLE special_item ADD COLUMN image_asset TEXT NOT NULL DEFAULT ''")
 
 
 def _catalog_digest() -> int:
@@ -562,13 +576,14 @@ def _synchronize_catalog(connection: sqlite3.Connection) -> None:
     for institution in INSTITUTIONS:
         connection.execute(
             """
-            INSERT INTO institution(id, name, category, active_reigns, function, source_id)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO institution(id, name, category, active_reigns, function, image_asset, source_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,
                 category = excluded.category,
                 active_reigns = excluded.active_reigns,
                 function = excluded.function,
+                image_asset = CASE WHEN excluded.image_asset <> '' THEN excluded.image_asset ELSE institution.image_asset END,
                 source_id = excluded.source_id
             """,
             (
@@ -577,6 +592,7 @@ def _synchronize_catalog(connection: sqlite3.Connection) -> None:
                 institution["category"],
                 institution["active_reigns"],
                 institution["function"],
+                institution.get("image_asset", ""),
                 source_id,
             ),
         )
@@ -603,17 +619,18 @@ def _synchronize_catalog(connection: sqlite3.Connection) -> None:
         )
     connection.executemany(
         """
-        INSERT INTO special_item(id, name, category, era, description, position, source_id)
-        VALUES (:id, :name, :category, :era, :description, :position, :source_id)
+        INSERT INTO special_item(id, name, category, era, description, position, image_asset, source_id)
+        VALUES (:id, :name, :category, :era, :description, :position, :image_asset, :source_id)
         ON CONFLICT(id) DO UPDATE SET
             name = excluded.name,
             category = excluded.category,
             era = excluded.era,
             description = excluded.description,
             position = excluded.position,
+            image_asset = CASE WHEN excluded.image_asset <> '' THEN excluded.image_asset ELSE special_item.image_asset END,
             source_id = excluded.source_id
         """,
-        [{**item, "position": position, "source_id": source_id} for position, item in enumerate(SPECIAL_ITEMS)],
+        [{**item, "position": position, "image_asset": item.get("image_asset", ""), "source_id": source_id} for position, item in enumerate(SPECIAL_ITEMS)],
     )
     _apply_asset_metadata(connection)
 

@@ -3,6 +3,7 @@ package com.ljyss.data
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import com.ljyss.BuildConfig
 import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.EventSection
 import com.ljyss.data.model.HistoricalPerson
@@ -45,7 +46,7 @@ class BundledMingRepository private constructor(
     companion object {
         private const val AssetName = "ming_history.sqlite3"
         private const val Preferences = "content_library"
-        private const val InstalledVersion = "installed_version"
+        private const val InstalledRevision = "installed_revision"
 
         fun load(context: Context): BundledMingRepository {
             val databaseFile = installAsset(context.applicationContext)
@@ -243,7 +244,7 @@ class BundledMingRepository private constructor(
                         )
                     },
                     institutionData = database.rows(
-                        "SELECT id, name, category, active_reigns, function FROM institution ORDER BY category, id"
+                        "SELECT id, name, category, active_reigns, function, image_asset FROM institution ORDER BY category, id"
                     ).map { row ->
                         val id = row.required("id")
                         Institution(
@@ -252,6 +253,7 @@ class BundledMingRepository private constructor(
                             category = row.required("category"),
                             activeReigns = row.required("active_reigns"),
                             function = row.required("function"),
+                            imageAsset = row.value("image_asset"),
                             promotionTracks = database.rows(
                                 "SELECT track, label FROM institution_promotion WHERE institution_id = ? ORDER BY position",
                                 arrayOf(id),
@@ -269,7 +271,7 @@ class BundledMingRepository private constructor(
                         )
                     },
                     specialData = database.rows(
-                        "SELECT id, name, category, era, description FROM special_item ORDER BY position"
+                        "SELECT id, name, category, era, description, image_asset FROM special_item ORDER BY position"
                     ).map { row ->
                         val id = row.required("id")
                         SpecialItem(
@@ -278,6 +280,7 @@ class BundledMingRepository private constructor(
                             category = row.required("category"),
                             era = row.required("era"),
                             description = row.required("description"),
+                            imageAsset = row.value("image_asset"),
                             sections = specialSections[id].orEmpty(),
                             people = specialPeople[id].orEmpty(),
                         )
@@ -288,9 +291,9 @@ class BundledMingRepository private constructor(
 
         private fun installAsset(context: Context): File {
             val destination = File(context.noBackupFilesDir, AssetName)
-            val version = context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
             val preferences = context.getSharedPreferences(Preferences, Context.MODE_PRIVATE)
-            if (destination.isFile && preferences.getLong(InstalledVersion, -1L) == version) return destination
+            val revision = BuildConfig.CONTENT_DATABASE_REVISION
+            if (destination.isFile && preferences.getString(InstalledRevision, null) == revision) return destination
             val temporary = File(context.noBackupFilesDir, "$AssetName.tmp")
             context.assets.open(AssetName).use { input ->
                 temporary.outputStream().use { output -> input.copyTo(output) }
@@ -298,7 +301,7 @@ class BundledMingRepository private constructor(
             check(temporary.length() > 1_000_000L) { "资料库文件不完整" }
             if (destination.exists()) check(destination.delete()) { "无法更新资料库" }
             check(temporary.renameTo(destination)) { "无法安装资料库" }
-            preferences.edit().putLong(InstalledVersion, version).apply()
+            preferences.edit().putString(InstalledRevision, revision).apply()
             return destination
         }
     }

@@ -1,18 +1,63 @@
-{"person_id":"zhudi","position":0,"role":"迁都北京并完成宫殿营建","source_id":"palace-museum-ming-v1","special_item_id":"beijing-gugong"}
-{"person_id":"zhuyuanzhang","position":0,"role":"明初南京宫城营建者","source_id":"mingshi-editorial-v1","special_item_id":"nanjing-gugong"}
-{"person_id":"yuanchonghuan","position":0,"role":"尚方剑相关军前处置事例","source_id":"mingshi-editorial-v1","special_item_id":"shangfang-baojian"}
-{"person_id":"zhuyuanzhang","position":0,"role":"明初颁赐功臣铁券","source_id":"mingshi-editorial-v1","special_item_id":"danshu-tiequan"}
-{"person_id":"zhuyuanzhang","position":0,"role":"明初宝钞发行","source_id":"mingshi-editorial-v1","special_item_id":"daming-baochao"}
-{"person_id":"zhuyuanzhang","position":0,"role":"陵寝主人","source_id":"mingshi-editorial-v1","special_item_id":"ming-xiaoling"}
-{"person_id":"mahuanghou","position":1,"role":"合葬皇后","source_id":"mingshi-editorial-v1","special_item_id":"ming-xiaoling"}
-{"person_id":"zhangjuzheng","position":0,"role":"万历间赋役改革相关阁臣","source_id":"mingshi-editorial-v1","special_item_id":"single-whip-law"}
-{"person_id":"zhuyuanzhang","position":0,"role":"洪武律本颁行者","source_id":"mingshi-editorial-v1","special_item_id":"great-ming-code"}
-{"person_id":"liuji","position":0,"role":"明初军卫法建议相关人物","source_id":"ming-military-system-v1","special_item_id":"weisuo-system"}
-{"person_id":"zhenghe","position":0,"role":"海外使节与航海活动相关人物","source_id":"mingshi-editorial-v1","special_item_id":"maritime-prohibition-tribute"}
-{"person_id":"zhudi","position":0,"role":"永乐朝编纂工程主持者","source_id":"mingshi-editorial-v1","special_item_id":"yongle-encyclopedia"}
-{"person_id":"jiexin","position":1,"role":"永乐大典总纂相关人物","source_id":"mingshi-editorial-v1","special_item_id":"yongle-encyclopedia"}
-{"person_id":"qijiguang","position":0,"role":"军队训练与火器运用相关将领","source_id":"mingshi-editorial-v1","special_item_id":"ming-firearms"}
-{"person_id":"zhudi","position":0,"role":"长陵陵主，十三陵营建起点","source_id":"beijing-ming-tombs-v1","special_item_id":"ming-tombs"}
-{"person_id":"zhudi","position":0,"role":"北京坛庙营建者","source_id":"mingshi-editorial-v1","special_item_id":"temple-of-heaven"}
-{"person_id":"zhudi","position":0,"role":"北京太庙营建者","source_id":"mingshi-editorial-v1","special_item_id":"imperial-ancestral-temple"}
-{"person_id":"zhudi","position":0,"role":"永乐朝武当山宫观营建相关皇帝","source_id":"mingshi-editorial-v1","special_item_id":"wudang-palace-complex"}
+{"person_id": "zhudi", "position": 0, "role": "迁都北京并完成宫殿营建", "source_id": "palace-museum-ming-v1", "special_item_id": "beijing-gugong"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "明初南京宫城营建者", "source_id": "mingshi-editorial-v1", "special_item_id": "nanjing-gugong"}
+{"person_id": "yuanchonghuan", "position": 0, "role": "尚方剑相关军前处置事例", "source_id": "mingshi-editorial-v1", "special_item_id": "shangfang-baojian"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "明初颁赐功臣铁券", "source_id": "mingshi-editorial-v1", "special_item_id": "danshu-tiequan"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "明初宝钞发行", "source_id": "mingshi-editorial-v1", "special_item_id": "daming-baochao"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "陵寝主人", "source_id": "mingshi-editorial-v1", "special_item_id": "ming-xiaoling"}
+{"person_id": "mahuanghou", "position": 1, "role": "合葬皇后", "source_id": "mingshi-editorial-v1", "special_item_id": "ming-xiaoling"}
+{"person_id": "zhangjuzheng", "position": 0, "role": "万历间赋役改革相关阁臣", "source_id": "mingshi-editorial-v1", "special_item_id": "single-whip-law"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "洪武律本颁行者", "source_id": "mingshi-editorial-v1", "special_item_id": "great-ming-code"}
+{"person_id": "liuji", "position": 0, "role": "明初军卫法建议相关人物", "source_id": "ming-military-system-v1", "special_item_id": "weisuo-system"}
+{"person_id": "zhenghe", "position": 0, "role": "海外使节与航海活动相关人物", "source_id": "mingshi-editorial-v1", "special_item_id": "maritime-prohibition-tribute"}
+{"person_id": "zhudi", "position": 0, "role": "永乐朝编纂工程主持者", "source_id": "mingshi-editorial-v1", "special_item_id": "yongle-encyclopedia"}
+{"person_id": "jiexin", "position": 1, "role": "永乐大典总纂相关人物", "source_id": "mingshi-editorial-v1", "special_item_id": "yongle-encyclopedia"}
+{"person_id": "qijiguang", "position": 0, "role": "军队训练与火器运用相关将领", "source_id": "mingshi-editorial-v1", "special_item_id": "ming-firearms"}
+{"person_id": "zhudi", "position": 0, "role": "长陵陵主，十三陵营建起点", "source_id": "beijing-ming-tombs-v1", "special_item_id": "ming-tombs"}
+{"person_id": "zhudi", "position": 0, "role": "北京坛庙营建者", "source_id": "mingshi-editorial-v1", "special_item_id": "temple-of-heaven"}
+{"person_id": "zhudi", "position": 0, "role": "北京太庙营建者", "source_id": "mingshi-editorial-v1", "special_item_id": "imperial-ancestral-temple"}
+{"person_id": "zhudi", "position": 0, "role": "永乐朝武当山宫观营建相关皇帝", "source_id": "mingshi-editorial-v1", "special_item_id": "wudang-palace-complex"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchaofushi"}
+{"person_id": "wanghong2", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-fulangjipao"}
+{"person_id": "yeqi", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-kaizhongfa"}
+{"person_id": "zhangjuzheng", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-kaochengfa"}
+{"person_id": "shenshixing", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-kaochengfa"}
+{"person_id": "wangzongmu", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-kaochengfa"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchangcheng"}
+{"person_id": "qijiguang", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchangcheng"}
+{"person_id": "lichengliang", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchangcheng"}
+{"person_id": "yuzijun", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchangcheng"}
+{"person_id": "wangqiong", "position": 4, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchangcheng"}
+{"person_id": "yongan", "position": 5, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingchangcheng"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-nanjingchengqiang"}
+{"person_id": "chenyouliang", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-nanjingchengqiang"}
+{"person_id": "zhuyousong", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-nanjingchengqiang"}
+{"person_id": "mashiying", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-nanjingchengqiang"}
+{"person_id": "liujI", "position": 4, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-nanjingchengqiang"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzuling"}
+{"person_id": "zhuhoucong", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingxianling"}
+{"person_id": "yansong", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingxianling"}
+{"person_id": "zhouyong", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingxianling"}
+{"person_id": "zhugaochi", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzhangling"}
+{"person_id": "zhuyijun", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzhangling"}
+{"person_id": "zhugaosui", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzhangling"}
+{"person_id": "xuhuanghou", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzhangling"}
+{"person_id": "zhudi", "position": 4, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzhangling"}
+{"person_id": "zhengheng", "position": 5, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingzhangling"}
+{"person_id": "zhuyijun", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingdingling"}
+{"person_id": "zhuchangluo", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingdingling"}
+{"person_id": "zhuyouxiao", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingdingling"}
+{"person_id": "zhuyouxiao", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingdeling"}
+{"person_id": "zhuqizhen", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingyuling"}
+{"person_id": "zhuyoujian", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingsiling"}
+{"person_id": "tianguifei", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingsiling"}
+{"person_id": "wusangui", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingsiling"}
+{"person_id": "caohuachun", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-mingsiling"}
+{"person_id": "zhuzhanji", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-jingtailing"}
+{"person_id": "zhuqizhen", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-jingtailing"}
+{"person_id": "zhuqiyu", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-jingtailing"}
+{"person_id": "zhujian", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-jingtailing"}
+{"person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-dabaoensi"}
+{"person_id": "tangxianzu", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-dabaoensi"}
+{"person_id": "zhudi", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-dabaoensi"}
+{"person_id": "zhenghe", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-dabaoensi"}
+{"person_id": "wangwei-2", "position": 4, "role": "相关人物", "source_id": "wikipedia-zh-20231101", "special_item_id": "special-dabaoensi"}

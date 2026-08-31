@@ -116,6 +116,8 @@ data class Institution(
     val category: String,
     val activeReigns: String,
     val function: String,
+    /** 与该条目一一对应的专属示意图资源名。 */
+    val imageAsset: String = "",
     /** 同一机构可有多条进入或升转路线；不得暗示唯一法定阶梯。 */
     val promotionTracks: List<InstitutionPromotionTrack>,
     val reforms: List<InstitutionReform>,
@@ -157,6 +159,8 @@ data class SpecialItem(
     val category: String,
     val era: String,
     val description: String,
+    /** 与该条目一一对应的专属示意图资源名。 */
+    val imageAsset: String = "",
     val sections: List<SpecialSection> = emptyList(),
     val people: List<SpecialPerson> = emptyList(),
 )

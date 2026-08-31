@@ -1,24 +1,40 @@
-{"institution_id":"grand-secretariat","person_id":"yangshiqi","position":0,"role":"永乐、宣德间阁臣","source_id":"mingshi-editorial-v1"}
-{"institution_id":"grand-secretariat","person_id":"yangrong","position":1,"role":"永乐、宣德间阁臣","source_id":"mingshi-editorial-v1"}
-{"institution_id":"grand-secretariat","person_id":"zhangjuzheng","position":2,"role":"万历初首辅","source_id":"mingshi-editorial-v1"}
-{"institution_id":"hanlin-academy","person_id":"jiexin","position":0,"role":"翰林学士","source_id":"mingshi-editorial-v1"}
-{"institution_id":"hanlin-academy","person_id":"yangshen","position":1,"role":"翰林院编修","source_id":"mingshi-editorial-v1"}
-{"institution_id":"hanlin-academy","person_id":"liudongyang","position":2,"role":"由翰林入中枢","source_id":"mingshi-editorial-v1"}
-{"institution_id":"six-ministries","person_id":"xiayuanji","position":0,"role":"户部尚书","source_id":"mingshi-editorial-v1"}
-{"institution_id":"six-ministries","person_id":"yuqian","position":1,"role":"兵部尚书","source_id":"mingshi-editorial-v1"}
-{"institution_id":"six-ministries","person_id":"songli","position":2,"role":"工部尚书","source_id":"mingshi-editorial-v1"}
-{"institution_id":"six-ministries","person_id":"xuguangqi","position":3,"role":"礼部尚书","source_id":"mingshi-editorial-v1"}
-{"institution_id":"eunuch-agencies","person_id":"wangzhen","position":0,"role":"司礼监太监","source_id":"mingshi-editorial-v1"}
-{"institution_id":"eunuch-agencies","person_id":"liujin","position":1,"role":"司礼监太监","source_id":"mingshi-editorial-v1"}
-{"institution_id":"eunuch-agencies","person_id":"fengbao","position":2,"role":"司礼监太监","source_id":"mingshi-editorial-v1"}
-{"institution_id":"eunuch-agencies","person_id":"weizhongxian","position":3,"role":"司礼监太监","source_id":"mingshi-editorial-v1"}
-{"institution_id":"provincial-administration","person_id":"wangshouren","position":0,"role":"南赣巡抚","source_id":"mingshi-editorial-v1"}
-{"institution_id":"provincial-administration","person_id":"haorui","position":1,"role":"地方与监察任职经历","source_id":"mingshi-editorial-v1"}
-{"institution_id":"provincial-administration","person_id":"kuangzhong","position":2,"role":"苏州知府","source_id":"mingshi-editorial-v1"}
-{"institution_id":"astronomical-bureau","person_id":"xuguangqi","position":0,"role":"晚明历法改革相关人物","source_id":"mingshi-editorial-v1"}
-{"institution_id":"astronomical-bureau","person_id":"zhuzaiyu","position":1,"role":"律历研究相关人物","source_id":"mingshi-editorial-v1"}
-{"institution_id":"jinyiwei","person_id":"lubing","position":0,"role":"锦衣卫都指挥使","source_id":"mingshi-editorial-v1"}
-{"institution_id":"clan-court","person_id":"zhuquan","position":0,"role":"宗室、宁王","source_id":"mingshi-editorial-v1"}
-{"institution_id":"censorate","person_id":"haorui","position":0,"role":"右佥都御史","source_id":"mingshi-editorial-v1"}
-{"institution_id":"prefecture-county-government","person_id":"haorui","position":0,"role":"淳安县知县等地方官","source_id":"mingshi-editorial-v1"}
-{"institution_id":"tusi-frontier-governance","person_id":"qinliangyu","position":0,"role":"石柱土司领袖","source_id":"mingshi-editorial-v1"}
+{"institution_id": "grand-secretariat", "person_id": "yangshiqi", "position": 0, "role": "永乐、宣德间阁臣", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "grand-secretariat", "person_id": "yangrong", "position": 1, "role": "永乐、宣德间阁臣", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "grand-secretariat", "person_id": "zhangjuzheng", "position": 2, "role": "万历初首辅", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "hanlin-academy", "person_id": "jiexin", "position": 0, "role": "翰林学士", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "hanlin-academy", "person_id": "yangshen", "position": 1, "role": "翰林院编修", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "hanlin-academy", "person_id": "liudongyang", "position": 2, "role": "由翰林入中枢", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "six-ministries", "person_id": "xiayuanji", "position": 0, "role": "户部尚书", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "six-ministries", "person_id": "yuqian", "position": 1, "role": "兵部尚书", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "six-ministries", "person_id": "songli", "position": 2, "role": "工部尚书", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "six-ministries", "person_id": "xuguangqi", "position": 3, "role": "礼部尚书", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "eunuch-agencies", "person_id": "wangzhen", "position": 0, "role": "司礼监太监", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "eunuch-agencies", "person_id": "liujin", "position": 1, "role": "司礼监太监", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "eunuch-agencies", "person_id": "fengbao", "position": 2, "role": "司礼监太监", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "eunuch-agencies", "person_id": "weizhongxian", "position": 3, "role": "司礼监太监", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "provincial-administration", "person_id": "wangshouren", "position": 0, "role": "南赣巡抚", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "provincial-administration", "person_id": "haorui", "position": 1, "role": "地方与监察任职经历", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "provincial-administration", "person_id": "kuangzhong", "position": 2, "role": "苏州知府", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "astronomical-bureau", "person_id": "xuguangqi", "position": 0, "role": "晚明历法改革相关人物", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "astronomical-bureau", "person_id": "zhuzaiyu", "position": 1, "role": "律历研究相关人物", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "jinyiwei", "person_id": "lubing", "position": 0, "role": "锦衣卫都指挥使", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "clan-court", "person_id": "zhuquan", "position": 0, "role": "宗室、宁王", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "censorate", "person_id": "haorui", "position": 0, "role": "右佥都御史", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "prefecture-county-government", "person_id": "haorui", "position": 0, "role": "淳安县知县等地方官", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "tusi-frontier-governance", "person_id": "qinliangyu", "position": 0, "role": "石柱土司领袖", "source_id": "mingshi-editorial-v1"}
+{"institution_id": "institution-zhongshusheng", "person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-zhongshusheng", "person_id": "huweyong", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-zhongshusheng", "person_id": "lishanchang", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-zhongshusheng", "person_id": "xuda", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-neiguanjian", "person_id": "zhenghe", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-neiguanjian", "person_id": "liujing", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-shangshanjian", "person_id": "weizhongxian", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-shangshanjian", "person_id": "keshi", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-shibosi", "person_id": "tangshunzhi", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-yumajian", "person_id": "zhangben", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-caoyunzongdu", "person_id": "zhuyuanzhang", "position": 0, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-caoyunzongdu", "person_id": "lingyunyi", "position": 1, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-caoyunzongdu", "person_id": "zhudi", "position": 2, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-caoyunzongdu", "person_id": "chenxuan", "position": 3, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-caoyunzongdu", "person_id": "wanghong", "position": 4, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
+{"institution_id": "institution-caoyunzongdu", "person_id": "chenmin", "position": 5, "role": "相关人物", "source_id": "wikipedia-zh-20231101"}
