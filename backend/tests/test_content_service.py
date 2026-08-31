@@ -12,7 +12,8 @@ class ContentServiceTest(unittest.TestCase):
     def test_bootstrap_has_the_reading_domains(self):
         payload = bootstrap_content()
         self.assertEqual(18, len(payload["reigns"]))
-        self.assertGreaterEqual(len(payload["events"]), 47)
+        self.assertGreaterEqual(len(payload["events"]), 100)
+        self.assertLessEqual(len(payload["events"]), 200)
         self.assertGreaterEqual(len(payload["people"]), 2_000)
         # 皇帝不与文臣武将建关系；关系网以家庭、同僚与南明阵营类为主，亲属补录可持续增加。
         self.assertGreaterEqual(len(payload["relationships"]), 30)
@@ -105,11 +106,35 @@ class ContentServiceTest(unittest.TestCase):
         with connect() as database:
             people = database.execute("SELECT COUNT(*) FROM person").fetchone()[0]
             events = database.execute("SELECT COUNT(*) FROM event").fetchone()[0]
-            events_with_background = database.execute(
-                "SELECT COUNT(DISTINCT event_id) FROM event_section WHERE section_key = 'background'"
-            ).fetchone()[0]
+            event_section_counts = database.execute(
+                "SELECT event_id, COUNT(*) AS count FROM event_section GROUP BY event_id"
+            ).fetchall()
         self.assertGreaterEqual(people, 2_000)
-        self.assertEqual(events, events_with_background)
+        self.assertEqual(events, len(event_section_counts))
+        self.assertTrue(all(row[1] == 5 for row in event_section_counts))
+
+    def test_major_event_catalog_has_no_vague_or_duplicate_titles(self):
+        from app.database import connect
+
+        with connect() as database:
+            rows = database.execute("SELECT id, title, participants FROM event").fetchall()
+            linked = database.execute(
+                """
+                SELECT e.id, p.name
+                FROM event AS e
+                JOIN event_participant AS ep ON ep.event_id = e.id
+                JOIN person AS p ON p.id = ep.person_id
+                """
+            ).fetchall()
+        by_event: dict[str, set[str]] = {}
+        for event_id, name in linked:
+            by_event.setdefault(event_id, set()).add(name)
+        self.assertEqual(len(rows), len({title for _, title, _ in rows}))
+        for event_id, title, participants in rows:
+            self.assertFalse(any(word in title for word in ("改元", "盛世")))
+            display_names = {name for name in participants.split("、") if name}
+            self.assertTrue(display_names)
+            self.assertEqual(display_names, by_event.get(event_id, set()))
 
     def test_every_person_has_a_factual_biography(self):
         from app.database import connect

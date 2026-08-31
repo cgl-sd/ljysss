@@ -3010,36 +3010,36 @@
    "朝臣": 1764,
    "文苑": 20
   },
-  "典章总数": 8,
+  "典章总数": 22,
   "典章按组": {
-   "宫阙": 2,
-   "器物": 3,
-   "制度": 2,
-   "陵寝": 1
+   "宫阙": 5,
+   "器物": 6,
+   "制度": 9,
+   "陵寝": 2
   },
   "典章缺年代": 0,
-  "事件总数": 76,
+  "事件总数": 100,
   "事件按年号": {
-   "hongwu": 12,
-   "jianwen": 3,
-   "yongle": 7,
+   "hongwu": 16,
+   "jianwen": 5,
+   "yongle": 14,
    "hongxi": 1,
-   "xuande": 2,
-   "zhengtong": 4,
+   "xuande": 4,
+   "zhengtong": 2,
    "jingtai": 2,
    "tianshun": 3,
-   "chenghua": 2,
-   "hongzhi": 2,
+   "chenghua": 1,
+   "hongzhi": 1,
    "zhengde": 3,
-   "jiajing": 5,
-   "longqing": 5,
-   "wanli": 9,
+   "jiajing": 6,
+   "longqing": 3,
+   "wanli": 12,
    "taichang": 1,
-   "tianqi": 6,
-   "chongzhen": 4,
-   "nanming": 5
+   "tianqi": 7,
+   "chongzhen": 9,
+   "nanming": 10
   },
   "关系边": 99,
-  "机构数": 16
+  "机构数": 20
  }
 }

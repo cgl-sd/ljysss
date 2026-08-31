@@ -169,6 +169,7 @@ def main() -> None:
                              if re.match(r"^[\u4e00-\u9fff]{1,6}[王公主]", line)]),
     }
     store = store_counts()
+    reigns = sorted(read_jsonl("reign"), key=lambda row: row["start_year"])
     order = [name for name, _, _, _ in TREATISES if name in treatise] + \
             [name for name in treatise if name not in {n for n, _, _, _ in TREATISES}]
     treatise = {name: treatise[name] for name in order}
@@ -208,17 +209,17 @@ def main() -> None:
         "## 二、事件（岁月页）",
         "",
         f"- 《明史》本纪逐月编年：**{annals['本纪逐月记事']} 条**（卷1–24，每条自带帝、年、月，可直接作出处）",
-        f"- 现有 {store['事件总数']} 条；志与传内另有大事（河决、地震、灾异、征伐）待抽",
+        f"- 现有 {store['事件总数']} 件精选大事；每件均含背景、经过、相关人物、结果、影响五个阅读分栏",
         "",
-        "| 年号 | 卷次 | 本纪编年条数 | 现有事件 |",
+        "| 时段 | 年份 | 本纪编年条数 | 现有事件 |",
         "|---|---|---|---|",
     ]
-    for j in range(1, 25):
-        body = "\n".join(lines_of(j))
-        title = lines_of(j)[0] if lines_of(j) else f"卷{j}"
-        if j == 1 or "皇帝" in title[:30] or "帝" in title[:12]:
-            doc.append(f"| {title.split()[0] if ' ' in title else title[:12]} | 卷{j} | "
-                       f"{len(DATE_ENTRY.findall(body))} | — |")
+    for reign in reigns:
+        years = str(reign["start_year"]) if reign["start_year"] == reign["end_year"] else \
+            f"{reign['start_year']}—{reign['end_year']}"
+        doc.append(
+            f"| {reign['title']} | {years} | — | {store['事件按年号'].get(reign['id'], 0)} |"
+        )
     doc += [
         "",
         "每条需要的介绍：标题 / 年 / 月（有则必填）/ 地点 / 背景 / 经过 /",

@@ -89,7 +89,7 @@ def bootstrap_content() -> dict:
 @app.get("/v1/events")
 def list_events(
     reign: Optional[str] = None,
-    year: Optional[int] = Query(default=None, ge=1368, le=1644),
+    year: Optional[int] = Query(default=None, ge=1368, le=1662),
     q: Optional[str] = None,
 ) -> list[dict]:
     conditions: list[str] = []
@@ -143,6 +143,7 @@ def get_event(event_id: str) -> dict:
     )
     if not item:
         raise HTTPException(status_code=404, detail="未找到该事件")
+    item["sections"] = get_event_sections(event_id)
     return item
 
 

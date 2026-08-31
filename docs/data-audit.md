@@ -2,7 +2,7 @@
 
 ## 当前发布基线
 
-当前资料库收录 2,157 名明朝及南明人物、18 个朝代、76 件事件、16 个机构、8 条典章与 99 条人物关系。内容版本真相为 `backend/data/content/*.jsonl`；SQLite 仅为由文本构建的运行产物。
+当前资料库收录 2,157 名明朝及南明人物、18 个朝代、100 件精选事件、20 个机构、22 条典章与 99 条人物关系。内容版本真相为 `backend/data/content/*.jsonl`；SQLite 仅为由文本构建的运行产物。
 
 ## 人物准入
 
@@ -19,6 +19,6 @@
 
 ## 自动校验
 
-- `backend/tests/` 检查分类、分栏、正式称号、人物存在性、事件结构、关系与数据库索引。
+- `backend/tests/` 检查分类、分栏、正式称号、人物存在性、事件五分栏、人物关联、关系与数据库索引。
 - `backend/scripts/audit_data_accuracy.py` 用于新增或改动关系边、事件参与人物时的生卒与首段出现判据校验。
 - 内容修改后执行 `backend/scripts/content_store.py import` 重建 SQLite；若直接编辑 SQLite，再执行 `export` 回写 JSONL 后提交。
