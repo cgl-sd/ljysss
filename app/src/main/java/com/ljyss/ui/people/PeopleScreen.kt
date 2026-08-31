@@ -68,7 +68,6 @@ internal fun PeopleScreen(
     focusPerson: String? = null,
     onFocusConsumed: () -> Unit = {},
     onProfileExit: () -> Unit = {},
-    onOpenEvent: (String) -> Unit = {},
     onSearch: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.PEOPLE) }
@@ -76,6 +75,8 @@ internal fun PeopleScreen(
     // 默认筛选洪武；再次点击当前朝代即可取消筛选、显示当前分类的全部人物。
     var selectedPeopleReign by rememberSaveable { mutableStateOf<String?>("洪武") }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
+    // 人物页中的事件详情在本页栈内打开：返回时稳定回到原人物，而不依赖切换底部导航。
+    var selectedRelatedEventId by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var returnListOffset by rememberSaveable { mutableStateOf(0) }
@@ -84,7 +85,9 @@ internal fun PeopleScreen(
     val allPeople = remember(repository) { repository.allPeople() }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
     val selectedPerson = allPeople.firstOrNull { it.name == selectedPersonName }
+    val selectedRelatedEvent = allEvents.firstOrNull { it.id == selectedRelatedEventId }
     val peopleListState = rememberLazyListState()
+    val eventDetailListState = rememberLazyListState()
     var profileDetail by remember(selectedPerson?.id) { mutableStateOf(selectedPerson) }
     LaunchedEffect(selectedPerson?.id) {
         val person = selectedPerson
@@ -108,12 +111,14 @@ internal fun PeopleScreen(
     }
 
     fun returnFromProfile() {
+        selectedRelatedEventId = null
         selectedPersonName = null
         personStack = emptyList()
         onProfileExit()
     }
 
     fun openProfileFromBrowse(name: String) {
+        selectedRelatedEventId = null
         returnListIndex = peopleListState.firstVisibleItemIndex
         returnListOffset = peopleListState.firstVisibleItemScrollOffset
         selectedPersonName = name
@@ -135,6 +140,17 @@ internal fun PeopleScreen(
             personStack = personStack + current
             selectedPersonName = targetName
         }
+    }
+
+    fun openRelatedEvent(eventId: String) {
+        if (allEvents.any { it.id == eventId }) {
+            selectedRelatedEventId = eventId
+        }
+    }
+
+    fun openPersonFromEvent(targetName: String) {
+        selectedRelatedEventId = null
+        if (selectedPersonName == null) openProfileFromBrowse(targetName) else openRelatedPerson(targetName)
     }
 
     fun closeProfileStep() {
@@ -161,70 +177,82 @@ internal fun PeopleScreen(
     }
 
     // 人物履历打开后，系统返回键与悬浮返回键保持同一行为，并保留进入详情前的页面状态。
-    BackHandler(enabled = selectedPersonName != null) {
+    BackHandler(enabled = selectedRelatedEvent != null) {
+        selectedRelatedEventId = null
+    }
+    BackHandler(enabled = selectedPersonName != null && selectedRelatedEvent == null) {
         closeProfileStep()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        MingList(contentPadding, state = peopleListState) {
-            if (selectedPerson != null) {
+        if (selectedRelatedEvent != null) {
+            // 事件使用独立滚动状态；关闭后不会覆盖人物详情或人物列表原有的位置。
+            MingList(contentPadding, state = eventDetailListState) {
                 item {
-                    PersonProfile(
-                        person = profileDetail ?: selectedPerson,
-                        relations = relations,
-                        onOpenPerson = ::openRelatedPerson,
-                        onOpenEvent = onOpenEvent,
-                    )
+                    ArchiveEventProfile(selectedRelatedEvent, ::openPersonFromEvent)
                 }
-            } else {
-                item { MingMasthead(onSearch) }
-                item { OrnamentalTitle("人物") }
-                item {
-                    PeopleTabRail(
-                        selected = selectedTab,
-                        onSelected = {
-                            selectedTab = it
-                            selectedPersonName = null
-                            personStack = emptyList()
-                        },
-                    )
-                }
-                when (selectedTab) {
-            PeopleTab.PEOPLE -> {
-                item {
-                    CategoryRail(
-                        selectedCategory = selectedCategory,
-                        onSelected = { selectedCategory = it },
-                    )
-                }
-                item {
-                    PersonChronologyRail(
-                        reigns = reigns,
-                        selectedReign = selectedPeopleReign,
-                        onSelected = { reign ->
-                            selectedPeopleReign = if (selectedPeopleReign == reign) null else reign
-                        },
-                    )
-                }
-                if (people.isEmpty()) {
-                    item { SourceNote("该分类在当前年号下暂无人物；再次点选当前年号可查看全部。") }
+            }
+        } else {
+            MingList(contentPadding, state = peopleListState) {
+                if (selectedPerson != null) {
+                    item {
+                        PersonProfile(
+                            person = profileDetail ?: selectedPerson,
+                            relations = relations,
+                            onOpenPerson = ::openRelatedPerson,
+                            onOpenEvent = ::openRelatedEvent,
+                        )
+                    }
                 } else {
-                    items(people, key = { it.name }) { person ->
-                        PersonCard(
-                            person = person,
-                            children = childrenByPerson[person.name].orEmpty(),
-                            expanded = false,
-                            onClick = {
-                                openProfileFromBrowse(person.name)
+                    item { MingMasthead(onSearch) }
+                    item { OrnamentalTitle("人物") }
+                    item {
+                        PeopleTabRail(
+                            selected = selectedTab,
+                            onSelected = {
+                                selectedTab = it
+                                selectedPersonName = null
+                                personStack = emptyList()
                             },
                         )
                     }
-                }
-            }
-            PeopleTab.RELATIONSHIPS -> {
-                item { RelationshipNetwork(relations, allEvents) }
-                item { RelationshipLedger(relations) }
-            }
+                    when (selectedTab) {
+                        PeopleTab.PEOPLE -> {
+                            item {
+                                CategoryRail(
+                                    selectedCategory = selectedCategory,
+                                    onSelected = { selectedCategory = it },
+                                )
+                            }
+                            item {
+                                PersonChronologyRail(
+                                    reigns = reigns,
+                                    selectedReign = selectedPeopleReign,
+                                    onSelected = { reign ->
+                                        selectedPeopleReign = if (selectedPeopleReign == reign) null else reign
+                                    },
+                                )
+                            }
+                            if (people.isEmpty()) {
+                                item { SourceNote("该分类在当前年号下暂无人物；再次点选当前年号可查看全部。") }
+                            } else {
+                                items(people, key = { it.name }) { person ->
+                                    PersonCard(
+                                        person = person,
+                                        children = childrenByPerson[person.name].orEmpty(),
+                                        expanded = false,
+                                        onClick = {
+                                            openProfileFromBrowse(person.name)
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                        PeopleTab.RELATIONSHIPS -> {
+                            item { RelationshipNetwork(relations, allEvents, ::openRelatedEvent) }
+                            item { RelationshipLedger(relations) }
+                        }
+                    }
                 }
             }
         }

@@ -25,8 +25,6 @@ internal fun TimelineScreen(
     repository: MingRepository,
     contentPadding: PaddingValues,
     onOpenPerson: (String) -> Unit = {},
-    returnToPrevious: Boolean = false,
-    onReturnToPrevious: () -> Unit = {},
     searchDestination: SearchDestination? = null,
     onSearchDestinationConsumed: () -> Unit = {},
     onSearch: () -> Unit = {},
@@ -51,7 +49,6 @@ internal fun TimelineScreen(
     }
     BackHandler(enabled = selectedArchiveEvent != null) {
         selectedArchiveEventId = null
-        if (returnToPrevious) onReturnToPrevious()
     }
 
     if (selectedArchiveEvent != null) {

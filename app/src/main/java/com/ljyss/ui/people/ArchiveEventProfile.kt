@@ -2,12 +2,13 @@ package com.ljyss.ui.people
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -71,12 +72,17 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             if (event.participants.isNotEmpty()) {
                 Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    items(event.participants, key = { it }) { name ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+                ) {
+                    event.participants.forEach { name ->
                         Surface(
                             modifier = Modifier
-                                .clip(CutCornerShape(4.dp))
-                                .clickable { onOpenPerson(name) },
+                                .clickable { onOpenPerson(name) }
+                                .clip(CutCornerShape(4.dp)),
                             shape = CutCornerShape(4.dp),
                             color = Vermilion.copy(alpha = 0.08f),
                             border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),

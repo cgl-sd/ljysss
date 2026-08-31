@@ -60,6 +60,7 @@ import kotlin.math.sin
 internal fun RelationshipNetwork(
     relations: List<PersonRelation>,
     events: List<HistoricalEvent>,
+    onOpenEvent: (String) -> Unit,
 ) {
     val focusNames = remember(relations) {
         relations
@@ -192,6 +193,9 @@ internal fun RelationshipNetwork(
                 ) {
                     items(eventThreads, key = { it.id }) { event ->
                         Surface(
+                            modifier = Modifier
+                                .clickable { onOpenEvent(event.id) }
+                                .clip(CutCornerShape(5.dp)),
                             shape = CutCornerShape(5.dp),
                             color = PaperShade,
                             border = BorderStroke(1.dp, LineGold),

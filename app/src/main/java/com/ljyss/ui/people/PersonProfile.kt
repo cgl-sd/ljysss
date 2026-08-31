@@ -2,12 +2,12 @@ package com.ljyss.ui.people
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,12 +128,20 @@ private fun RelatedEventsSection(events: List<RelatedEvent>, onOpenEvent: (Strin
     ) {
         Text("相关事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            items(events, key = { it.id }) { event ->
+        // 事件不多，使用可横向滚动的普通行。它保留紧凑的横排阅读，也避免嵌套 LazyRow
+        // 在长人物档案底部截获点击手势。
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            events.forEach { event ->
                 Card(
                     modifier = Modifier
-                        .clip(CutCornerShape(5.dp))
-                        .clickable { onOpenEvent(event.id) },
+                        // clickable 放在裁切之前，让完整的卡片触控区域先参与命中测试。
+                        .clickable { onOpenEvent(event.id) }
+                        .clip(CutCornerShape(5.dp)),
                     shape = CutCornerShape(5.dp),
                     border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
                     colors = CardDefaults.cardColors(containerColor = Vermilion.copy(alpha = 0.08f)),
