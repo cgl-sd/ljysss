@@ -48,7 +48,14 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
                 fontFamily = FontFamily.Serif,
                 fontSize = 15.sp,
             )
-            EventArticleSection("事件简介", event.description)
+            if (event.sections.isEmpty()) {
+                EventArticleSection("事件简介", event.description)
+            } else {
+                event.sections
+                    .filter { it.key != "people" && it.content.isNotBlank() }
+                    .sortedBy { it.position }
+                    .forEach { section -> EventArticleSection(section.title, section.content) }
+            }
             if (event.participants.isNotEmpty()) {
                 Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
@@ -63,7 +70,9 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
                     )
                 }
             }
-            event.consequence.takeIf { it.isNotBlank() }?.let { EventArticleSection("影响", it) }
+            if (event.sections.isEmpty()) {
+                event.consequence.takeIf { it.isNotBlank() }?.let { EventArticleSection("影响", it) }
+            }
             Text("出处：${event.sourceLabel}", color = Brass, fontFamily = FontFamily.Serif, fontSize = 13.sp)
         }
     }

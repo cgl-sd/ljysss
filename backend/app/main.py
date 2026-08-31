@@ -105,7 +105,7 @@ def list_events(
         parameters.extend([f"%{q}%"] * 3)
 
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-    return records(
+    events = records(
         f"""
         SELECT e.*, r.title AS reign_title, s.title AS source_title, s.review_status
         FROM event AS e
@@ -116,6 +116,17 @@ def list_events(
         """,
         tuple(parameters),
     )
+    for event in events:
+        event["sections"] = records(
+            """
+            SELECT section_key, title, content, position
+            FROM event_section
+            WHERE event_id = ?
+            ORDER BY position
+            """,
+            (event["id"],),
+        )
+    return events
 
 
 @app.get("/v1/events/{event_id}")

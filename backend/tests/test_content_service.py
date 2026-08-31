@@ -92,6 +92,13 @@ class ContentServiceTest(unittest.TestCase):
         sections = {section["section_key"] for section in get_event_sections("hongwu-founding")}
         self.assertEqual({"background", "course", "people", "result", "impact"}, sections)
 
+    def test_bootstrap_events_include_their_reading_sections(self):
+        event = next(item for item in bootstrap_content()["events"] if item["id"] == "hongwu-founding")
+        self.assertEqual(
+            ["background", "course", "people", "result", "impact"],
+            [section["section_key"] for section in event["sections"]],
+        )
+
     def test_every_person_and_event_has_a_uniform_profile_template(self):
         from app.database import connect
 

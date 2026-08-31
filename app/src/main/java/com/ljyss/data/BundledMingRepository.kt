@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import com.ljyss.data.model.HistoricalEvent
+import com.ljyss.data.model.EventSection
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
@@ -82,6 +83,18 @@ class BundledMingRepository private constructor(
                         sections = sections[row.required("id")].orEmpty(),
                     )
                 }
+                val eventSections = database.rows(
+                    "SELECT event_id, section_key, title, content, position FROM event_section ORDER BY event_id, position"
+                ).groupBy { it.required("event_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        EventSection(
+                            key = it.required("section_key"),
+                            title = it.required("title"),
+                            content = it.required("content"),
+                            position = it.int("position"),
+                        )
+                    }
+                }
                 val eventsByReign = database.rows(
                     """
                     SELECT e.id, e.reign_id, e.year, e.month, e.title, e.summary, e.detail, e.place,
@@ -102,6 +115,7 @@ class BundledMingRepository private constructor(
                             participants = row.value("participants").split("、").filter { it.isNotBlank() },
                             consequence = row.required("consequence"),
                             sourceLabel = row.required("source_title"),
+                            sections = eventSections[row.required("id")].orEmpty(),
                         )
                     }
                 }

@@ -20,6 +20,15 @@ data class HistoricalEvent(
     val detail: String = description,
     val participants: List<String> = emptyList(),
     val consequence: String = "",
+    /** 事件详情采用统一分栏；卡片仅展示摘要，独立页面展示这些正文。 */
+    val sections: List<EventSection> = emptyList(),
+)
+
+data class EventSection(
+    val key: String,
+    val title: String,
+    val content: String,
+    val position: Int,
 )
 
 /** 人物六分类：帝王 / 内廷 / 宗藩 / 朝臣 / 将帅 / 文苑。爵位本身不作为分类。 */
