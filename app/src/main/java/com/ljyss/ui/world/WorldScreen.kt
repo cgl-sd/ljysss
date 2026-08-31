@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -87,6 +88,7 @@ internal fun WorldScreen(
     var selectedRelicGroup by rememberSaveable { mutableStateOf("制度法令") }
     var selectedInstitutionId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedSpecialId by rememberSaveable { mutableStateOf<String?>(null) }
+    val worldListState = rememberLazyListState()
     LaunchedEffect(searchDestination) {
         val destination = searchDestination ?: return@LaunchedEffect
         destination.worldSection?.let { label ->
@@ -123,7 +125,7 @@ internal fun WorldScreen(
         return
     }
 
-    MingList(contentPadding) {
+    MingList(contentPadding, state = worldListState) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 MingMasthead(onSearch)
