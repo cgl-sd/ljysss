@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.ui.theme.Brass
@@ -56,7 +57,10 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-internal fun RelationshipNetwork(relations: List<PersonRelation>) {
+internal fun RelationshipNetwork(
+    relations: List<PersonRelation>,
+    events: List<HistoricalEvent>,
+) {
     val focusNames = remember(relations) {
         relations
             .flatMap { listOf(it.fromName, it.toName) }
@@ -73,6 +77,12 @@ internal fun RelationshipNetwork(relations: List<PersonRelation>) {
         if (relation.fromName == activeFocus) relation.toName else relation.fromName
     }.distinct()
     val legend = focusedRelations.map { it.type }.distinct().map { it to it.label }
+    val eventThreads = remember(activeFocus, events) {
+        events
+            .filter { activeFocus in it.participants }
+            .sortedBy { it.year ?: Int.MAX_VALUE }
+            .take(6)
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = CutCornerShape(10.dp),
@@ -81,9 +91,9 @@ internal fun RelationshipNetwork(relations: List<PersonRelation>) {
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("人物关系图", color = Ink, fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+            Text("关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 23.sp, fontWeight = FontWeight.Bold)
             Text(
-                "按后端已编目的关系连线。选择一位人物，查看其直接关联；节点位置只为阅读布局，不代表地理位置或政治距离。",
+                "以人物为节点展开直接关联；事件只作为人物互动发生的线索。节点位置只为阅读布局，不代表地理位置或政治距离。",
                 color = InkSoft,
                 fontFamily = FontFamily.Serif,
                 fontSize = 14.sp,
@@ -174,8 +184,31 @@ internal fun RelationshipNetwork(relations: List<PersonRelation>) {
                     }
                 }
             }
+            if (eventThreads.isNotEmpty()) {
+                Text("关联事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    contentPadding = PaddingValues(horizontal = 1.dp),
+                ) {
+                    items(eventThreads, key = { it.id }) { event ->
+                        Surface(
+                            shape = CutCornerShape(5.dp),
+                            color = PaperShade,
+                            border = BorderStroke(1.dp, LineGold),
+                        ) {
+                            Text(
+                                text = "${event.year ?: ""} · ${event.title}",
+                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp),
+                                color = Ink,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 13.sp,
+                            )
+                        }
+                    }
+                }
+            }
             Text(
-                "已建立 ${relations.size} 条首批关系；当前显示“$activeFocus”关联的 ${focusedRelations.size} 条，可横向选择其他人物继续查看。",
+                "已建立 ${relations.size} 条关系；当前显示“$activeFocus”关联的 ${focusedRelations.size} 条，并串联 ${eventThreads.size} 件相关事件。",
                 color = Vermilion,
                 fontFamily = FontFamily.Serif,
                 fontSize = 13.sp,
@@ -214,37 +247,3 @@ internal fun RelationshipNode(name: String, emphasized: Boolean, modifier: Modif
         )
     }
 }
-
-/** 关系页的双视图：人物关系网络与事件关系网络。 */
-internal enum class RelationView(val label: String) {
-    PERSON("人物关系"),
-    EVENT("事件关系"),
-}
-
-@Composable
-internal fun RelationViewRail(selected: RelationView, onSelected: (RelationView) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        RelationView.entries.forEach { view ->
-            val active = view == selected
-            Surface(
-                modifier = Modifier
-                    .clip(CutCornerShape(6.dp))
-                    .clickable { onSelected(view) },
-                shape = CutCornerShape(6.dp),
-                color = if (active) Vermilion else PaperLight,
-                border = BorderStroke(1.dp, if (active) Vermilion else LineGold),
-            ) {
-                Text(
-                    text = view.label,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
-                    color = if (active) PaperLight else Ink,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
-    }
-}
-
-/** 事件为中心的辐射图：辐条一端是参与人物，另一端是共享人物的其他事件。 */

@@ -48,9 +48,6 @@ import com.ljyss.domain.orderedPeopleForCards
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.ljyss.ui.components.MingList
-import com.ljyss.ui.relationship.EventRelationshipNetwork
-import com.ljyss.ui.relationship.RelationView
-import com.ljyss.ui.relationship.RelationViewRail
 import com.ljyss.ui.relationship.RelationshipLedger
 import com.ljyss.ui.relationship.RelationshipNetwork
 import com.ljyss.ui.components.MingMasthead
@@ -81,7 +78,6 @@ internal fun PeopleScreen(
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var returnListOffset by rememberSaveable { mutableStateOf(0) }
-    var relationView by rememberSaveable { mutableStateOf(RelationView.PERSON) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
@@ -224,18 +220,8 @@ internal fun PeopleScreen(
                 }
             }
             PeopleTab.RELATIONSHIPS -> {
-                item {
-                    RelationViewRail(
-                        selected = relationView,
-                        onSelected = { relationView = it },
-                    )
-                }
-                if (relationView == RelationView.PERSON) {
-                    item { RelationshipNetwork(repository.personRelations()) }
-                    item { RelationshipLedger(repository.personRelations()) }
-                } else {
-                    item { EventRelationshipNetwork(allEvents) }
-                }
+                item { RelationshipNetwork(relations, allEvents) }
+                item { RelationshipLedger(relations) }
             }
                 }
             }
