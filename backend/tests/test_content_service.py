@@ -153,6 +153,26 @@ class ContentServiceTest(unittest.TestCase):
             self.assertTrue(display_names)
             self.assertEqual(display_names, by_event.get(event_id, set()))
 
+    def test_major_events_have_a_valid_time_range_and_controlled_type(self):
+        from app.database import connect
+
+        allowed_types = {
+            "建制与法令",
+            "宫廷政争",
+            "战争与边防",
+            "外交与朝贡",
+            "财政与经济",
+            "社会与民变",
+            "文化与科技",
+        }
+        with connect() as database:
+            rows = database.execute(
+                "SELECT id, year, end_year, event_type FROM event ORDER BY year, id"
+            ).fetchall()
+        self.assertTrue(rows)
+        self.assertTrue(all(row[2] >= row[1] for row in rows))
+        self.assertTrue(all(row[3] in allowed_types for row in rows))
+
     def test_formal_event_participants_are_named_in_event_detail(self):
         """每一条可点击的人物关联都必须能在事件正文中找到依据。"""
         from app.database import connect

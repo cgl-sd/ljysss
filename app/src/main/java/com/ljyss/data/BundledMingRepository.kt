@@ -125,8 +125,9 @@ class BundledMingRepository private constructor(
                 }
                 val eventsByReign = database.rows(
                     """
-                    SELECT e.id, e.reign_id, e.year, e.month, e.title, e.summary, e.detail, e.place,
-                           e.participants, e.consequence, s.title AS source_title
+                    SELECT e.id, e.reign_id, e.year, e.end_year, e.month, e.title, e.event_type,
+                           e.summary, e.detail, e.place, e.participants, e.consequence,
+                           s.title AS source_title
                     FROM event AS e JOIN source AS s ON s.id = e.source_id
                     ORDER BY e.year, e.id
                     """.trimIndent(),
@@ -135,8 +136,10 @@ class BundledMingRepository private constructor(
                         HistoricalEvent(
                             id = row.required("id"),
                             year = row.int("year"),
+                            endYear = row.int("end_year"),
                             month = row.required("month"),
                             title = row.required("title"),
+                            eventType = row.required("event_type"),
                             description = row.required("summary"),
                             detail = row.required("detail"),
                             place = row.required("place"),

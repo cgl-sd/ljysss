@@ -44,8 +44,17 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(event.title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+            val yearLabel = event.year?.let { start ->
+                val end = event.endYear
+                if (end != null && end != start) "$start—$end" else start.toString()
+            }
             Text(
-                listOfNotNull(event.year?.toString(), event.month.takeIf { it.isNotBlank() }, event.place.takeIf { it.isNotBlank() })
+                listOfNotNull(
+                    yearLabel,
+                    event.month.takeIf { it.isNotBlank() },
+                    event.eventType.takeIf { it.isNotBlank() && it != "未分类" },
+                    event.place.takeIf { it.isNotBlank() },
+                )
                     .joinToString("｜"),
                 color = Vermilion,
                 fontFamily = FontFamily.Serif,

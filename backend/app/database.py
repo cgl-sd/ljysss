@@ -130,9 +130,13 @@ CREATE TABLE IF NOT EXISTS person (
 CREATE TABLE IF NOT EXISTS event (
     id TEXT PRIMARY KEY,
     reign_id TEXT NOT NULL REFERENCES reign(id),
+    -- year is the documented starting year, retained for the existing timeline index.
     year INTEGER NOT NULL,
+    -- 0 is accepted only while importing a legacy JSONL row and is normalized to year.
+    end_year INTEGER NOT NULL DEFAULT 0 CHECK(end_year = 0 OR end_year >= year),
     month TEXT NOT NULL,
     title TEXT NOT NULL,
+    event_type TEXT NOT NULL DEFAULT '未分类',
     summary TEXT NOT NULL,
     detail TEXT NOT NULL,
     place TEXT NOT NULL,
@@ -424,12 +428,24 @@ def initialize_database() -> None:
         import_content()
     with connect() as connection:
         connection.executescript(SCHEMA)
+        _migrate_event_columns(connection)
         _migrate_person_columns(connection)
         _ensure_person_profile_taxonomy(connection)
         if connection.execute("PRAGMA user_version").fetchone()[0] == _catalog_digest():
             return
         _synchronize_catalog(connection)
         connection.execute(f"PRAGMA user_version = {_catalog_digest()}")
+
+
+def _migrate_event_columns(connection: sqlite3.Connection) -> None:
+    """Keep locally installed pre-metadata databases readable during an APK upgrade."""
+
+    columns = {row[1] for row in connection.execute("PRAGMA table_info(event)")}
+    if "end_year" not in columns:
+        connection.execute("ALTER TABLE event ADD COLUMN end_year INTEGER NOT NULL DEFAULT 0")
+    if "event_type" not in columns:
+        connection.execute("ALTER TABLE event ADD COLUMN event_type TEXT NOT NULL DEFAULT '未分类'")
+    connection.execute("UPDATE event SET end_year = year WHERE end_year = 0")
 
 
 def _catalog_digest() -> int:
@@ -702,6 +718,7 @@ def import_content() -> list[tuple[str, int]]:
                     )
             connection.commit()
             counts.append((table, len(records)))
+        connection.execute("UPDATE event SET end_year = year WHERE end_year = 0")
         # JSONL 是内容真相。新导入库若保留默认 user_version=0，会在首次服务启动时被
         # catalog.py 的旧种子字段回写，覆盖已审计的人物分类或介绍；写入当前指纹即可
         # 让启动同步仅在 catalog 本身变化时运行。

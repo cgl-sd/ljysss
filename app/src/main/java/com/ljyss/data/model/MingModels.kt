@@ -16,6 +16,10 @@ data class HistoricalEvent(
     val sourceLabel: String,
     val id: String = "",
     val year: Int? = null,
+    /** 结束年份；单年事件与 year 相同。 */
+    val endYear: Int? = null,
+    /** 建制与法令／宫廷政争／战争与边防等受控分类。 */
+    val eventType: String = "",
     /** 展开事件后显示；避免把史料正文硬写在 Compose 界面中。 */
     val detail: String = description,
     val participants: List<String> = emptyList(),
