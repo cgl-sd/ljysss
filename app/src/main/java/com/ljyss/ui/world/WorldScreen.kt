@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
@@ -48,6 +49,7 @@ import com.ljyss.data.MingRepository
 import com.ljyss.R
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
+import com.ljyss.data.model.InstitutionPromotionTrack
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.ui.components.MingList
@@ -554,8 +556,8 @@ private fun InstitutionDetailScreen(
         items(institution.sections.sortedBy { it.position }, key = { it.key }) { section ->
             InstitutionTextSection(section.title, section.content)
         }
-        if (institution.promotionPath.isNotEmpty()) {
-            item { InstitutionPromotionGuide(institution.promotionPath) }
+        if (institution.promotionTracks.isNotEmpty()) {
+            item { InstitutionPromotionGuide(institution.promotionTracks) }
         }
         if (institution.reforms.isNotEmpty()) {
             item {
@@ -590,13 +592,26 @@ private fun InstitutionTextSection(title: String, content: String) {
 }
 
 @Composable
-private fun InstitutionPromotionGuide(path: List<String>) {
+private fun InstitutionPromotionGuide(tracks: List<InstitutionPromotionTrack>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        InstitutionTextSection(title = "常见仕途导览", content = "此处呈现与本机构相关的常见任用或升迁轨迹，不是所有官员必须经历的法定阶梯。")
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            items(path) { step ->
-                Surface(shape = CutCornerShape(4.dp), color = PaperShade, border = BorderStroke(1.dp, LineGold)) {
-                    Text(step, modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp), color = Ink, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+        InstitutionTextSection(
+            title = "常见仕途导览",
+            content = "此处按可考的不同任用路线分列，不表示所有官员必须逐级经历，亦不把特简与常规升转混为同一法定阶梯。",
+        )
+        tracks.forEach { track ->
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(track.title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    itemsIndexed(track.steps) { index, step ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(shape = CutCornerShape(4.dp), color = PaperShade, border = BorderStroke(1.dp, LineGold)) {
+                                Text(step, modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp), color = Ink, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                            }
+                            if (index < track.steps.lastIndex) {
+                                Text("→", modifier = Modifier.padding(horizontal = 2.dp), color = Brass, fontSize = 14.sp)
+                            }
+                        }
+                    }
                 }
             }
         }

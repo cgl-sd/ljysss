@@ -8,6 +8,7 @@ import com.ljyss.data.model.EventSection
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.Institution
 import com.ljyss.data.model.InstitutionPerson
+import com.ljyss.data.model.InstitutionPromotionTrack
 import com.ljyss.data.model.InstitutionReform
 import com.ljyss.data.model.InstitutionSection
 import com.ljyss.data.model.PersonCategory
@@ -253,9 +254,12 @@ class BundledMingRepository private constructor(
                             category = row.required("category"),
                             activeReigns = row.required("active_reigns"),
                             function = row.required("function"),
-                            promotionPath = database.rows(
-                                "SELECT label FROM institution_promotion WHERE institution_id = ? ORDER BY position", arrayOf(id)
-                            ).map { it.required("label") },
+                            promotionTracks = database.rows(
+                                "SELECT track, label FROM institution_promotion WHERE institution_id = ? ORDER BY position",
+                                arrayOf(id),
+                            ).groupBy { it.required("track") }.map { (track, rows) ->
+                                InstitutionPromotionTrack(track, rows.map { it.required("label") })
+                            },
                             reforms = database.rows(
                                 "SELECT year, title, description FROM institution_reform WHERE institution_id = ? ORDER BY position",
                                 arrayOf(id),

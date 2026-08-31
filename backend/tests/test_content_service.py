@@ -322,6 +322,10 @@ class ContentServiceTest(unittest.TestCase):
         cabinet = institutions["grand-secretariat"]
         self.assertEqual(["duty", "structure", "operation", "evolution"], [item["section_key"] for item in cabinet["sections"]])
         self.assertIn("杨士奇", {item["name"] for item in cabinet["people"]})
+        self.assertEqual(
+            ["科举翰林线", "部院、地方转入线", "特简入阁"],
+            [track["title"] for track in cabinet["promotion_tracks"]],
+        )
         self.assertIn("京军三大营", {item["name"] for item in institutions.values()})
 
     def test_emperors_have_no_minister_or_general_relations(self):

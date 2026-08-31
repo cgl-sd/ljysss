@@ -311,6 +311,7 @@ CREATE TABLE IF NOT EXISTS institution (
 CREATE TABLE IF NOT EXISTS institution_promotion (
     institution_id TEXT NOT NULL REFERENCES institution(id) ON DELETE CASCADE,
     position INTEGER NOT NULL,
+    track TEXT NOT NULL DEFAULT '常见任用路径',
     label TEXT NOT NULL,
     PRIMARY KEY(institution_id, position)
 );
@@ -429,6 +430,7 @@ def initialize_database() -> None:
     with connect() as connection:
         connection.executescript(SCHEMA)
         _migrate_event_columns(connection)
+        _migrate_institution_promotion_columns(connection)
         _migrate_person_columns(connection)
         _ensure_person_profile_taxonomy(connection)
         if connection.execute("PRAGMA user_version").fetchone()[0] == _catalog_digest():
@@ -446,6 +448,16 @@ def _migrate_event_columns(connection: sqlite3.Connection) -> None:
     if "event_type" not in columns:
         connection.execute("ALTER TABLE event ADD COLUMN event_type TEXT NOT NULL DEFAULT '未分类'")
     connection.execute("UPDATE event SET end_year = year WHERE end_year = 0")
+
+
+def _migrate_institution_promotion_columns(connection: sqlite3.Connection) -> None:
+    """Add a route label without invalidating an installed content library."""
+
+    columns = {row[1] for row in connection.execute("PRAGMA table_info(institution_promotion)")}
+    if "track" not in columns:
+        connection.execute(
+            "ALTER TABLE institution_promotion ADD COLUMN track TEXT NOT NULL DEFAULT '常见任用路径'"
+        )
 
 
 def _catalog_digest() -> int:

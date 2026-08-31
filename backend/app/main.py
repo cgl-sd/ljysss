@@ -314,13 +314,19 @@ def list_institutions() -> list[dict]:
         """
     )
     for institution in institutions:
-        institution["promotion_path"] = [
-            entry["label"]
-            for entry in records(
-                "SELECT label FROM institution_promotion WHERE institution_id = ? ORDER BY position",
-                (institution["id"],),
-            )
+        promotion_rows = records(
+            "SELECT track, label FROM institution_promotion WHERE institution_id = ? ORDER BY position",
+            (institution["id"],),
+        )
+        promotion_tracks: dict[str, list[str]] = {}
+        for entry in promotion_rows:
+            promotion_tracks.setdefault(entry["track"], []).append(entry["label"])
+        institution["promotion_tracks"] = [
+            {"title": title, "steps": steps}
+            for title, steps in promotion_tracks.items()
         ]
+        # Keep the original flat field available to existing development tools.
+        institution["promotion_path"] = [entry["label"] for entry in promotion_rows]
         institution["reforms"] = records(
             """
             SELECT year, title, description

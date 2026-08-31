@@ -229,7 +229,7 @@ private fun searchCatalog(repository: MingRepository, rawQuery: String): List<Se
         }
         repository.institutions().forEach { institution ->
             val searchable = listOf(institution.name, institution.category, institution.activeReigns, institution.function)
-                .plus(institution.promotionPath)
+                .plus(institution.promotionTracks.flatMap { track -> listOf(track.title) + track.steps })
                 .plus(institution.reforms.flatMap { listOf(it.year, it.title, it.description) })
                 .joinToString(" ")
             add(SearchResult("institution:${institution.id}", "机构", institution.name, text("${institution.category}｜${institution.function}"), searchable, SearchDestination(2, worldSection = "机构", worldCategory = institution.category)))

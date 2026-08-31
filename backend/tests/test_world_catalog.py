@@ -61,6 +61,12 @@ class WorldCatalogTests(unittest.TestCase):
             self.assertIn(row["source_id"], sources)
             self.assertTrue(row["role"].strip())
 
+    def test_cabinet_promotion_guide_has_separate_routes(self):
+        rows = [row for row in load_rows("institution_promotion") if row["institution_id"] == "grand-secretariat"]
+        tracks = {row.get("track") for row in rows}
+        self.assertEqual({"科举翰林线", "部院、地方转入线", "特简入阁"}, tracks)
+        self.assertEqual(len(rows), len({row["position"] for row in rows}))
+
     def test_every_special_has_readable_sections_and_valid_person_links(self):
         specials = {row["id"] for row in load_rows("special_item")}
         people = {row["id"] for row in load_rows("person")}

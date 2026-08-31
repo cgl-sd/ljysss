@@ -117,10 +117,16 @@ data class Institution(
     val category: String,
     val activeReigns: String,
     val function: String,
-    val promotionPath: List<String>,
+    /** 同一机构可有多条进入或升转路线；不得暗示唯一法定阶梯。 */
+    val promotionTracks: List<InstitutionPromotionTrack>,
     val reforms: List<InstitutionReform>,
     val sections: List<InstitutionSection> = emptyList(),
     val people: List<InstitutionPerson> = emptyList(),
+)
+
+data class InstitutionPromotionTrack(
+    val title: String,
+    val steps: List<String>,
 )
 
 data class InstitutionReform(
