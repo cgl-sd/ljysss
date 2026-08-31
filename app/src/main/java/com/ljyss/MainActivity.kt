@@ -127,6 +127,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
     var searchDestination by remember { mutableStateOf<SearchDestination?>(null) }
     var focusPerson by remember { mutableStateOf<String?>(null) }
     var personReturnSection by rememberSaveable { mutableStateOf<Int?>(null) }
+    var returnToPersonAfterEvent by rememberSaveable { mutableStateOf(false) }
     val sectionStateHolder = rememberSaveableStateHolder()
 
     Scaffold(
@@ -140,6 +141,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                         if (destination != selectedSection) {
                             focusPerson = null
                             personReturnSection = null
+                            returnToPersonAfterEvent = false
                             searchDestination = null
                         }
                         selectedSection = destination
@@ -175,6 +177,11 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                             focusPerson = name
                             selectedSection = 1
                         },
+                        returnToPrevious = returnToPersonAfterEvent,
+                        onReturnToPrevious = {
+                            returnToPersonAfterEvent = false
+                            selectedSection = 1
+                        },
                     )
                     1 -> PeopleScreen(
                         repository = repository,
@@ -185,6 +192,22 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                             personReturnSection?.let { origin ->
                                 personReturnSection = null
                                 selectedSection = origin
+                            }
+                        },
+                        onOpenEvent = { eventId ->
+                            val eventReign = repository.reigns().firstOrNull { reign ->
+                                reign.events.any { event -> event.id == eventId }
+                            }
+                            val event = eventReign?.events?.firstOrNull { it.id == eventId }
+                            if (eventReign != null && event != null) {
+                                returnToPersonAfterEvent = true
+                                searchDestination = SearchDestination(
+                                    sectionIndex = 0,
+                                    reignTitle = eventReign.title,
+                                    year = event.year,
+                                    eventId = event.id,
+                                )
+                                selectedSection = 0
                             }
                         },
                         onSearch = { searchOpen = true },

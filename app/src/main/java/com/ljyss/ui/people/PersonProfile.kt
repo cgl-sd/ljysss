@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
@@ -36,6 +38,7 @@ import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.PersonSection
+import com.ljyss.data.model.RelatedEvent
 import com.ljyss.domain.LifeCollapseCharacterLimit
 import com.ljyss.domain.parseLifeBlocks
 import com.ljyss.domain.parentChildTypes
@@ -53,6 +56,7 @@ internal fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
     onOpenPerson: (String) -> Unit,
+    onOpenEvent: (String) -> Unit,
 ) {
     // 正常读取资料库预生成栏目；缺少 sections 时回退至摘要生平，
     // 不能让人物详情只剩姓名与画像。
@@ -102,8 +106,45 @@ internal fun PersonProfile(
                     "relations" -> if (person.category != PersonCategory.EMPERORS) {
                         ArticleSection(section.title, body, relationNames, onOpenPerson)
                     }
-                    "events" -> ProfileSection(section.title, readableParagraphs(body))
+                    // 有正式事件实体时，以可跳转反链取代旧正文；无反链才保留原有叙述。
+                    "events" -> if (person.relatedEvents.isEmpty()) ProfileSection(section.title, readableParagraphs(body))
                     // 其余键属于内部标记（如资料状态），不作为栏目呈现。
+                }
+            }
+            if (person.relatedEvents.isNotEmpty()) {
+                RelatedEventsSection(person.relatedEvents, onOpenEvent)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RelatedEventsSection(events: List<RelatedEvent>, onOpenEvent: (String) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text("相关事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            items(events, key = { it.id }) { event ->
+                Card(
+                    modifier = Modifier
+                        .clip(CutCornerShape(5.dp))
+                        .clickable { onOpenEvent(event.id) },
+                    shape = CutCornerShape(5.dp),
+                    border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
+                    colors = CardDefaults.cardColors(containerColor = Vermilion.copy(alpha = 0.08f)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                ) {
+                    Text(
+                        text = "${event.year} · ${event.title}",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                        color = Vermilion,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
         }

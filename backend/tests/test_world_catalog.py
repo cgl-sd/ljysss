@@ -22,12 +22,15 @@ class WorldCatalogTests(unittest.TestCase):
         institutions = load_rows("institution")
         specials = load_rows("special_item")
         categories = {row["category"] for row in institutions}
-        self.assertTrue({"中央政务", "监察司法", "军事卫所", "内廷宦官", "地方治理", "教育礼制"} <= categories)
+        self.assertEqual(
+            {"中枢政务", "监察司法", "军事卫所", "内廷宦官", "地方治理", "教育与专门"},
+            categories,
+        )
         self.assertTrue(
             {"国子监", "翰林院", "钦天监", "太医院", "京军三大营", "府州县学", "詹事府", "太常寺"}
             <= {row["name"] for row in institutions}
         )
-        self.assertEqual({"制度", "器物", "宫阙", "陵寝"}, {row["category"] for row in specials})
+        self.assertEqual({"制度", "器物", "宫陵"}, {row["category"] for row in specials})
         self.assertFalse(any(row["id"].startswith("wiki-") for row in specials))
 
     def test_every_institution_has_four_readable_detail_sections(self):

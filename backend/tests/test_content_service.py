@@ -100,6 +100,14 @@ class ContentServiceTest(unittest.TestCase):
             [section["section_key"] for section in event["sections"]],
         )
 
+    def test_event_and_person_endpoints_expose_the_same_formal_participant_links(self):
+        from app.main import get_event
+
+        event = get_event("hongwu-founding")
+        person = get_person(event["people"][0]["id"])
+        self.assertTrue(event["people"])
+        self.assertIn(event["id"], {item["id"] for item in person["events"]})
+
     def test_public_content_payload_does_not_expose_editorial_review_labels(self):
         from app.main import get_source
 

@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -59,15 +62,26 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             if (event.participants.isNotEmpty()) {
                 Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-                event.participants.forEach { name ->
-                    Text(
-                        name,
-                        modifier = Modifier.clip(CutCornerShape(4.dp)).clickable { onOpenPerson(name) }.padding(vertical = 3.dp),
-                        color = Vermilion,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                    items(event.participants, key = { it }) { name ->
+                        Surface(
+                            modifier = Modifier
+                                .clip(CutCornerShape(4.dp))
+                                .clickable { onOpenPerson(name) },
+                            shape = CutCornerShape(4.dp),
+                            color = Vermilion.copy(alpha = 0.08f),
+                            border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
+                        ) {
+                            Text(
+                                name,
+                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                                color = Vermilion,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
                 }
             }
             if (event.sections.isEmpty()) {

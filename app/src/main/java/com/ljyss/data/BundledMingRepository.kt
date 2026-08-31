@@ -15,6 +15,7 @@ import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.PersonSection
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Reign
+import com.ljyss.data.model.RelatedEvent
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.data.model.SpecialSection
@@ -60,6 +61,22 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
+                val relatedEventsByPerson = database.rows(
+                    """
+                    SELECT ep.person_id, e.id, e.year, e.title
+                    FROM event_participant AS ep
+                    JOIN event AS e ON e.id = ep.event_id
+                    ORDER BY ep.person_id, e.year, e.id
+                    """.trimIndent(),
+                ).groupBy { it.required("person_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        RelatedEvent(
+                            id = it.required("id"),
+                            year = it.int("year"),
+                            title = it.required("title"),
+                        )
+                    }
+                }
                 val people = database.rows(
                     """
                     SELECT id, name, display_name, title, reign, archive_start_year, years, category, courtesy_name,
@@ -81,6 +98,7 @@ class BundledMingRepository private constructor(
                         portraitKey = row.value("portrait_key").ifBlank { null },
                         category = PersonCategory.entries.first { it.label == row.required("category") },
                         sections = sections[row.required("id")].orEmpty(),
+                        relatedEvents = relatedEventsByPerson[row.required("id")].orEmpty(),
                     )
                 }
                 val eventSections = database.rows(
@@ -94,6 +112,16 @@ class BundledMingRepository private constructor(
                             position = it.int("position"),
                         )
                     }
+                }
+                val participantsByEvent = database.rows(
+                    """
+                    SELECT ep.event_id, p.name
+                    FROM event_participant AS ep
+                    JOIN person AS p ON p.id = ep.person_id
+                    ORDER BY ep.event_id, ep.rowid
+                    """.trimIndent(),
+                ).groupBy { it.required("event_id") }.mapValues { (_, rows) ->
+                    rows.map { it.required("name") }
                 }
                 val eventsByReign = database.rows(
                     """
@@ -112,7 +140,8 @@ class BundledMingRepository private constructor(
                             description = row.required("summary"),
                             detail = row.required("detail"),
                             place = row.required("place"),
-                            participants = row.value("participants").split("、").filter { it.isNotBlank() },
+                            participants = participantsByEvent[row.required("id")]
+                                ?: row.value("participants").split("、").filter { it.isNotBlank() },
                             consequence = row.required("consequence"),
                             sourceLabel = row.required("source_title"),
                             sections = eventSections[row.required("id")].orEmpty(),

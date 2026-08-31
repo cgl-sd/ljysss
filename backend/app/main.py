@@ -126,6 +126,7 @@ def list_events(
             """,
             (event["id"],),
         )
+        event["people"] = event_people(event["id"])
     return events
 
 
@@ -144,6 +145,7 @@ def get_event(event_id: str) -> dict:
     if not item:
         raise HTTPException(status_code=404, detail="未找到该事件")
     item["sections"] = get_event_sections(event_id)
+    item["people"] = event_people(event_id)
     return item
 
 
@@ -244,7 +246,32 @@ def get_person(person_id: str) -> dict:
         """,
         (person_id, person_id),
     )
+    person["events"] = records(
+        """
+        SELECT e.id, e.year, e.month, e.title, e.summary, e.place, ep.role
+        FROM event_participant AS ep
+        JOIN event AS e ON e.id = ep.event_id
+        WHERE ep.person_id = ?
+        ORDER BY e.year, e.id
+        """,
+        (person_id,),
+    )
     return person
+
+
+def event_people(event_id: str) -> list[dict]:
+    """Formal event participants.  The same table drives both event and person links."""
+
+    return records(
+        """
+        SELECT p.id, p.name, p.display_name, p.title, ep.role
+        FROM event_participant AS ep
+        JOIN person AS p ON p.id = ep.person_id
+        WHERE ep.event_id = ?
+        ORDER BY ep.rowid
+        """,
+        (event_id,),
+    )
 
 
 @app.get("/v1/events/{event_id}/sections")

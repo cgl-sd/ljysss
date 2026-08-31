@@ -84,8 +84,8 @@ internal fun WorldScreen(
     val relicGroups = remember(specials) {
         specialCategoryDefinitions.filter { group -> specials.any { it.category in group.categories } }
     }
-    var selectedInstitutionGroup by rememberSaveable { mutableStateOf("中央政务") }
-    var selectedRelicGroup by rememberSaveable { mutableStateOf("制度法令") }
+    var selectedInstitutionGroup by rememberSaveable { mutableStateOf("中枢政务") }
+    var selectedRelicGroup by rememberSaveable { mutableStateOf("制度") }
     var selectedInstitutionId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedSpecialId by rememberSaveable { mutableStateOf<String?>(null) }
     val worldListState = rememberLazyListState()
@@ -110,7 +110,6 @@ internal fun WorldScreen(
         InstitutionDetailScreen(
             institution = selectedInstitution,
             contentPadding = contentPadding,
-            onBack = { selectedInstitutionId = null },
             onOpenPerson = onOpenPerson,
         )
         return
@@ -119,7 +118,6 @@ internal fun WorldScreen(
         SpecialDetailScreen(
             item = selectedSpecial,
             contentPadding = contentPadding,
-            onBack = { selectedSpecialId = null },
             onOpenPerson = onOpenPerson,
         )
         return
@@ -319,22 +317,18 @@ private enum class WorldSection(val label: String) {
 private data class WorldCategoryGroup(val label: String, val categories: Set<String>)
 
 private val institutionCategoryDefinitions = listOf(
-    WorldCategoryGroup("中央政务", setOf("中央政务")),
+    WorldCategoryGroup("中枢政务", setOf("中枢政务")),
     WorldCategoryGroup("监察司法", setOf("监察司法")),
     WorldCategoryGroup("军事卫所", setOf("军事卫所")),
     WorldCategoryGroup("内廷宦官", setOf("内廷宦官")),
-    WorldCategoryGroup("皇帝亲军", setOf("皇帝亲军")),
-    WorldCategoryGroup("皇族事务", setOf("皇族事务")),
     WorldCategoryGroup("地方治理", setOf("地方治理")),
-    WorldCategoryGroup("教育礼制", setOf("教育礼制")),
+    WorldCategoryGroup("教育与专门", setOf("教育与专门")),
 )
 
 private val specialCategoryDefinitions = listOf(
-    WorldCategoryGroup("制度法令", setOf("制度")),
-    WorldCategoryGroup("器物文书", setOf("器物")),
-    WorldCategoryGroup("礼俗生活", setOf("习俗")),
-    WorldCategoryGroup("宫阙陵寝", setOf("宫阙", "陵寝")),
-    WorldCategoryGroup("史事专题", setOf("专题")),
+    WorldCategoryGroup("制度", setOf("制度")),
+    WorldCategoryGroup("器物", setOf("器物")),
+    WorldCategoryGroup("宫陵", setOf("宫陵")),
 )
 
 @Composable
@@ -420,20 +414,9 @@ private fun SpecialItemCard(item: SpecialItem, onOpen: () -> Unit) {
 private fun SpecialDetailScreen(
     item: SpecialItem,
     contentPadding: PaddingValues,
-    onBack: () -> Unit,
     onOpenPerson: (String) -> Unit,
 ) {
     MingList(contentPadding) {
-        item {
-            Text(
-                text = "返回典章",
-                modifier = Modifier.clickable(onClick = onBack).padding(vertical = 4.dp),
-                color = Vermilion,
-                fontFamily = FontFamily.Serif,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -459,7 +442,6 @@ private fun SpecialDetailScreen(
         if (item.people.isNotEmpty()) {
             item { SpecialPeopleSection(item.people, onOpenPerson) }
         }
-        item { SourceNote("内容据随应用发布的明代制度与文物资料索引整理。") }
     }
 }
 
@@ -548,20 +530,9 @@ private fun InstitutionCard(institution: Institution, onOpen: () -> Unit) {
 private fun InstitutionDetailScreen(
     institution: Institution,
     contentPadding: PaddingValues,
-    onBack: () -> Unit,
     onOpenPerson: (String) -> Unit,
 ) {
     MingList(contentPadding) {
-        item {
-            Text(
-                text = "返回机构",
-                modifier = Modifier.clickable(onClick = onBack).padding(vertical = 4.dp),
-                color = Vermilion,
-                fontFamily = FontFamily.Serif,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -599,7 +570,6 @@ private fun InstitutionDetailScreen(
         if (institution.people.isNotEmpty()) {
             item { InstitutionPeopleSection(institution.people, onOpenPerson) }
         }
-        item { SourceNote("内容据随应用发布的《明史》与《明实录》资料索引整理。") }
     }
 }
 

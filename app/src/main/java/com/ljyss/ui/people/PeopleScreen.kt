@@ -68,6 +68,7 @@ internal fun PeopleScreen(
     focusPerson: String? = null,
     onFocusConsumed: () -> Unit = {},
     onProfileExit: () -> Unit = {},
+    onOpenEvent: (String) -> Unit = {},
     onSearch: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.PEOPLE) }
@@ -172,6 +173,7 @@ internal fun PeopleScreen(
                         person = profileDetail ?: selectedPerson,
                         relations = relations,
                         onOpenPerson = ::openRelatedPerson,
+                        onOpenEvent = onOpenEvent,
                     )
                 }
             } else {

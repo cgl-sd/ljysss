@@ -62,6 +62,15 @@ data class HistoricalPerson(
     val displayName: String = name,
     /** 仅在跨年号总档（目前为南明）中使用的首次活动年份；0 表示未设。 */
     val archiveStartYear: Int = 0,
+    /** 由 event_participant 生成的正式事件反链；人物页不再从正文猜测关联事件。 */
+    val relatedEvents: List<RelatedEvent> = emptyList(),
+)
+
+/** 可从人物详情直接打开的事件实体，保留稳定 id 以避免同题事件误跳。 */
+data class RelatedEvent(
+    val id: String,
+    val year: Int,
+    val title: String,
 )
 
 /** 人物详情结构化栏目：life／family／relations／events，按服务端 position 排序。 */
