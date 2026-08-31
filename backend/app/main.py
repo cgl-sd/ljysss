@@ -349,16 +349,6 @@ def list_institutions() -> list[dict]:
             """,
             (institution["id"],),
         )
-        institution["events"] = records(
-            """
-            SELECT e.id, e.year, e.month, e.title, e.summary, e.place, ie.relation
-            FROM institution_event AS ie
-            JOIN event AS e ON e.id = ie.event_id
-            WHERE ie.institution_id = ?
-            ORDER BY ie.position
-            """,
-            (institution["id"],),
-        )
     return institutions
 
 
@@ -384,26 +374,6 @@ def list_specials() -> list[dict]:
             JOIN person AS p ON p.id = sp.person_id
             WHERE sp.special_item_id = ?
             ORDER BY sp.position
-            """,
-            (special["id"],),
-        )
-        special["events"] = records(
-            """
-            SELECT e.id, e.year, e.month, e.title, e.summary, e.place, se.relation
-            FROM special_event AS se
-            JOIN event AS e ON e.id = se.event_id
-            WHERE se.special_item_id = ?
-            ORDER BY se.position
-            """,
-            (special["id"],),
-        )
-        special["institutions"] = records(
-            """
-            SELECT i.id, i.name, i.category, si.relation
-            FROM special_institution AS si
-            JOIN institution AS i ON i.id = si.institution_id
-            WHERE si.special_item_id = ?
-            ORDER BY si.position
             """,
             (special["id"],),
         )

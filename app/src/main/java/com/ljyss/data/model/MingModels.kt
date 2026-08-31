@@ -71,7 +71,6 @@ data class RelatedEvent(
     val id: String,
     val year: Int,
     val title: String,
-    val relation: String = "",
 )
 
 /** 人物详情结构化栏目：life／family／relations／events，按服务端 position 排序。 */
@@ -118,7 +117,6 @@ data class Institution(
     val reforms: List<InstitutionReform>,
     val sections: List<InstitutionSection> = emptyList(),
     val people: List<InstitutionPerson> = emptyList(),
-    val events: List<RelatedEvent> = emptyList(),
 )
 
 data class InstitutionReform(
@@ -152,16 +150,6 @@ data class SpecialItem(
     val description: String,
     val sections: List<SpecialSection> = emptyList(),
     val people: List<SpecialPerson> = emptyList(),
-    val events: List<RelatedEvent> = emptyList(),
-    val institutions: List<RelatedInstitution> = emptyList(),
-)
-
-/** 典章条目中的机构交叉索引；保留主归属，避免把机构重复录入典章目录。 */
-data class RelatedInstitution(
-    val id: String,
-    val name: String,
-    val category: String,
-    val relation: String,
 )
 
 /** 典章详情的通用阅读分栏：释义、形制、使用与历史脉络。 */

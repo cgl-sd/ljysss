@@ -36,12 +36,9 @@ CONTENT_TABLES = [
     "institution_reform",
     "institution_section",
     "institution_person",
-    "institution_event",
     "special_item",
     "special_section",
     "special_person",
-    "special_event",
-    "special_institution",
     "person_mingshi",
     "person_wiki",
     "person_cbdb",
@@ -64,11 +61,8 @@ CONTENT_ORDER = {
     "institution_reform": ("institution_id", "position"),
     "institution_section": ("institution_id", "position"),
     "institution_person": ("institution_id", "position"),
-    "institution_event": ("institution_id", "position"),
     "special_section": ("special_item_id", "position"),
     "special_person": ("special_item_id", "position"),
-    "special_event": ("special_item_id", "position"),
-    "special_institution": ("special_item_id", "position"),
 }
 
 # 人物分类和详情栏目都是内容模型的一部分，而不是前端散落的字面量。person 表仍保留
@@ -350,18 +344,6 @@ CREATE TABLE IF NOT EXISTS institution_person (
 CREATE INDEX IF NOT EXISTS institution_person_by_institution_position
     ON institution_person(institution_id, position);
 
--- 机构与事件只在确有直接制度、设置、改革或运作关联时建立链接。
-CREATE TABLE IF NOT EXISTS institution_event (
-    institution_id TEXT NOT NULL REFERENCES institution(id) ON DELETE CASCADE,
-    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
-    relation TEXT NOT NULL,
-    position INTEGER NOT NULL,
-    source_id TEXT NOT NULL REFERENCES source(id),
-    PRIMARY KEY(institution_id, event_id)
-);
-CREATE INDEX IF NOT EXISTS institution_event_by_institution_position
-    ON institution_event(institution_id, position);
-
 -- 天下页的“典章”科普：宫殿、器物与制度名物，与机构分列。
 CREATE TABLE IF NOT EXISTS special_item (
     id TEXT PRIMARY KEY,
@@ -396,29 +378,6 @@ CREATE TABLE IF NOT EXISTS special_person (
 );
 CREATE INDEX IF NOT EXISTS special_person_by_item_position
     ON special_person(special_item_id, position);
-
--- 典章与事件、机构的交叉索引：仅作“相关”导航，不改变条目的主归属。
-CREATE TABLE IF NOT EXISTS special_event (
-    special_item_id TEXT NOT NULL REFERENCES special_item(id) ON DELETE CASCADE,
-    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
-    relation TEXT NOT NULL,
-    position INTEGER NOT NULL,
-    source_id TEXT NOT NULL REFERENCES source(id),
-    PRIMARY KEY(special_item_id, event_id)
-);
-CREATE INDEX IF NOT EXISTS special_event_by_item_position
-    ON special_event(special_item_id, position);
-
-CREATE TABLE IF NOT EXISTS special_institution (
-    special_item_id TEXT NOT NULL REFERENCES special_item(id) ON DELETE CASCADE,
-    institution_id TEXT NOT NULL REFERENCES institution(id) ON DELETE CASCADE,
-    relation TEXT NOT NULL,
-    position INTEGER NOT NULL,
-    source_id TEXT NOT NULL REFERENCES source(id),
-    PRIMARY KEY(special_item_id, institution_id)
-);
-CREATE INDEX IF NOT EXISTS special_institution_by_item_position
-    ON special_institution(special_item_id, position);
 
 -- 维基百科条目全文（hf-mirror 数据包提取，t2s 规范化）。
 CREATE TABLE IF NOT EXISTS person_wiki (

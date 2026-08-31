@@ -16,7 +16,6 @@ import com.ljyss.data.model.PersonSection
 import com.ljyss.data.model.RelationshipType
 import com.ljyss.data.model.Reign
 import com.ljyss.data.model.RelatedEvent
-import com.ljyss.data.model.RelatedInstitution
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.data.model.SpecialSection
@@ -192,23 +191,6 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
-                val institutionEvents = database.rows(
-                    """
-                    SELECT ie.institution_id, e.id, e.year, e.title, ie.relation
-                    FROM institution_event AS ie
-                    JOIN event AS e ON e.id = ie.event_id
-                    ORDER BY ie.institution_id, ie.position
-                    """.trimIndent(),
-                ).groupBy { it.required("institution_id") }.mapValues { (_, rows) ->
-                    rows.map {
-                        RelatedEvent(
-                            id = it.required("id"),
-                            year = it.int("year"),
-                            title = it.required("title"),
-                            relation = it.required("relation"),
-                        )
-                    }
-                }
                 val specialSections = database.rows(
                     "SELECT special_item_id, section_key, title, content, position FROM special_section ORDER BY special_item_id, position"
                 ).groupBy { it.required("special_item_id") }.mapValues { (_, rows) ->
@@ -235,40 +217,6 @@ class BundledMingRepository private constructor(
                             name = it.required("name"),
                             title = it.required("title"),
                             role = it.required("role"),
-                        )
-                    }
-                }
-                val specialEvents = database.rows(
-                    """
-                    SELECT se.special_item_id, e.id, e.year, e.title, se.relation
-                    FROM special_event AS se
-                    JOIN event AS e ON e.id = se.event_id
-                    ORDER BY se.special_item_id, se.position
-                    """.trimIndent(),
-                ).groupBy { it.required("special_item_id") }.mapValues { (_, rows) ->
-                    rows.map {
-                        RelatedEvent(
-                            id = it.required("id"),
-                            year = it.int("year"),
-                            title = it.required("title"),
-                            relation = it.required("relation"),
-                        )
-                    }
-                }
-                val specialInstitutions = database.rows(
-                    """
-                    SELECT si.special_item_id, i.id, i.name, i.category, si.relation
-                    FROM special_institution AS si
-                    JOIN institution AS i ON i.id = si.institution_id
-                    ORDER BY si.special_item_id, si.position
-                    """.trimIndent(),
-                ).groupBy { it.required("special_item_id") }.mapValues { (_, rows) ->
-                    rows.map {
-                        RelatedInstitution(
-                            id = it.required("id"),
-                            name = it.required("name"),
-                            category = it.required("category"),
-                            relation = it.required("relation"),
                         )
                     }
                 }
@@ -313,7 +261,6 @@ class BundledMingRepository private constructor(
                             },
                             sections = institutionSections[id].orEmpty(),
                             people = institutionPeople[id].orEmpty(),
-                            events = institutionEvents[id].orEmpty(),
                         )
                     },
                     specialData = database.rows(
@@ -328,8 +275,6 @@ class BundledMingRepository private constructor(
                             description = row.required("description"),
                             sections = specialSections[id].orEmpty(),
                             people = specialPeople[id].orEmpty(),
-                            events = specialEvents[id].orEmpty(),
-                            institutions = specialInstitutions[id].orEmpty(),
                         )
                     },
                 )

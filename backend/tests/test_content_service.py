@@ -270,14 +270,6 @@ class ContentServiceTest(unittest.TestCase):
         self.assertEqual(["duty", "structure", "operation", "evolution"], [item["section_key"] for item in cabinet["sections"]])
         self.assertIn("杨士奇", {item["name"] for item in cabinet["people"]})
         self.assertIn("京军三大营", {item["name"] for item in institutions.values()})
-        self.assertTrue(institutions["jinyiwei"]["events"])
-        self.assertEqual("hongwu-jinyiwei", institutions["jinyiwei"]["events"][0]["id"])
-
-    def test_special_details_expose_cross_links_without_duplicating_institution_entries(self):
-        specials = {item["id"]: item for item in bootstrap_content()["specials"]}
-        code = specials["great-ming-code"]
-        self.assertEqual("hongwu-law", code["events"][0]["id"])
-        self.assertEqual("大理寺与三法司", code["institutions"][0]["name"])
 
     def test_emperors_have_no_minister_or_general_relations(self):
         from app.database import connect
