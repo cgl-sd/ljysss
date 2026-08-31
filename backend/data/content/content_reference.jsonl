@@ -3200,6 +3200,8 @@
 {"content_id": "zhudi", "content_type": "person", "id": 163, "locator": "朱棣", "note": "用于人工复核", "position": 1, "section_key": "life", "title": "中文维基百科检索", "url": "https://zh.wikipedia.org/wiki/%E6%9C%B1%E6%A3%A3"}
 {"content_id": "zhudi", "content_type": "person", "id": 164, "locator": "朱棣", "note": "用于人工复核", "position": 2, "section_key": "life", "title": "百度百科检索", "url": "https://baike.baidu.com/search/word?word=%E6%9C%B1%E6%A3%A3"}
 {"content_id": "zhudi", "content_type": "person", "id": 5645, "locator": "明史卷005", "note": "帝王出处取自本纪", "position": 3, "section_key": "life", "title": "《明史》本纪·成祖", "url": ""}
+{"content_id": "lidingguo", "content_type": "person", "id": 5968, "locator": "李定国", "note": "人物身份与生平核对", "position": 0, "section_key": "life", "title": "中文维基百科条目", "url": "https://zh.wikipedia.org/wiki/%E6%9D%8E%E5%AE%9A%E5%9B%BD"}
+{"content_id": "lidingguo", "content_type": "person", "id": 5969, "locator": "明史卷120", "note": "南明事迹与两蹶名王关联核对", "position": 1, "section_key": "life", "title": "《明史》卷120", "url": "https://zh.wikisource.org/zh-hans/%E6%98%8E%E5%8F%B2/%E5%8D%B7120"}
 {"content_id": "zhudianyang", "content_type": "person", "id": 1426, "locator": "朱典楧", "note": "官方数据包提取，CC BY-SA", "position": 0, "section_key": "life", "title": "中文维基百科条目", "url": "https://zh.wikipedia.org/wiki/朱典楧"}
 {"content_id": "zhudianyang", "content_type": "person", "id": 1427, "locator": "朱典楧", "note": "用于人工复核", "position": 1, "section_key": "life", "title": "百度百科检索", "url": "https://baike.baidu.com/item/%E6%9C%B1%E5%85%B8%E6%A5%A7"}
 {"content_id": "zhudong", "content_type": "person", "id": 1428, "locator": "朱栋", "note": "官方数据包提取，CC BY-SA", "position": 0, "section_key": "life", "title": "中文维基百科条目", "url": "https://zh.wikipedia.org/wiki/朱棟"}

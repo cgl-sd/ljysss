@@ -483,11 +483,11 @@
 {"content": "关键人物包括朱由榔。", "event_id": "nanming-yongli", "position": 2, "section_key": "people", "title": "相关人物"}
 {"content": "永历政权成为此后持续时间最长的南明政权。", "event_id": "nanming-yongli", "position": 3, "section_key": "result", "title": "结果"}
 {"content": "西南与西南沿海的军政力量围绕永历名义重新组织。", "event_id": "nanming-yongli", "position": 4, "section_key": "impact", "title": "影响"}
-{"content": "永历朝依托西南军队继续与清军作战。", "event_id": "nanming-li-dingguo", "position": 0, "section_key": "background", "title": "背景"}
-{"content": "李定国在桂林、衡阳等地作战，先后击败清军重要将领。", "event_id": "nanming-li-dingguo", "position": 1, "section_key": "course", "title": "经过"}
-{"content": "关键人物包括朱由榔。", "event_id": "nanming-li-dingguo", "position": 2, "section_key": "people", "title": "相关人物"}
-{"content": "南明军队取得阶段性重大胜利。", "event_id": "nanming-li-dingguo", "position": 3, "section_key": "result", "title": "结果"}
-{"content": "胜利一度振奋抗清力量，但未能扭转整体战略劣势。", "event_id": "nanming-li-dingguo", "position": 4, "section_key": "impact", "title": "影响"}
+{"content": "永历政权在西南立足后，仍需以战果维系抗清军队与地方的支持。", "event_id": "nanming-li-dingguo", "position": 0, "section_key": "background", "title": "背景"}
+{"content": "李定国率军先后攻克桂林、衡阳等地，迫使清定南王孔有德自尽，并在衡州战胜敬谨亲王尼堪所部。", "event_id": "nanming-li-dingguo", "position": 1, "section_key": "course", "title": "经过"}
+{"content": "李定国统率南明军作战；朱由榔为永历政权君主，其名义为各路抗清军所奉。", "event_id": "nanming-li-dingguo", "position": 2, "section_key": "people", "title": "相关人物"}
+{"content": "清军两名重要统帅相继败亡，南明军一度收复湘桂部分州县。", "event_id": "nanming-li-dingguo", "position": 3, "section_key": "result", "title": "结果"}
+{"content": "胜利显著振奋南明军民，但其兵源、财赋与各部协同仍不足以扭转整体战局。", "event_id": "nanming-li-dingguo", "position": 4, "section_key": "impact", "title": "影响"}
 {"content": "清军进入西南后，永历朝失去主要根据地。", "event_id": "nanming-burma", "position": 0, "section_key": "background", "title": "背景"}
 {"content": "朱由榔率随从进入缅甸避难。", "event_id": "nanming-burma", "position": 1, "section_key": "course", "title": "经过"}
 {"content": "关键人物包括朱由榔。", "event_id": "nanming-burma", "position": 2, "section_key": "people", "title": "相关人物"}

@@ -153,6 +153,39 @@ class ContentServiceTest(unittest.TestCase):
             self.assertTrue(display_names)
             self.assertEqual(display_names, by_event.get(event_id, set()))
 
+    def test_formal_event_participants_are_named_in_event_detail(self):
+        """每一条可点击的人物关联都必须能在事件正文中找到依据。"""
+        from app.database import connect
+
+        with connect() as database:
+            missing = database.execute(
+                """
+                WITH event_detail AS (
+                    SELECT event_id, GROUP_CONCAT(content, char(10)) AS body
+                    FROM event_section
+                    GROUP BY event_id
+                )
+                SELECT e.id, e.title, p.name
+                FROM event_participant AS ep
+                JOIN event AS e ON e.id = ep.event_id
+                JOIN person AS p ON p.id = ep.person_id
+                JOIN event_detail AS d ON d.event_id = e.id
+                WHERE instr(d.body, p.name) = 0
+                ORDER BY e.id, p.name
+                """
+            ).fetchall()
+        self.assertEqual([], missing, "关联人物必须在事件的五个阅读分栏中具名出现")
+
+    def test_major_event_people_are_bidirectionally_reachable(self):
+        from app.main import get_event
+
+        event = get_event("nanming-li-dingguo")
+        people = {person["id"] for person in event["people"]}
+        self.assertEqual({"zhuyoulang", "lidingguo"}, people)
+        for person_id in people:
+            linked_event_ids = {item["id"] for item in get_person(person_id)["events"]}
+            self.assertIn(event["id"], linked_event_ids)
+
     def test_every_person_has_a_factual_biography(self):
         from app.database import connect
 
