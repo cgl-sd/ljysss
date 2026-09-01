@@ -31,6 +31,6 @@
 ## 发布前检查（2026-09-01）
 
 - release 构建启用 R8 代码压缩与资源收缩；动态查找的图片资源（画像、机构、典章、手册插绘）由 `res/raw/keep.xml` 显式保留，资源名完整进入资源表。
-- 打包库按项目要求全量打包 `backend/data/ming_history.sqlite3`（28 张表），不做阅读端裁剪；阅读端代码只查询其实际使用的表。
+- 打包库为阅读端发布库：`backend/scripts/build_release_database.py` 从编辑库投影 19 张阅读端表（27M → 19M，索引与触发器保留，外键校验通过），编辑专用表（维基原文、CBDB、明史语料、研究状态、引用登记、编年、亲属名录）不进 APK。
 - 清理：`tmp/`、`backend/data/staging/`、AI 出图原始 PNG 底图、6 张未引用 WebP（special_cover_*/special_artifact/palace/system）、根 `.DS_Store`、`.pytest_cache`。
 - 验证：`assembleDebug`/`assembleRelease` 通过；lint 0 错误；后端 pytest 96 通过；release APK（R8）安装到模拟器冒烟——首页、穿越手册列表与详情插绘、人物绢本画像均渲染正常。release APK 体积 24M（debug 46M）。
