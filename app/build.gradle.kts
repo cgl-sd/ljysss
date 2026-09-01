@@ -85,20 +85,9 @@ sourceSets {
 }
 
 // 发布内容库的真相仍是 backend/data/content/*.jsonl；SQLite 由导入流程生成。
-// 打包时先投影出阅读端发布库（剔除编辑专用表，减小 APK 体积），再作为
-// asset 打入，首次启动复制到手机私有目录。
-val buildReleaseDatabase by tasks.registering(Exec::class) {
-    commandLine(
-        "python3",
-        rootProject.file("backend/scripts/build_release_database.py").absolutePath,
-        rootProject.file("backend/data/ming_history.sqlite3").absolutePath,
-        layout.buildDirectory.file("generated/releaseDatabase/ming_history.sqlite3").get().asFile.absolutePath,
-    )
-}
-
+// 全量数据库随 APK 打包，首次启动复制到手机私有目录。
 val packageContentDatabase by tasks.registering(Sync::class) {
-    dependsOn(buildReleaseDatabase)
-    from(layout.buildDirectory.dir("generated/releaseDatabase"))
+    from(rootProject.layout.projectDirectory.file("backend/data/ming_history.sqlite3"))
     into(layout.buildDirectory.dir("generated/contentDatabaseAssets"))
     rename { "ming_history.sqlite3" }
 }
