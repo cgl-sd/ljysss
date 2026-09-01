@@ -60,7 +60,7 @@ import com.ljyss.ui.theme.LineGold
 import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.theme.XuanPaper
-import com.ljyss.ui.theme.两京一十三省Theme
+import com.ljyss.ui.theme.MingAppTheme
 import com.ljyss.ui.timeline.TimelineScreen
 import com.ljyss.ui.world.WorldScreen
 
@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            两京一十三省Theme {
+            MingAppTheme {
                 val currentRepository = repository
                 if (currentRepository != null) {
                     TwoCapitalsApp(repository = currentRepository)
@@ -173,7 +173,9 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                             personReturnSection = null
                             selectedSection = destination.sectionIndex
                         }
-                    searchDestination = destination.takeIf { it.reignTitle != null || it.worldSection != null }
+                    searchDestination = destination.takeIf {
+                        it.reignTitle != null || it.worldSection != null || it.guideId != null
+                    }
                 },
             )
         } else {
@@ -207,7 +209,13 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                         onSearch = { searchOpen = true },
                         onOpenPerson = ::openPerson,
                     )
-                    else -> ProfileScreen(innerPadding, onSearch = { searchOpen = true })
+                    else -> ProfileScreen(
+                        repository = repository,
+                        contentPadding = innerPadding,
+                        searchDestination = searchDestination,
+                        onSearchDestinationConsumed = { searchDestination = null },
+                        onSearch = { searchOpen = true },
+                    )
                 }
             }
         }

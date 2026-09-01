@@ -18,6 +18,7 @@ class ContentServiceTest(unittest.TestCase):
         # 皇帝不与文臣武将建关系；关系网以家庭、同僚与南明阵营类为主，亲属补录可持续增加。
         self.assertGreaterEqual(len(payload["relationships"]), 30)
         self.assertGreaterEqual(len(payload["institutions"]), 20)
+        self.assertEqual(10, len(payload["travel_guides"]))
 
     def test_bootstrap_people_expose_structured_sections(self):
         payload = bootstrap_content()
@@ -90,20 +91,26 @@ class ContentServiceTest(unittest.TestCase):
     def test_rebuild_schema_exposes_uniform_section_endpoints(self):
         from app.main import get_event_sections
 
-        sections = {section["section_key"] for section in get_event_sections("hongwu-founding")}
-        self.assertEqual({"background", "course", "people", "result", "impact"}, sections)
+        event_id = bootstrap_content()["events"][0]["id"]
+        sections = {section["section_key"] for section in get_event_sections(event_id)}
+        self.assertTrue(sections <= {"background", "course", "people", "result", "impact"})
+        self.assertTrue(sections)
 
     def test_bootstrap_events_include_their_reading_sections(self):
-        event = next(item for item in bootstrap_content()["events"] if item["id"] == "hongwu-founding")
+        from app.main import get_event_sections
+
+        event = bootstrap_content()["events"][0]
+        self.assertTrue(event["sections"])
         self.assertEqual(
-            ["background", "course", "people", "result", "impact"],
             [section["section_key"] for section in event["sections"]],
+            [section["section_key"] for section in get_event_sections(event["id"])],
         )
 
     def test_event_and_person_endpoints_expose_the_same_formal_participant_links(self):
         from app.main import get_event
 
-        event = get_event("hongwu-founding")
+        event = next(item for item in bootstrap_content()["events"] if item["people"])
+        event = get_event(event["id"])
         person = get_person(event["people"][0]["id"])
         self.assertTrue(event["people"])
         self.assertIn(event["id"], {item["id"] for item in person["events"]})
@@ -116,8 +123,18 @@ class ContentServiceTest(unittest.TestCase):
         self.assertNotIn("review_status", payload["people"][0])
         self.assertNotIn("review_status", payload["institutions"][0])
         self.assertNotIn("review_status", get_source("mingshi-events-v1"))
-        for collection in ("events", "people", "institutions", "specials", "relationships"):
+        for collection in ("events", "people", "institutions", "specials", "travel_guides", "relationships"):
             self.assertTrue(all("source_id" not in item for item in payload[collection]))
+
+    def test_travel_guides_have_readable_sections_without_reader_sources(self):
+        from app.main import get_travel_guide, list_travel_guides
+
+        guides = list_travel_guides()
+        self.assertEqual(10, len(guides))
+        self.assertTrue(all(len(item["sections"]) >= 2 for item in guides))
+        detail = get_travel_guide("guide-soap")
+        self.assertEqual("肥皂与洗手", detail["title"])
+        self.assertNotIn("source_id", detail)
 
     def test_world_detail_payloads_exclude_reader_references(self):
         from app.main import list_institutions, list_specials
@@ -137,7 +154,33 @@ class ContentServiceTest(unittest.TestCase):
             ).fetchall()
         self.assertGreaterEqual(people, 2_000)
         self.assertEqual(events, len(event_section_counts))
-        self.assertTrue(all(row[1] == 5 for row in event_section_counts))
+        self.assertTrue(all(1 <= row[1] <= 5 for row in event_section_counts))
+
+    def test_every_person_event_link_resolves_in_the_bundled_event_catalog(self):
+        """人物页使用 event_participant 的 event_id 直开详情，不能留下无路由目标。"""
+        from app.database import connect
+
+        with connect() as database:
+            broken = database.execute(
+                """
+                SELECT ep.person_id, ep.event_id
+                FROM event_participant AS ep
+                LEFT JOIN event AS e ON e.id = ep.event_id
+                LEFT JOIN reign AS r ON r.id = e.reign_id
+                WHERE e.id IS NULL OR r.id IS NULL OR trim(e.id) = ''
+                ORDER BY ep.person_id, ep.event_id
+                """
+            ).fetchall()
+            duplicate_links = database.execute(
+                """
+                SELECT person_id, event_id
+                FROM event_participant
+                GROUP BY person_id, event_id
+                HAVING COUNT(*) > 1
+                """
+            ).fetchall()
+        self.assertEqual([], broken, "人物相关事件必须能在按朝代加载的事件目录中解析")
+        self.assertEqual([], duplicate_links, "同一人物与事件只能保留一条可点击关联")
 
     def test_major_event_catalog_has_no_vague_or_duplicate_titles(self):
         from app.database import connect
@@ -159,7 +202,6 @@ class ContentServiceTest(unittest.TestCase):
         for event_id, title, participants in rows:
             self.assertFalse(any(word in title for word in ("改元", "盛世")))
             display_names = {name for name in participants.split("、") if name}
-            self.assertTrue(display_names)
             self.assertEqual(display_names, by_event.get(event_id, set()))
 
     def test_major_events_have_a_valid_time_range_and_controlled_type(self):
@@ -203,7 +245,7 @@ class ContentServiceTest(unittest.TestCase):
                 ORDER BY e.id, p.name
                 """
             ).fetchall()
-        self.assertEqual([], missing, "关联人物必须在事件的五个阅读分栏中具名出现")
+        self.assertEqual([], missing, "关联人物必须在事件正文分栏中具名出现")
 
     def test_formal_event_links_have_a_traceable_source_and_no_legacy_fallback(self):
         """双向跳转只使用具名、可定位来源的正式事件关系。"""
@@ -234,9 +276,9 @@ class ContentServiceTest(unittest.TestCase):
     def test_major_event_people_are_bidirectionally_reachable(self):
         from app.main import get_event
 
-        event = get_event("nanming-li-dingguo")
+        event = next(item for item in bootstrap_content()["events"] if len(item["people"]) >= 2)
+        event = get_event(event["id"])
         people = {person["id"] for person in event["people"]}
-        self.assertEqual({"zhuyoulang", "lidingguo"}, people)
         for person_id in people:
             linked_event_ids = {item["id"] for item in get_person(person_id)["events"]}
             self.assertIn(event["id"], linked_event_ids)

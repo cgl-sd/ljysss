@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -78,20 +79,36 @@ internal fun PeopleScreen(
     var selectedRelatedEventId by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
-    var returnListOffset by rememberSaveable { mutableStateOf(0) }
+    var returnListOffset by rememberSaveable { mutableIntStateOf(0) }
     val reigns = remember(repository) { repository.reigns() }
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
+    // 相关事件使用稳定 ID 索引；同时登记年份+标题回退键，兼容旧内容包中的空 ID。
+    val eventByKey = remember(allEvents) {
+        buildMap {
+            allEvents.forEach { event ->
+                if (event.id.isNotBlank()) put(event.id, event)
+                putIfAbsent("${event.year}:${event.title}", event)
+            }
+        }
+    }
     // A root destination is rendered immediately; the local selection is filled by the effect
     // below for subsequent profile-to-profile navigation and back-stack handling.
     val focusedPerson = focusPersonId?.let { id -> allPeople.firstOrNull { it.id == id } }
     val selectedPerson = focusedPerson ?: allPeople.firstOrNull { it.name == selectedPersonName }
-    val selectedRelatedEvent = allEvents.firstOrNull { it.id == selectedRelatedEventId }
+    val selectedRelatedEvent = selectedRelatedEventId?.let { eventByKey[it] }
     val peopleListState = rememberLazyListState()
+    // 列表与人物详情各自维护滚动位置。否则从一位人物的长传记跳到另一人时，
+    // 新人物会错误地继承旧页面的中段位置。
+    val profileListState = rememberLazyListState()
     val eventDetailListState = rememberLazyListState()
+    LaunchedEffect(selectedRelatedEventId) {
+        if (selectedRelatedEventId != null) eventDetailListState.scrollToItem(0)
+    }
     var profileDetail by remember(selectedPerson?.id) { mutableStateOf(selectedPerson) }
     LaunchedEffect(selectedPerson?.id) {
+        if (selectedPerson != null) profileListState.scrollToItem(0)
         val person = selectedPerson
         if (person != null && profileDetail?.sections.isNullOrEmpty()) {
             val full = withContext(Dispatchers.IO) { repository.personDetail(person.id) }
@@ -145,7 +162,9 @@ internal fun PeopleScreen(
     }
 
     fun openRelatedEvent(eventId: String) {
-        if (allEvents.any { it.id == eventId }) {
+        // 不再用 any 检查后静默丢弃点击；正式库中的 ID 由导入校验保证可解析。
+        // 空 ID 的旧数据通过回退键仍可打开对应事件详情。
+        if (eventId.isNotBlank()) {
             selectedRelatedEventId = eventId
         }
     }
@@ -195,15 +214,23 @@ internal fun PeopleScreen(
                 }
             }
         } else {
-            MingList(contentPadding, state = peopleListState) {
+            MingList(contentPadding, state = if (selectedPerson != null) profileListState else peopleListState) {
                 if (selectedPerson != null) {
+                    val profile = profileDetail ?: selectedPerson
                     item {
                         PersonProfile(
-                            person = profileDetail ?: selectedPerson,
+                            person = profile,
                             relations = relations,
                             onOpenPerson = ::openRelatedPerson,
-                            onOpenEvent = ::openRelatedEvent,
                         )
+                    }
+                    if (profile.relatedEvents.isNotEmpty()) {
+                        item {
+                            PersonRelatedEventsPanel(
+                                events = profile.relatedEvents,
+                                onOpenEvent = ::openRelatedEvent,
+                            )
+                        }
                     }
                 } else {
                     item { MingMasthead(onSearch) }

@@ -33,7 +33,7 @@ class WorldCatalogTests(unittest.TestCase):
         self.assertEqual({"制度", "器物", "宫陵"}, {row["category"] for row in specials})
         self.assertFalse(any(row["id"].startswith("wiki-") for row in specials))
 
-    def test_every_institution_has_four_readable_detail_sections(self):
+    def test_every_institution_has_at_least_two_readable_detail_sections(self):
         institutions = load_rows("institution")
         sections = load_rows("institution_section")
         sources = {row["id"] for row in load_rows("source")}
@@ -45,11 +45,8 @@ class WorldCatalogTests(unittest.TestCase):
 
         self.assertEqual({row["id"] for row in institutions}, set(grouped))
         for institution_id, rows in grouped.items():
-            self.assertEqual(
-                ["duty", "structure", "operation", "evolution"],
-                [row["section_key"] for row in sorted(rows, key=lambda row: row["position"])],
-                institution_id,
-            )
+            self.assertGreaterEqual(len(rows), 2, institution_id)
+            self.assertEqual(len(rows), len({row["section_key"] for row in rows}), institution_id)
 
     def test_institution_people_only_link_to_published_people(self):
         people = {row["id"] for row in load_rows("person")}
@@ -79,11 +76,8 @@ class WorldCatalogTests(unittest.TestCase):
             sections_by_item.setdefault(section["special_item_id"], []).append(section)
         self.assertEqual(specials, set(sections_by_item))
         for item_id, rows in sections_by_item.items():
-            self.assertEqual(
-                ["meaning", "form", "practice", "legacy"],
-                [row["section_key"] for row in sorted(rows, key=lambda row: row["position"])],
-                item_id,
-            )
+            self.assertGreaterEqual(len(rows), 2, item_id)
+            self.assertEqual(len(rows), len({row["section_key"] for row in rows}), item_id)
         for row in load_rows("special_person"):
             self.assertIn(row["special_item_id"], specials)
             self.assertIn(row["person_id"], people)

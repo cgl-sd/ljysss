@@ -39,6 +39,8 @@ CONTENT_TABLES = [
     "special_item",
     "special_section",
     "special_person",
+    "travel_guide",
+    "travel_guide_section",
     "person_mingshi",
     "person_wiki",
     "person_cbdb",
@@ -63,6 +65,8 @@ CONTENT_ORDER = {
     "institution_person": ("institution_id", "position"),
     "special_section": ("special_item_id", "position"),
     "special_person": ("special_item_id", "position"),
+    "travel_guide": ("position",),
+    "travel_guide_section": ("travel_guide_id", "position"),
 }
 
 # 人物分类和详情栏目都是内容模型的一部分，而不是前端散落的字面量。person 表仍保留
@@ -385,6 +389,31 @@ CREATE TABLE IF NOT EXISTS special_person (
 );
 CREATE INDEX IF NOT EXISTS special_person_by_item_position
     ON special_person(special_item_id, position);
+
+-- “我的”页的穿越手册：以可复用的生活、农业与工坊知识为主题，和明代史料目录分开保存。
+CREATE TABLE IF NOT EXISTS travel_guide (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL,
+    title TEXT NOT NULL,
+    subtitle TEXT NOT NULL,
+    description TEXT NOT NULL,
+    image_asset TEXT NOT NULL DEFAULT '',
+    position INTEGER NOT NULL,
+    source_id TEXT NOT NULL REFERENCES source(id)
+);
+CREATE INDEX IF NOT EXISTS travel_guide_by_position ON travel_guide(position);
+
+CREATE TABLE IF NOT EXISTS travel_guide_section (
+    travel_guide_id TEXT NOT NULL REFERENCES travel_guide(id) ON DELETE CASCADE,
+    section_key TEXT NOT NULL,
+    title TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    source_id TEXT NOT NULL REFERENCES source(id),
+    PRIMARY KEY(travel_guide_id, section_key)
+);
+CREATE INDEX IF NOT EXISTS travel_guide_section_by_guide_position
+    ON travel_guide_section(travel_guide_id, position);
 
 -- 维基百科条目全文（hf-mirror 数据包提取，t2s 规范化）。
 CREATE TABLE IF NOT EXISTS person_wiki (

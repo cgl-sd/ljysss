@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -13,14 +15,53 @@ android {
         applicationId = "com.ljyss"
         minSdk = 24
         targetSdk = 37
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 10_000
+        versionName = "1.0.0"
+
+        // 内容库独立于 App 版本发布。将 SQLite 内容指纹编入 BuildConfig，
+        // 让设备上的私有副本在数据更新后自动替换，即使 versionCode 没有变化。
+        val contentDatabase = rootProject.file("backend/data/ming_history.sqlite3")
+        val contentDatabaseRevision = if (contentDatabase.isFile) {
+            MessageDigest.getInstance("SHA-256")
+                .digest(contentDatabase.readBytes())
+                .joinToString("") { byte -> "%02x".format(byte) }
+        } else {
+            "missing"
+        }
+        buildConfigField("String", "CONTENT_DATABASE_REVISION", "\"$contentDatabaseRevision\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val releaseStorePath = providers.gradleProperty("LJYSS_RELEASE_STORE_FILE")
+        .orElse(providers.environmentVariable("LJYSS_RELEASE_STORE_FILE")).orNull
+    val releaseStorePassword = providers.gradleProperty("LJYSS_RELEASE_STORE_PASSWORD")
+        .orElse(providers.environmentVariable("LJYSS_RELEASE_STORE_PASSWORD")).orNull
+    val releaseKeyAlias = providers.gradleProperty("LJYSS_RELEASE_KEY_ALIAS")
+        .orElse(providers.environmentVariable("LJYSS_RELEASE_KEY_ALIAS")).orNull
+    val releaseKeyPassword = providers.gradleProperty("LJYSS_RELEASE_KEY_PASSWORD")
+        .orElse(providers.environmentVariable("LJYSS_RELEASE_KEY_PASSWORD")).orNull
+    val hasReleaseSigning = listOf(
+        releaseStorePath,
+        releaseStorePassword,
+        releaseKeyAlias,
+        releaseKeyPassword,
+    ).all { !it.isNullOrBlank() }
+
+    signingConfigs {
+        create("release") {
+            if (hasReleaseSigning) {
+                storeFile = file(releaseStorePath!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = false
             }
@@ -35,8 +76,10 @@ android {
         buildConfig = true
     }
 
-    sourceSets {
-    getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/contentDatabaseAssets").get().asFile)
+sourceSets {
+    getByName("main").assets.directories.add(
+        layout.buildDirectory.dir("generated/contentDatabaseAssets").get().asFile.path,
+    )
     }
 }
 
@@ -50,15 +93,15 @@ val packageContentDatabase by tasks.registering(Sync::class) {
 
 tasks.configureEach {
     val packagesAppAssets = name.startsWith("merge") && name.endsWith("Assets")
-    val inspectsReleaseAssets = name == "generateReleaseLintVitalReportModel" ||
-        name == "lintVitalAnalyzeRelease"
-    if (packagesAppAssets || inspectsReleaseAssets) dependsOn(packageContentDatabase)
+    // Lint 也会读取 main assets；不声明依赖会在 Gradle 9 中成为构建错误。
+    val inspectsAssets = name.contains("lint", ignoreCase = true)
+    if (packagesAppAssets || inspectsAssets) dependsOn(packageContentDatabase)
 }
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)

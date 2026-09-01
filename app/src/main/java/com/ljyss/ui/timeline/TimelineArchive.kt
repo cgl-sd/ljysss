@@ -44,6 +44,7 @@ import com.ljyss.data.model.Reign
 import com.ljyss.domain.lunarMonthOrder
 import com.ljyss.domain.startYear
 import com.ljyss.domain.yearLabel
+import com.ljyss.ui.components.MingPersonLinks
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Indigo
 import com.ljyss.ui.theme.Ink
@@ -202,25 +203,9 @@ private fun EventRow(
                     lineHeight = 23.sp,
                 )
                 if (event.participants.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier.padding(top = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                         Text("相关人物", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
-                        event.participants.forEach { name ->
-                            Text(
-                                text = name,
-                                modifier = Modifier
-                                    .clip(CutCornerShape(4.dp))
-                                    .clickable { onOpenPerson(name) }
-                                    .padding(horizontal = 6.dp, vertical = 3.dp),
-                                color = Vermilion,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
+                        MingPersonLinks(event.participants, onOpenPerson)
                     }
                 }
                 if (event.consequence.isNotBlank()) {

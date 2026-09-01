@@ -1,19 +1,14 @@
 package com.ljyss.ui.people
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.model.HistoricalEvent
+import com.ljyss.ui.components.MingArticleSection
+import com.ljyss.ui.components.MingPersonLinks
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -71,32 +68,7 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             if (event.participants.isNotEmpty()) {
                 Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(7.dp),
-                ) {
-                    event.participants.forEach { name ->
-                        Surface(
-                            modifier = Modifier
-                                .clickable { onOpenPerson(name) }
-                                .clip(CutCornerShape(4.dp)),
-                            shape = CutCornerShape(4.dp),
-                            color = Vermilion.copy(alpha = 0.08f),
-                            border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
-                        ) {
-                            Text(
-                                name,
-                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
-                                color = Vermilion,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                    }
-                }
+                MingPersonLinks(event.participants, onOpenPerson)
             }
             if (event.sections.isEmpty()) {
                 event.consequence.takeIf { it.isNotBlank() }?.let { EventArticleSection("影响", it) }
@@ -107,7 +79,5 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
 
 @Composable
 private fun EventArticleSection(title: String, content: String) {
-    Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-    HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-    Text(content, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, lineHeight = 26.sp)
+    MingArticleSection(title, content)
 }

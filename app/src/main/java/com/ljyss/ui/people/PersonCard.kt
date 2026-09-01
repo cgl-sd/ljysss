@@ -1,5 +1,6 @@
 package com.ljyss.ui.people
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -26,17 +27,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ljyss.R
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
@@ -126,44 +128,14 @@ internal fun PersonCard(
 }
 
 @Composable
+@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 internal fun PersonPortrait(person: HistoricalPerson) {
-    val resource = when (person.portraitKey ?: person.name) {
-        "朱元璋" -> R.drawable.portrait_zhuyuanzhang
-        "朱允炆" -> R.drawable.portrait_zhuyunwen
-        "朱棣" -> R.drawable.portrait_zhudi
-        "朱瞻基" -> R.drawable.portrait_zhuzhanji
-        "朱标" -> R.drawable.portrait_zhubiao
-        "朱高炽" -> R.drawable.portrait_zhugaochi
-        "朱祁镇" -> R.drawable.portrait_zhuqizhen
-        "朱祁钰" -> R.drawable.portrait_zhuqiyu
-        "朱见深" -> R.drawable.portrait_zhujian
-        "朱祐樘" -> R.drawable.portrait_zhuyoutang
-        "朱厚照" -> R.drawable.portrait_zhuhouzhao
-        "朱厚熜" -> R.drawable.portrait_zhuhoucong
-        "朱载基" -> R.drawable.portrait_zhuzaiji
-        "朱载壑" -> R.drawable.portrait_zhuzaihe
-        "朱载坖" -> R.drawable.portrait_zhuzaihou
-        "朱翊钧" -> R.drawable.portrait_zhuyijun
-        "朱常洛" -> R.drawable.portrait_zhuchangluo
-        "朱聿键" -> R.drawable.portrait_zhuyujian
-        "朱由校" -> R.drawable.portrait_zhuyouxiao
-        "朱聿鐭" -> R.drawable.portrait_zhuyuyu
-        "朱由崧" -> R.drawable.portrait_zhuyousong
-        "朱常淓" -> R.drawable.portrait_zhuchangfang
-        "朱由检" -> R.drawable.portrait_zhuyoujian
-        "朱以海" -> R.drawable.portrait_zhuyihai
-        "朱由榔" -> R.drawable.portrait_zhuyoulang
-        "朱慈烺" -> R.drawable.portrait_zhucilang
-        "刘基" -> R.drawable.portrait_liuji
-        "徐达" -> R.drawable.portrait_xuda
-        "于谦" -> R.drawable.portrait_yuqian
-        "张居正" -> R.drawable.portrait_zhangjuzheng
-        "郑和" -> R.drawable.portrait_zhenghe
-        "戚继光" -> R.drawable.portrait_qijiguang
-        "秦良玉" -> R.drawable.portrait_qinliangyu
-        "孙传庭" -> R.drawable.portrait_sunchuanting
-        "李时珍" -> R.drawable.portrait_lishizhen
-        else -> null
+    val context = LocalContext.current
+    val resource = remember(person.id, context.packageName) {
+        val normalizedId = portraitResourceSuffix(person.id)
+        context.resources
+            .getIdentifier("portrait_$normalizedId", "drawable", context.packageName)
+            .takeIf { it != 0 }
     }
     Box(
         modifier = Modifier
@@ -187,6 +159,21 @@ internal fun PersonPortrait(person: HistoricalPerson) {
                 Icon(Icons.Outlined.PersonOutline, null, modifier = Modifier.size(52.dp), tint = Brass)
                 Text("待补图像", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 12.sp)
             }
+        }
+    }
+}
+
+/**
+ * Android drawable names must be lowercase, while a small number of historical data IDs use
+ * an uppercase suffix to distinguish same-pinyin people.  Escaping rather than lowercasing
+ * keeps every portrait key one-to-one with the database person ID.
+ */
+private fun portraitResourceSuffix(personId: String): String = buildString {
+    personId.forEach { character ->
+        when {
+            character in 'a'..'z' || character in '0'..'9' -> append(character)
+            character in 'A'..'Z' -> append("_u_").append(character.lowercaseChar()).append('_')
+            character == '-' -> append("_d_")
         }
     }
 }

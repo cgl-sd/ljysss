@@ -3,6 +3,7 @@ package com.ljyss.data
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import androidx.core.content.edit
 import com.ljyss.BuildConfig
 import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.EventSection
@@ -21,6 +22,8 @@ import com.ljyss.data.model.RelatedEvent
 import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.data.model.SpecialSection
+import com.ljyss.data.model.TravelGuide
+import com.ljyss.data.model.TravelGuideSection
 import java.io.File
 
 /**
@@ -33,6 +36,7 @@ class BundledMingRepository private constructor(
     private val relationData: List<PersonRelation>,
     private val institutionData: List<Institution>,
     private val specialData: List<SpecialItem>,
+    private val travelGuideData: List<TravelGuide>,
 ) : MingRepository {
     private val personById = peopleData.associateBy { it.id }
 
@@ -43,6 +47,7 @@ class BundledMingRepository private constructor(
     override fun institutions(): List<Institution> = institutionData
     override fun personDetail(id: String): HistoricalPerson? = personById[id]
     override fun specialItems(): List<SpecialItem> = specialData
+    override fun travelGuides(): List<TravelGuide> = travelGuideData
     companion object {
         private const val AssetName = "ming_history.sqlite3"
         private const val Preferences = "content_library"
@@ -223,6 +228,18 @@ class BundledMingRepository private constructor(
                         )
                     }
                 }
+                val travelGuideSections = database.rows(
+                    "SELECT travel_guide_id, section_key, title, content, position FROM travel_guide_section ORDER BY travel_guide_id, position"
+                ).groupBy { it.required("travel_guide_id") }.mapValues { (_, rows) ->
+                    rows.map {
+                        TravelGuideSection(
+                            key = it.required("section_key"),
+                            title = it.required("title"),
+                            content = it.required("content"),
+                            position = it.int("position"),
+                        )
+                    }
+                }
                 return BundledMingRepository(
                     reignData = reigns,
                     peopleData = people,
@@ -285,6 +302,20 @@ class BundledMingRepository private constructor(
                             people = specialPeople[id].orEmpty(),
                         )
                     },
+                    travelGuideData = database.rows(
+                        "SELECT id, category, title, subtitle, description, image_asset FROM travel_guide ORDER BY position"
+                    ).map { row ->
+                        val id = row.required("id")
+                        TravelGuide(
+                            id = id,
+                            category = row.required("category"),
+                            title = row.required("title"),
+                            subtitle = row.required("subtitle"),
+                            description = row.required("description"),
+                            imageAsset = row.required("image_asset"),
+                            sections = travelGuideSections[id].orEmpty(),
+                        )
+                    },
                 )
             }
         }
@@ -301,7 +332,7 @@ class BundledMingRepository private constructor(
             check(temporary.length() > 1_000_000L) { "资料库文件不完整" }
             if (destination.exists()) check(destination.delete()) { "无法更新资料库" }
             check(temporary.renameTo(destination)) { "无法安装资料库" }
-            preferences.edit().putString(InstalledRevision, revision).apply()
+            preferences.edit { putString(InstalledRevision, revision) }
             return destination
         }
     }

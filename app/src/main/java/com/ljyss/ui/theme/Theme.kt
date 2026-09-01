@@ -43,7 +43,7 @@ private val MingDarkColors = darkColorScheme(
 )
 
 @Composable
-fun 两京一十三省Theme(
+fun MingAppTheme(
     darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {

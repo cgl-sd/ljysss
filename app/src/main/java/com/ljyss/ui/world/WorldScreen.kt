@@ -1,5 +1,6 @@
 package com.ljyss.ui.world
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -8,6 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,10 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
@@ -37,7 +38,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +60,8 @@ import com.ljyss.data.model.SpecialItem
 import com.ljyss.data.model.SpecialPerson
 import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
+import com.ljyss.ui.components.MingArticleSection
+import com.ljyss.ui.components.MingPersonLinks
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.components.Seal
 import com.ljyss.ui.search.SearchDestination
@@ -339,8 +341,17 @@ private val specialCategoryDefinitions = listOf(
     WorldCategoryGroup("宫陵", setOf("宫陵")),
 )
 
+/**
+ * 天下资料卡统一使用三比二的横幅画框。此前 74×68dp 的近方形缩略图会把资料画压得过矮，
+ * 也让不同条目看起来像在共用一个小图标；这里将列表和详情的画框规格集中管理。
+ */
+private val WorldCardImageWidth = 112.dp
+private val WorldCardImageHeight = 94.dp
+private val WorldDetailImageHeight = 220.dp
+
 /** 资源键由 JSONL 按条目写入；不再按分类复用一张含义不符的占位图。 */
 @Composable
+@SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 private fun WorldAssetImage(
     asset: String,
     contentDescription: String?,
@@ -424,7 +435,7 @@ private fun SpecialItemCard(item: SpecialItem, onOpen: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 82.dp)
+            .heightIn(min = 118.dp)
             .clickable(onClick = onOpen),
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.25.dp, LineGold),
@@ -440,8 +451,8 @@ private fun SpecialItemCard(item: SpecialItem, onOpen: () -> Unit) {
                 asset = item.imageAsset,
                 contentDescription = "${item.name}示意图",
                 modifier = Modifier
-                    .width(74.dp)
-                    .height(68.dp)
+                    .width(WorldCardImageWidth)
+                    .height(WorldCardImageHeight)
                     .clip(CutCornerShape(5.dp)),
                 contentScale = ContentScale.Crop,
             )
@@ -523,7 +534,7 @@ private fun SpecialCover(item: SpecialItem) {
         contentDescription = "${item.name}专题示意图",
         modifier = Modifier
             .fillMaxWidth()
-            .height(108.dp)
+            .height(WorldDetailImageHeight)
             .clip(CutCornerShape(7.dp)),
         contentScale = ContentScale.Crop,
     )
@@ -532,17 +543,7 @@ private fun SpecialCover(item: SpecialItem) {
 /** 机构、典章沿用事件详情页的无嵌套卡片正文：标题、分隔线和自然段连续阅读。 */
 @Composable
 private fun CatalogArticleSection(title: String, content: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        CatalogArticleHeading(title)
-        Text(
-            content,
-            color = InkSoft,
-            fontFamily = FontFamily.Serif,
-            fontSize = 15.sp,
-            lineHeight = 26.sp,
-            textAlign = TextAlign.Justify,
-        )
-    }
+    MingArticleSection(title, content)
 }
 
 @Composable
@@ -562,35 +563,7 @@ private fun SpecialTextSection(title: String, content: String) {
 private fun SpecialPeopleSection(people: List<SpecialPerson>, onOpenPerson: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         CatalogArticleHeading("相关人物")
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
-        ) {
-            people.forEach { person ->
-                Surface(
-                    modifier = Modifier
-                        .clip(CutCornerShape(4.dp))
-                        .clickable { onOpenPerson(person.name) },
-                    shape = CutCornerShape(4.dp),
-                    color = Vermilion.copy(alpha = 0.08f),
-                    border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp)) {
-                        Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                        if (person.title.isNotBlank() || person.role.isNotBlank()) {
-                            Text(
-                                listOf(person.title, person.role).filter { it.isNotBlank() }.joinToString(" · "),
-                                color = InkSoft,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        MingPersonLinks(people.map { it.name }, onOpenPerson)
     }
 }
 
@@ -599,7 +572,7 @@ private fun InstitutionCard(institution: Institution, onOpen: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 82.dp)
+            .heightIn(min = 118.dp)
             .clickable(onClick = onOpen),
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.25.dp, LineGold),
@@ -615,8 +588,8 @@ private fun InstitutionCard(institution: Institution, onOpen: () -> Unit) {
                 asset = institution.imageAsset,
                 contentDescription = "${institution.name}示意图",
                 modifier = Modifier
-                    .width(74.dp)
-                    .height(68.dp)
+                    .width(WorldCardImageWidth)
+                    .height(WorldCardImageHeight)
                     .clip(CutCornerShape(5.dp)),
                 contentScale = ContentScale.Crop,
             )
@@ -697,7 +670,7 @@ private fun InstitutionDetailScreen(
                         contentDescription = "${institution.name}示意图",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(108.dp)
+                            .height(WorldDetailImageHeight)
                             .clip(CutCornerShape(7.dp)),
                         contentScale = ContentScale.Crop,
                     )
@@ -729,6 +702,7 @@ private fun InstitutionTextSection(title: String, content: String) {
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun InstitutionPromotionGuide(tracks: List<InstitutionPromotionTrack>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         InstitutionTextSection(
@@ -738,14 +712,32 @@ private fun InstitutionPromotionGuide(tracks: List<InstitutionPromotionTrack>) {
         tracks.forEach { track ->
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(track.title, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    itemsIndexed(track.steps) { index, step ->
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    track.steps.forEachIndexed { index, step ->
+                        // 把节点和后继箭头作为一个不可拆分单元，换行只发生在节点边界。
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Surface(shape = CutCornerShape(4.dp), color = PaperShade, border = BorderStroke(1.dp, LineGold)) {
-                                Text(step, modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp), color = Ink, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                            Surface(
+                                modifier = Modifier.width(124.dp),
+                                shape = CutCornerShape(4.dp),
+                                color = PaperShade,
+                                border = BorderStroke(1.dp, LineGold),
+                            ) {
+                                Text(
+                                    step,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                    color = Ink,
+                                    fontFamily = FontFamily.Serif,
+                                    fontSize = 13.sp,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
                             if (index < track.steps.lastIndex) {
-                                Text("→", modifier = Modifier.padding(horizontal = 2.dp), color = Brass, fontSize = 14.sp)
+                                Text("→", modifier = Modifier.padding(horizontal = 1.dp), color = Brass, fontSize = 14.sp)
                             }
                         }
                     }
@@ -759,34 +751,6 @@ private fun InstitutionPromotionGuide(tracks: List<InstitutionPromotionTrack>) {
 private fun InstitutionPeopleSection(people: List<InstitutionPerson>, onOpenPerson: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         CatalogArticleHeading("相关人物")
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
-        ) {
-            people.forEach { person ->
-                Surface(
-                    modifier = Modifier
-                        .clip(CutCornerShape(4.dp))
-                        .clickable { onOpenPerson(person.name) },
-                    shape = CutCornerShape(4.dp),
-                    color = Vermilion.copy(alpha = 0.08f),
-                    border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp)) {
-                        Text(person.name, color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                        if (person.title.isNotBlank() || person.role.isNotBlank()) {
-                            Text(
-                                listOf(person.title, person.role).filter { it.isNotBlank() }.joinToString(" · "),
-                                color = InkSoft,
-                                fontFamily = FontFamily.Serif,
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        MingPersonLinks(people.map { it.name }, onOpenPerson)
     }
 }

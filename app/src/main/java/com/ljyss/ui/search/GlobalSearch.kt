@@ -59,6 +59,7 @@ data class SearchDestination(
     val eventId: String? = null,
     val worldSection: String? = null,
     val worldCategory: String? = null,
+    val guideId: String? = null,
 )
 
 private data class SearchResult(
@@ -71,7 +72,7 @@ private data class SearchResult(
 )
 
 private enum class SearchFilter(val label: String) {
-    ALL("全部"), PEOPLE("人物"), TIMELINE("岁月"), WORLD("天下"),
+    ALL("全部"), PEOPLE("人物"), TIMELINE("岁月"), WORLD("天下"), GUIDE("手册"),
 }
 
 /** 全屏检索路由，替代遮住原页的对话框；返回时无缝回到此前阅读位置。 */
@@ -105,7 +106,7 @@ fun GlobalSearchScreen(
             SearchFilterRail(filter) { filter = it }
             when {
                 query.isBlank() -> Text(
-                    "输入关键词，即可检索人物、岁月与天下资料。",
+                    "输入关键词，即可检索人物、岁月、天下与手册资料。",
                     color = InkSoft,
                     fontFamily = FontFamily.Serif,
                     fontSize = 15.sp,
@@ -163,7 +164,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
             Icon(Icons.Outlined.Search, contentDescription = null, tint = Vermilion, modifier = Modifier.padding(end = 9.dp))
             Box(modifier = Modifier.weight(1f).padding(vertical = 10.dp)) {
                 if (query.isBlank()) {
-                    Text("姓名、年号、官职、事件、机构或典章", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                    Text("姓名、年号、官职、事件、机构、典章或手册", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
                 }
                 BasicTextField(
                     value = query,
@@ -179,7 +180,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
 
 @Composable
 private fun SearchEmptyState() {
-    Text("未寻得相符条目。可尝试姓名、年号、官职或机构名称。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+    Text("未寻得相符条目。可尝试姓名、年号、官职、机构或手册主题。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
 }
 
 @Composable
@@ -207,6 +208,7 @@ private fun SearchFilter.matches(result: SearchResult): Boolean = when (this) {
     SearchFilter.PEOPLE -> result.kind == "人物"
     SearchFilter.TIMELINE -> result.kind == "年号" || result.kind == "大事"
     SearchFilter.WORLD -> result.kind == "机构" || result.kind == "典章"
+    SearchFilter.GUIDE -> result.kind == "手册"
 }
 
 private fun searchCatalog(repository: MingRepository, rawQuery: String): List<SearchResult> {
@@ -236,6 +238,12 @@ private fun searchCatalog(repository: MingRepository, rawQuery: String): List<Se
         }
         repository.specialItems().forEach { item ->
             add(SearchResult("special:${item.id}", "典章", item.name, text("${item.category}｜${item.era}｜${item.description}"), "${item.name} ${item.category} ${item.era} ${item.description}", SearchDestination(2, worldSection = "典章", worldCategory = item.category)))
+        }
+        repository.travelGuides().forEach { guide ->
+            val searchable = listOf(guide.title, guide.category, guide.subtitle, guide.description)
+                .plus(guide.sections.map { it.title + " " + it.content })
+                .joinToString(" ")
+            add(SearchResult("guide:${guide.id}", "手册", guide.title, text("${guide.category}｜${guide.description}"), searchable, SearchDestination(3, guideId = guide.id)))
         }
     }
     return results.filter { it.haystack.lowercase().contains(query) }.take(80)

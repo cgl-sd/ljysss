@@ -18,7 +18,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="两京一十三省内容 API",
     version="0.1.0",
-    description="人物、事件、关系、机构与史料来源的本地内容服务。",
+    description="人物、事件、关系、天下资料与穿越手册的本地内容服务。",
     lifespan=lifespan,
 )
 # bootstrap 全量资料约 15MB 文本，gzip 后约 3.6MB；客户端以 Accept-Encoding 声明。
@@ -83,6 +83,7 @@ def bootstrap_content() -> dict:
         "relationships": list_relationships(),
         "institutions": list_institutions(),
         "specials": list_specials(),
+        "travel_guides": list_travel_guides(),
     }
 
 
@@ -391,6 +392,52 @@ def list_specials() -> list[dict]:
             (special["id"],),
         )
     return specials
+
+
+@app.get("/v1/travel-guides")
+def list_travel_guides() -> list[dict]:
+    guides = records(
+        """
+        SELECT id, category, title, subtitle, description, image_asset, position
+        FROM travel_guide
+        ORDER BY position
+        """
+    )
+    for guide in guides:
+        guide["sections"] = records(
+            """
+            SELECT section_key, title, content, position
+            FROM travel_guide_section
+            WHERE travel_guide_id = ?
+            ORDER BY position
+            """,
+            (guide["id"],),
+        )
+    return guides
+
+
+@app.get("/v1/travel-guides/{guide_id}")
+def get_travel_guide(guide_id: str) -> dict:
+    guide = record(
+        """
+        SELECT id, category, title, subtitle, description, image_asset, position
+        FROM travel_guide
+        WHERE id = ?
+        """,
+        (guide_id,),
+    )
+    if not guide:
+        raise HTTPException(status_code=404, detail="未找到该手册条目")
+    guide["sections"] = records(
+        """
+        SELECT section_key, title, content, position
+        FROM travel_guide_section
+        WHERE travel_guide_id = ?
+        ORDER BY position
+        """,
+        (guide_id,),
+    )
+    return guide
 
 
 @app.get("/v1/sources/{source_id}")

@@ -2,12 +2,10 @@ package com.ljyss.ui.people
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
@@ -18,11 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -34,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
@@ -51,13 +46,13 @@ import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
 import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.Vermilion
+import com.ljyss.ui.components.MingEventLinks
 
 @Composable
 internal fun PersonProfile(
     person: HistoricalPerson,
     relations: List<PersonRelation>,
     onOpenPerson: (String) -> Unit,
-    onOpenEvent: (String) -> Unit,
 ) {
     // 正常读取资料库预生成栏目；缺少 sections 时回退至摘要生平，
     // 不能让人物详情只剩姓名与画像。
@@ -113,50 +108,26 @@ internal fun PersonProfile(
                     // 其余键属于内部标记（如资料状态），不作为栏目呈现。
                 }
             }
-            if (person.relatedEvents.isNotEmpty()) {
-                RelatedEventsSection(person.relatedEvents, onOpenEvent)
-            }
         }
     }
 }
 
 @Composable
-private fun RelatedEventsSection(events: List<RelatedEvent>, onOpenEvent: (String) -> Unit) {
-    Column(
+internal fun PersonRelatedEventsPanel(events: List<RelatedEvent>, onOpenEvent: (String) -> Unit) {
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        shape = CutCornerShape(10.dp),
+        border = BorderStroke(1.25.dp, LineGold),
+        colors = CardDefaults.cardColors(containerColor = PaperLight.copy(alpha = 0.96f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Text("相关事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-        // 事件不多，使用可横向滚动的普通行。它保留紧凑的横排阅读，也避免嵌套 LazyRow
-        // 在长人物档案底部截获点击手势。
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            events.forEach { event ->
-                Card(
-                    modifier = Modifier
-                        // clickable 放在裁切之前，让完整的卡片触控区域先参与命中测试。
-                        .clickable { onOpenEvent(event.id) }
-                        .clip(CutCornerShape(5.dp)),
-                    shape = CutCornerShape(5.dp),
-                    border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
-                    colors = CardDefaults.cardColors(containerColor = Vermilion.copy(alpha = 0.08f)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                ) {
-                    Text(
-                        text = "${event.year} · ${event.title}",
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-                        color = Vermilion,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
+            Text("相关事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+            MingEventLinks(events, onOpenEvent)
         }
     }
 }

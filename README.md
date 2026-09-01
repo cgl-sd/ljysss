@@ -2,7 +2,7 @@
 
 明朝历史阅读应用：Android 客户端 + 统一内容资料库。
 
-- `app/` — Android 客户端（Kotlin + Jetpack Compose）：岁月（事件时间线）、人物（2,158 人、六分类）、天下（舆图／机构／典章）、我的。界面按功能分包于 `app/src/main/java/com/ljyss/{ui,domain}/`，`MainActivity.kt` 只留装配与底部导航。
+- `app/` — Android 客户端（Kotlin + Jetpack Compose）：岁月（事件时间线）、人物（2,158 人、六分类）、天下（舆图／机构／典章）、我的（穿越手册）。界面按功能分包于 `app/src/main/java/com/ljyss/{ui,domain}/`，`MainActivity.kt` 只留装配与底部导航。
 - `backend/` — 内容资料库与编辑服务（FastAPI + SQLite）：`app/` 服务代码，`data/content/*.jsonl` 为版本库真相，`data/ming_history.sqlite3` 为可再生构建产物，`scripts/` 为数据管线，`sources/` 为原始权威数据包。
 - `docs/` — 接口契约与界面核对记录
 - `sources/`(见 `backend/sources/`)— 原始权威数据包,详见下文
@@ -56,3 +56,17 @@ cd backend && .venv/bin/uvicorn app.main:app --port 8000
 ```
 
 协作约定见 `AGENTS.md`;接口契约见 `docs/backend-api-contract.md`。
+
+## 发布
+
+阅读端不访问网络，资料库和图片均随 APK 打包。正式发布使用独立的 Android 签名密钥；密钥和密码不进入版本库，通过下列环境变量在本机或持续集成环境提供：
+
+```bash
+export LJYSS_RELEASE_STORE_FILE=/path/to/release.p12
+export LJYSS_RELEASE_STORE_PASSWORD=…
+export LJYSS_RELEASE_KEY_ALIAS=…
+export LJYSS_RELEASE_KEY_PASSWORD=…
+./gradlew :app:assembleRelease :app:bundleRelease
+```
+
+可安装包输出在 `app/build/outputs/apk/release/`；应用商店上传包输出在 `app/build/outputs/bundle/release/`。

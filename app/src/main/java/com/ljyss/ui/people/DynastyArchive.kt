@@ -54,6 +54,7 @@ internal fun DynastyArchive(
     onPersonSelected: (HistoricalPerson) -> Unit,
     onOpenPerson: (String) -> Unit,
     onEventSelected: (HistoricalEvent) -> Unit,
+    showEvents: Boolean = true,
 ) {
     val groups = PersonCategory.entries.map { category ->
         category to orderedPeopleForCards(people.filter { it.category == category }, reign.title)
@@ -84,16 +85,18 @@ internal fun DynastyArchive(
             groups.forEach { (category, members) ->
                 ArchiveGroup(category.label, members, onPersonSelected)
             }
-            ArchiveSectionHeading("本朝大事")
-            if (reign.events.isEmpty()) {
-                Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
-            } else {
-                reign.events.sortedBy { it.year ?: Int.MAX_VALUE }.forEach { event ->
-                    ArchiveEventCard(
-                        event = event,
-                        onClick = { onEventSelected(event) },
-                        onOpenPerson = onOpenPerson,
-                    )
+            if (showEvents) {
+                ArchiveSectionHeading("本朝大事")
+                if (reign.events.isEmpty()) {
+                    Text("该朝事件正在按年份与史料卷次整理。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 14.sp)
+                } else {
+                    reign.events.sortedBy { it.year ?: Int.MAX_VALUE }.forEach { event ->
+                        ArchiveEventCard(
+                            event = event,
+                            onClick = { onEventSelected(event) },
+                            onOpenPerson = onOpenPerson,
+                        )
+                    }
                 }
             }
         }
@@ -116,7 +119,7 @@ private fun ArchiveStat(label: String, value: String, modifier: Modifier = Modif
 }
 
 @Composable
-private fun ArchiveSectionHeading(title: String) {
+internal fun ArchiveSectionHeading(title: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Box(modifier = Modifier.padding(start = 9.dp).weight(1f).height(1.dp).background(LineGold.copy(alpha = 0.72f)))
@@ -126,7 +129,7 @@ private fun ArchiveSectionHeading(title: String) {
 
 /** 档案卡只承担入口职责；完整介绍在独立事件页阅读。 */
 @Composable
-private fun ArchiveEventCard(
+internal fun ArchiveEventCard(
     event: HistoricalEvent,
     onClick: () -> Unit,
     onOpenPerson: (String) -> Unit,
@@ -148,7 +151,7 @@ private fun ArchiveEventCard(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
             Text(
-                "${event.year ?: ""} ${event.month} · ${event.title.ifBlank { "事件待补题" }}",
+                "${event.year?.let { "${it}年" } ?: "年代待考"} · ${event.title.ifBlank { "事件待补题" }}",
                 color = Ink,
                 fontFamily = FontFamily.Serif,
                 fontSize = 16.sp,
@@ -173,6 +176,8 @@ private fun ArchiveEventCard(
 
 @Composable
 private fun ArchiveParticipants(participants: List<String>, onOpenPerson: (String) -> Unit) {
+    // 朝档卡片只保留一行相关人物，避免与详情页的多行标签混淆；
+    // 每个人名仍是独立点击目标，整张事件卡则保留进入事件详情的入口。
     Row(
         modifier = Modifier.fillMaxWidth().heightIn(min = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -185,7 +190,7 @@ private fun ArchiveParticipants(participants: List<String>, onOpenPerson: (Strin
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(participants, key = { it }) { name ->
+                items(participants.distinct(), key = { it }) { name ->
                     Text(
                         name,
                         modifier = Modifier

@@ -1,6 +1,7 @@
 package com.ljyss.ui.timeline
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
@@ -11,13 +12,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
+import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.domain.startYear
 import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.people.DynastyArchive
+import com.ljyss.ui.people.ArchiveEventCard
 import com.ljyss.ui.people.ArchiveEventProfile
+import com.ljyss.ui.people.ArchiveSectionHeading
 import com.ljyss.ui.search.SearchDestination
 
 @Composable
@@ -37,7 +42,17 @@ internal fun TimelineScreen(
     val archiveListState = rememberLazyListState()
     val eventDetailListState = rememberLazyListState()
     val selectedReign = reigns.first { it.title == selectedTitle }
-    val selectedArchiveEvent = reigns.flatMap { it.events }.firstOrNull { it.id == selectedArchiveEventId }
+    val archiveEvents = remember(selectedReign) {
+        selectedReign.events.sortedWith(compareBy<HistoricalEvent>({ it.year ?: Int.MAX_VALUE }, { it.month }, { it.title }))
+    }
+    fun eventKey(event: HistoricalEvent): String = event.id.ifBlank {
+        "${event.year ?: 0}:${event.title}"
+    }
+    val selectedArchiveEvent = reigns.flatMap { it.events }.firstOrNull { eventKey(it) == selectedArchiveEventId }
+    // 每次打开事件详情都从列表首项开始，避免返回后再次点击时沿用上一次的滚动位置。
+    LaunchedEffect(selectedArchiveEventId) {
+        if (selectedArchiveEventId != null) eventDetailListState.scrollToItem(0)
+    }
     LaunchedEffect(searchDestination) {
         val destination = searchDestination ?: return@LaunchedEffect
         destination.reignTitle?.takeIf { title -> reigns.any { it.title == title } }?.let { title ->
@@ -78,8 +93,34 @@ internal fun TimelineScreen(
                     people = allPeople.filter { it.reign.contains(selectedReign.title) },
                     onPersonSelected = { person -> onOpenPerson(person.name) },
                     onOpenPerson = onOpenPerson,
-                    onEventSelected = { event -> selectedArchiveEventId = event.id },
+                    showEvents = false,
+                    onEventSelected = { event ->
+                        // 正式库事件都有稳定 id；兜底键用于兼容编辑中的旧条目，
+                        // 让任何可见卡片都不会因为空 id 而失去详情入口。
+                        selectedArchiveEventId = eventKey(event)
+                    },
                 )
+            }
+            item { ArchiveSectionHeading("本朝大事") }
+            if (archiveEvents.isEmpty()) {
+                item {
+                    androidx.compose.material3.Text(
+                        "该朝事件正在按年份与史料卷次整理。",
+                        color = com.ljyss.ui.theme.InkSoft,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                        fontSize = 14.sp,
+                    )
+                }
+            } else {
+                items(archiveEvents, key = { eventKey(it) }) { event ->
+                    ArchiveEventCard(
+                        event = event,
+                        onClick = {
+                            selectedArchiveEventId = eventKey(event)
+                        },
+                        onOpenPerson = onOpenPerson,
+                    )
+                }
             }
     }
 }

@@ -6,6 +6,7 @@ import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.Reign
 import com.ljyss.data.model.SpecialItem
+import com.ljyss.data.model.TravelGuide
 
 /**
  * UI 只依赖这份统一资料库契约。
@@ -18,4 +19,5 @@ interface MingRepository {
     fun institutions(): List<Institution>
     fun personDetail(id: String): HistoricalPerson?
     fun specialItems(): List<SpecialItem>
+    fun travelGuides(): List<TravelGuide>
 }

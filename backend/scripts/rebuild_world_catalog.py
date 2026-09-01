@@ -235,7 +235,7 @@ FALLBACK_INSTITUTIONS = {
 
 NOISE_HEADINGS = {"参考文献", "参考资料", "外部链接", "延伸阅读", "注释", "脚注", "参见", "分类"}
 SECTION_TITLES = {
-    "duty": "概览与职掌", "structure": "组织与设置", "operation": "运行与作用", "evolution": "形成与沿革",
+    "duty": "概览", "structure": "结构与职能", "operation": "运行与作用", "evolution": "沿革与影响",
     "meaning": "概览", "form": "形制与内容", "practice": "使用与运行", "legacy": "历史脉络",
 }
 
@@ -251,8 +251,11 @@ def read_rows(table: str) -> list[dict]:
 
 
 def load_selected_wiki() -> dict[str, str]:
-    """只读取候选条目，避免把一百多万篇全文堆到内存。"""
+    """只读取目录条目和候选条目，避免把一百多万篇全文堆到内存。"""
     aliases = {alias for _name, _category, _era, names in INSTITUTION_ADDITIONS + SPECIAL_ADDITIONS for alias in names}
+    # 现有目录也必须重新用本地维基校正；上一版只扫描新增候选，
+    # 导致多数旧条目继续沿用编辑稿。
+    aliases.update(row.get("name", "") for table in ("institution", "special_item") for row in read_rows(table))
     # 已有条目的导语校正也需要少量页面。
     aliases.update({"故宫", "明故宫", "明孝陵", "明十三陵", "天坛", "北京太庙", "武当山", "黄册", "大明律", "大明会典", "永乐大典"})
     normalized_aliases = {t2s.convert(alias).strip() for alias in aliases}
@@ -305,6 +308,7 @@ def clean_sentence(sentence: str) -> str:
         "旅游", "景区", "旅游经济特区", "博物馆", "世界文化遗产", "文化遗产",
         "文物保护单位", "非物质文化遗产", "国务院公布", "申遗", "管理中心",
         "对外开放", "现为", "外文", "英文", "拉丁", "转写", "外部链接", "延伸阅读",
+        "该部分", "此处补充", "正在整理", "待补充", "资料不足",
     )):
         return ""
     return sentence
@@ -395,18 +399,19 @@ def unique_id(prefix: str, name: str, used: set[str]) -> str:
 def sections_from_groups(kind: str, intro: str, groups: list[tuple[str, str]], fallback: list[str] | None = None) -> list[dict]:
     keys = ("duty", "structure", "operation", "evolution") if kind == "institution" else ("meaning", "form", "practice", "legacy")
     if fallback:
-        fillers = ("该部分记录这一名物在明代制度中的具体位置。", "该部分补充其组织、形制或使用方式。", "该部分说明相关事务在当时的运行情形。", "该部分概括其沿革及历史影响。")
-        overview = intro if len(intro) >= 50 else intro + fillers[0]
-        fallback_contents: list[str] = []
-        for index, part in enumerate(fallback):
-            value = part
-            while len(value) < 50:
-                value += fillers[index + 1]
-            fallback_contents.append(value)
-        contents = [overview, *fallback_contents]
+        # 编辑稿的短事实合并到相邻事实中，不再追加没有信息量的模板补句。
+        parts = [intro.strip(), *(part.strip() for part in fallback)]
+        # 保留至少两块可独立阅读的事实：概览加首段、其余运行/沿革信息。
+        contents: list[str] = []
+        if len(parts) >= 3:
+            contents = [parts[0] + parts[1], "".join(parts[2:])]
+        else:
+            contents = ["".join(parts)]
+        if len(contents) < 2:
+            return []
     else:
-        # 先按自然段去重，再均衡切成四组。这样既不会按字数强拆段落，
-        # 也不会在只有一个维基小标题时把同一段正文复制到三个栏目。
+        # 先按自然段去重，再按句子边界均衡分组。栏目数量由正文决定，
+        # 最少两栏、最多四栏，不用模板句凑数，也不按字数硬拆自然段。
         paragraphs: list[str] = []
         seen: set[str] = set()
         for _title, content in groups:
@@ -422,10 +427,13 @@ def sections_from_groups(kind: str, intro: str, groups: list[tuple[str, str]], f
         for paragraph in paragraphs:
             sentences = [s.strip() for s in re.split(r"(?<=[。！？])", paragraph) if s.strip()]
             units.extend(sentences or [paragraph])
+        if len(units) < 2 or sum(len(unit) for unit in units) < 100:
+            return []
+        target_count = 4 if len(units) >= 4 else 2
         contents = []
         cursor = 0
-        for group_index in range(4):
-            remaining_groups = 4 - group_index
+        for group_index in range(target_count):
+            remaining_groups = target_count - group_index
             remaining = len(units) - cursor
             take = max(1, (remaining + remaining_groups - 1) // remaining_groups)
             chunk = "".join(units[cursor: cursor + take]).strip()
@@ -436,9 +444,9 @@ def sections_from_groups(kind: str, intro: str, groups: list[tuple[str, str]], f
                 cursor += 1
             contents.append(chunk)
     result: list[dict] = []
-    if len(contents) < 4:
+    if len(contents) < 2:
         return result
-    for position, key in enumerate(keys):
+    for position, key in enumerate(keys[: len(contents)]):
         content = contents[position].strip()
         if len(content) < 50:
             return []
@@ -500,7 +508,88 @@ def build() -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict],
                 row["description"] = overview
                 row["source_id"] = SOURCE_EDITORIAL
 
-    # 现有条目只清理重复、现代宣传和标题，保留已编辑的事实正文。
+    # 先重新读取现有目录的维基正文。命中本地快照的条目统一以快照为正文来源；
+    # 没有足够正文的条目才保留清理后的编辑稿，避免旧稿无条件覆盖维基内容。
+    refreshed_institution_sections: list[dict] = []
+    refreshed_special_sections: list[dict] = []
+    old_institution_sections = institution_sections
+    old_special_sections = special_sections
+    old_inst_by_id: dict[str, list[dict]] = {}
+    old_special_by_id: dict[str, list[dict]] = {}
+    for section in old_institution_sections:
+        old_inst_by_id.setdefault(section.get("institution_id", ""), []).append(section)
+    for section in old_special_sections:
+        old_special_by_id.setdefault(section.get("special_item_id", ""), []).append(section)
+
+    for row in institutions:
+        item_id = row["id"]
+        page = source_page(wiki, [row.get("name", "")])
+        source = row.get("source_id", SOURCE_EDITORIAL)
+        new_sections: list[dict] = []
+        intro = ""
+        if page:
+            _title, raw = page
+            _body, groups = parse_article(raw)
+            intro = groups[0][1] if groups else ""
+            if len(intro) < 50 and groups:
+                intro = max((content for _title, content in groups), key=len)
+            new_sections = sections_from_groups("institution", intro, groups)
+            if new_sections:
+                source = SOURCE_WIKI
+                row["function"] = intro[:3000]
+        if not new_sections:
+            # 保留现有编辑稿的事实段落，但移除模板/宣传句；无需强行重分四栏。
+            for old in old_inst_by_id.get(item_id, []):
+                content = clean_block(old.get("content", ""), 8000)
+                if len(content) >= 50:
+                    new_sections.append({
+                        "section_key": old.get("section_key", "duty"),
+                        "title": SECTION_TITLES.get(old.get("section_key", ""), old.get("title", "概览")),
+                        "position": len(new_sections),
+                        "content": content,
+                    })
+        if len(new_sections) >= 2:
+            row["source_id"] = source
+            for section in new_sections:
+                section.update({"institution_id": item_id, "source_id": source})
+                refreshed_institution_sections.append(section)
+
+    for row in specials:
+        item_id = row["id"]
+        page = source_page(wiki, [row.get("name", "")])
+        source = row.get("source_id", SOURCE_EDITORIAL)
+        new_sections: list[dict] = []
+        intro = ""
+        if page:
+            _title, raw = page
+            _body, groups = parse_article(raw)
+            intro = groups[0][1] if groups else ""
+            if len(intro) < 50 and groups:
+                intro = max((content for _title, content in groups), key=len)
+            new_sections = sections_from_groups("special", intro, groups)
+            if new_sections:
+                source = SOURCE_WIKI
+                row["description"] = intro[:3000]
+        if not new_sections:
+            for old in old_special_by_id.get(item_id, []):
+                content = clean_block(old.get("content", ""), 8000)
+                if len(content) >= 50:
+                    new_sections.append({
+                        "section_key": old.get("section_key", "meaning"),
+                        "title": SECTION_TITLES.get(old.get("section_key", ""), old.get("title", "概览")),
+                        "position": len(new_sections),
+                        "content": content,
+                    })
+        if len(new_sections) >= 2:
+            row["source_id"] = source
+            for section in new_sections:
+                section.update({"special_item_id": item_id, "source_id": source})
+                refreshed_special_sections.append(section)
+
+    institution_sections = refreshed_institution_sections
+    special_sections = refreshed_special_sections
+
+    # 清理摘要、补齐逐条图片资源键；正式资源由独立图片流水线生成。
     for row in institutions:
         row["image_asset"] = asset_name("institution", row["id"])
         row["function"] = clean_block(row.get("function", ""), 5000)
@@ -510,15 +599,9 @@ def build() -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict],
         row["image_asset"] = asset_name("special", row["id"])
         row["description"] = clean_block(row.get("description", ""), 5000)
     for row in institution_sections:
-        row["title"] = SECTION_TITLES.get(row.get("section_key", ""), row.get("title", "概览与职掌"))
-        body, _groups = parse_article(row.get("content", ""))
-        if len(body) >= 50:
-            row["content"] = body
+        row["title"] = SECTION_TITLES.get(row.get("section_key", ""), row.get("title", "概览"))
     for row in special_sections:
         row["title"] = SECTION_TITLES.get(row.get("section_key", ""), row.get("title", "概览"))
-        body, _groups = parse_article(row.get("content", ""))
-        if len(body) >= 50:
-            row["content"] = body
 
     institution_by_name = {row["name"]: row for row in institutions}
     used_institution_ids = {row["id"] for row in institutions}
@@ -552,7 +635,7 @@ def build() -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict],
         institutions.append(row)
         institution_by_name[name] = row
         sections = sections_from_groups("institution", intro, groups)
-        if len(sections) < 4 and fallback:
+        if len(sections) < 2 and fallback:
             intro, fallback_parts = fallback
             source = SOURCE_EDITORIAL
             sections = sections_from_groups("institution", intro, [], fallback_parts)
@@ -561,8 +644,8 @@ def build() -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict],
         for section in sections:
             section.update({"institution_id": item_id, "source_id": source})
             institution_sections.append(section)
-        if len([r for r in institution_sections if r["institution_id"] == item_id]) < 4:
-            notes.append(f"机构正文不足四栏，跳过：{name}")
+        if len([r for r in institution_sections if r["institution_id"] == item_id]) < 2:
+            notes.append(f"机构正文不足两栏，跳过：{name}")
             institutions.remove(row)
             institution_sections[:] = [r for r in institution_sections if r["institution_id"] != item_id]
             continue
@@ -596,14 +679,14 @@ def build() -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict],
         item_id = unique_id("special", name, used_special_ids)
         row = {"id": item_id, "name": name, "category": category, "era": era, "description": intro[:3000], "position": 900, "source_id": source, "image_asset": asset_name("special", item_id)}
         sections = sections_from_groups("special", intro, groups)
-        if fallback:
+        if len(sections) < 2 and fallback:
             intro, fallback_parts = fallback
             source = SOURCE_EDITORIAL
             row["description"] = intro[:3000]
             row["source_id"] = source
             sections = sections_from_groups("special", intro, [], fallback_parts)
-        if len(sections) < 4:
-            notes.append(f"典章正文不足四栏，跳过：{name}")
+        if len(sections) < 2:
+            notes.append(f"典章正文不足两栏，跳过：{name}")
             continue
         specials.append(row)
         special_by_name[name] = row
@@ -615,7 +698,7 @@ def build() -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict],
             link["special_item_id"] = item_id
             special_people.append(link)
 
-    # 只保留有四栏正文的正式条目；清除旧条目偶发的孤立栏。
+    # 只保留有至少两栏正文的正式条目；清除旧条目偶发的孤立栏。
     inst_ids = {r["id"] for r in institutions}
     special_ids = {r["id"] for r in specials}
     institution_sections = [r for r in institution_sections if r.get("institution_id") in inst_ids]

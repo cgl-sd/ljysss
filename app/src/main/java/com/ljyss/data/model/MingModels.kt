@@ -180,3 +180,21 @@ data class SpecialPerson(
     val title: String,
     val role: String,
 )
+
+/** “我的”页穿越手册的离线条目；资料来源仅留在编辑库，阅读端不显示。 */
+data class TravelGuide(
+    val id: String,
+    val category: String,
+    val title: String,
+    val subtitle: String,
+    val description: String,
+    val imageAsset: String,
+    val sections: List<TravelGuideSection> = emptyList(),
+)
+
+data class TravelGuideSection(
+    val key: String,
+    val title: String,
+    val content: String,
+    val position: Int,
+)
