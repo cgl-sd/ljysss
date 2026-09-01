@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 前景 72dp 超出自适应图标安全区（66/108dp），鼎形上下边缘会被 launcher 裁切；缩至 56dp 完全可见。 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:width="72dp"
-        android:height="72dp"
+        android:width="56dp"
+        android:height="56dp"
         android:gravity="center">
         <bitmap
             android:gravity="fill"
