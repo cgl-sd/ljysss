@@ -36,6 +36,7 @@ internal fun TimelineScreen(
 ) {
     val reigns = remember(repository) { repository.reigns() }
     val allPeople = remember(repository) { repository.allPeople() }
+    val relations = remember(repository) { repository.personRelations() }
     var selectedTitle by rememberSaveable { mutableStateOf(reigns.first().title) }
     var selectedYear by rememberSaveable { mutableIntStateOf(reigns.first().startYear()) }
     var selectedArchiveEventId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -68,7 +69,7 @@ internal fun TimelineScreen(
 
     if (selectedArchiveEvent != null) {
         MingList(contentPadding, state = eventDetailListState) {
-            item { ArchiveEventProfile(selectedArchiveEvent, onOpenPerson) }
+            item { ArchiveEventProfile(selectedArchiveEvent, relations, onOpenPerson) }
         }
     } else MingList(contentPadding, state = archiveListState) {
             item { MingMasthead(onSearch) }

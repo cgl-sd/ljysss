@@ -106,8 +106,6 @@
 {"id": 4240, "from_person_id": "zhuqizhen", "to_person_id": "zhangfu", "relation_type": "君臣", "reign": "正统", "note": "张辅以英国公身份随英宗亲征，战死于土木堡。", "source_id": "mingshi-editorial-v1"}
 {"id": 4241, "from_person_id": "zhuqizhen", "to_person_id": "kuangye", "relation_type": "君臣", "reign": "正统", "note": "兵部尚书邝埜随征，力谏回銮，战死于土木堡。", "source_id": "mingshi-editorial-v1"}
 {"id": 4242, "from_person_id": "zhuqizhen", "to_person_id": "caonai", "relation_type": "君臣", "reign": "正统", "note": "学士曹鼐随征，战死于土木堡。", "source_id": "mingshi-editorial-v1"}
-{"id": 4243, "from_person_id": "zhuqiyu", "to_person_id": "zhuqizhen", "relation_type": "兄弟姐妹", "reign": "宣德", "note": "景帝为英宗异母弟。", "source_id": "mingshi-editorial-v1"}
-{"id": 4244, "from_person_id": "zhudi", "to_person_id": "zhugaochi", "relation_type": "父子", "reign": "洪武", "note": "朱高炽为朱棣长子，靖难期间留守北平。", "source_id": "mingshi-editorial-v1"}
 {"id": 4245, "from_person_id": "zhudi", "to_person_id": "zhugaoxu", "relation_type": "父子", "reign": "洪武", "note": "朱高煦为朱棣次子，靖难中为燕军主将。", "source_id": "mingshi-editorial-v1"}
 {"id": 4246, "from_person_id": "zhudi", "to_person_id": "zhuneng", "relation_type": "统属", "reign": "建文", "note": "朱能随朱棣起兵，为燕军主要将领。", "source_id": "mingshi-editorial-v1"}
 {"id": 4247, "from_person_id": "zhudi", "to_person_id": "zhangyu", "relation_type": "统属", "reign": "建文", "note": "张玉随朱棣起兵，战死于东昌。", "source_id": "mingshi-editorial-v1"}
@@ -129,7 +127,6 @@
 {"id": 4263, "from_person_id": "zhangcong", "to_person_id": "guie", "relation_type": "同僚", "reign": "嘉靖", "note": "张璁与桂萼同为议礼派核心。", "source_id": "mingshi-editorial-v1"}
 {"id": 4264, "from_person_id": "zhangcong", "to_person_id": "xishu", "relation_type": "同僚", "reign": "嘉靖", "note": "席书上疏附和议礼主张。", "source_id": "mingshi-editorial-v1"}
 {"id": 4265, "from_person_id": "zhangcong", "to_person_id": "huotao", "relation_type": "同僚", "reign": "嘉靖", "note": "霍韬支持议礼。", "source_id": "mingshi-editorial-v1"}
-{"id": 4266, "from_person_id": "yangtinghe", "to_person_id": "yangshen", "relation_type": "父子", "reign": "正德", "note": "杨慎为杨廷和之子。", "source_id": "mingshi-editorial-v1"}
 {"id": 4267, "from_person_id": "weizhongxian", "to_person_id": "yanglian-2", "relation_type": "政争", "reign": "天启", "note": "阉党首领魏忠贤与东林党杨涟对立。", "source_id": "mingshi-editorial-v1"}
 {"id": 4268, "from_person_id": "weizhongxian", "to_person_id": "zuoguangdou", "relation_type": "政争", "reign": "天启", "note": "魏忠贤迫害东林党人左光斗。", "source_id": "mingshi-editorial-v1"}
 {"id": 4269, "from_person_id": "guxiancheng", "to_person_id": "gaopanlong", "relation_type": "同僚", "reign": "万历", "note": "共事于东林书院讲学。", "source_id": "mingshi-editorial-v1"}
@@ -165,7 +162,6 @@
 {"id": 4299, "from_person_id": "sunchengzong", "to_person_id": "mangui", "relation_type": "统属", "reign": "崇祯", "note": "满桂受孙承宗调度。", "source_id": "mingshi-editorial-v1"}
 {"id": 4300, "from_person_id": "sunchengzong", "to_person_id": "zudashou", "relation_type": "统属", "reign": "崇祯", "note": "孙承宗督师收复遵永四城，祖大寿为部将。", "source_id": "mingshi-editorial-v1"}
 {"id": 4301, "from_person_id": "zhuchangluo", "to_person_id": "fangcongzhe", "relation_type": "君臣", "reign": "泰昌", "note": "方从哲为泰昌朝首辅。", "source_id": "mingshi-editorial-v1"}
-{"id": 4302, "from_person_id": "zhuyijun", "to_person_id": "zhuchangluo", "relation_type": "父子", "reign": "万历", "note": "朱常洛为万历帝长子。", "source_id": "mingshi-editorial-v1"}
 {"id": 4303, "from_person_id": "zhugeng", "to_person_id": "shenyiguan", "relation_type": "同僚", "reign": "万历", "note": "同在内阁，为妖书案所涉。", "source_id": "mingshi-editorial-v1"}
 {"id": 4304, "from_person_id": "shenli", "to_person_id": "guozhengyu", "relation_type": "同僚", "reign": "万历", "note": "共为东林党人，同被妖书案牵连。", "source_id": "mingshi-editorial-v1"}
 {"id": 4305, "from_person_id": "wangji-2", "to_person_id": "jianggui", "relation_type": "统属", "reign": "正统", "note": "王骥总督军务，蒋贵为总兵官。", "source_id": "mingshi-editorial-v1"}

@@ -43,16 +43,19 @@ import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
 import com.ljyss.data.model.PeopleTab
 import com.ljyss.data.model.PersonCategory
+import com.ljyss.data.model.PersonRelation
 import com.ljyss.data.model.Reign
 import com.ljyss.domain.parentChildTypes
 import com.ljyss.domain.orderedPeopleForCards
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.ljyss.ui.components.MingList
-import com.ljyss.ui.relationship.RelationshipLedger
-import com.ljyss.ui.relationship.RelationshipNetwork
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
+import com.ljyss.ui.relationship.EventHubCard
+import com.ljyss.ui.relationship.RelationDetailScreen
+import com.ljyss.ui.relationship.RelationHubCard
+import com.ljyss.ui.relationship.SectionTitle
 import com.ljyss.ui.timeline.ReignRail
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
@@ -77,6 +80,8 @@ internal fun PeopleScreen(
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     // 人物页中的事件详情在本页栈内打开：返回时稳定回到原人物，而不依赖切换底部导航。
     var selectedRelatedEventId by rememberSaveable { mutableStateOf<String?>(null) }
+    // 关系 tab 的关系详情同样在本页栈内打开，与事件详情互斥渲染。
+    var selectedRelationKey by rememberSaveable { mutableStateOf<String?>(null) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var returnListOffset by rememberSaveable { mutableIntStateOf(0) }
@@ -84,6 +89,8 @@ internal fun PeopleScreen(
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
+    // 关系 tab 事件分组按年份升序；空/无 year 的事件排最后。
+    val sortedEvents = remember(allEvents) { allEvents.sortedBy { it.year ?: Int.MAX_VALUE } }
     // 相关事件使用稳定 ID 索引；同时登记年份+标题回退键，兼容旧内容包中的空 ID。
     val eventByKey = remember(allEvents) {
         buildMap {
@@ -98,6 +105,7 @@ internal fun PeopleScreen(
     val focusedPerson = focusPersonId?.let { id -> allPeople.firstOrNull { it.id == id } }
     val selectedPerson = focusedPerson ?: allPeople.firstOrNull { it.name == selectedPersonName }
     val selectedRelatedEvent = selectedRelatedEventId?.let { eventByKey[it] }
+    val selectedRelation = selectedRelationKey?.let { key -> relations.firstOrNull { relationKey(it) == key } }
     val peopleListState = rememberLazyListState()
     // 列表与人物详情各自维护滚动位置。否则从一位人物的长传记跳到另一人时，
     // 新人物会错误地继承旧页面的中段位置。
@@ -131,6 +139,7 @@ internal fun PeopleScreen(
 
     fun returnFromProfile() {
         selectedRelatedEventId = null
+        selectedRelationKey = null
         selectedPersonName = null
         personStack = emptyList()
         onProfileExit()
@@ -138,6 +147,7 @@ internal fun PeopleScreen(
 
     fun openProfileFromBrowse(name: String) {
         selectedRelatedEventId = null
+        selectedRelationKey = null
         returnListIndex = peopleListState.firstVisibleItemIndex
         returnListOffset = peopleListState.firstVisibleItemScrollOffset
         selectedPersonName = name
@@ -197,9 +207,11 @@ internal fun PeopleScreen(
         }
     }
 
-    // 人物履历打开后，系统返回键与悬浮返回键保持同一行为，并保留进入详情前的页面状态。
     BackHandler(enabled = selectedRelatedEvent != null) {
         selectedRelatedEventId = null
+    }
+    BackHandler(enabled = selectedRelationKey != null && selectedRelatedEvent == null) {
+        selectedRelationKey = null
     }
     BackHandler(enabled = selectedPersonName != null && selectedRelatedEvent == null) {
         closeProfileStep()
@@ -210,7 +222,21 @@ internal fun PeopleScreen(
             // 事件使用独立滚动状态；关闭后不会覆盖人物详情或人物列表原有的位置。
             MingList(contentPadding, state = eventDetailListState) {
                 item {
-                    ArchiveEventProfile(selectedRelatedEvent, ::openPersonFromEvent)
+                    ArchiveEventProfile(selectedRelatedEvent, relations, ::openPersonFromEvent)
+                }
+            }
+        } else if (selectedRelation != null) {
+            MingList(contentPadding) {
+                item {
+                    RelationDetailScreen(
+                        relation = selectedRelation,
+                        relations = relations,
+                        events = allEvents,
+                        onOpenPerson = { name ->
+                            if (selectedPersonName == null) openProfileFromBrowse(name) else openRelatedPerson(name)
+                        },
+                        onOpenEvent = { eventId -> if (eventId.isNotBlank()) selectedRelatedEventId = eventId },
+                    )
                 }
             }
         } else {
@@ -280,16 +306,14 @@ internal fun PeopleScreen(
                             }
                         }
                         PeopleTab.RELATIONSHIPS -> {
-                            item {
-                                RelationshipNetwork(
-                                    relations,
-                                    allEvents,
-                                    onOpenPerson = { name ->
-                                        if (selectedPersonName == null) openProfileFromBrowse(name) else openRelatedPerson(name)
-                                    },
-                                )
+                            item { SectionTitle("事件") }
+                            items(sortedEvents, key = { it.id.ifBlank { "${it.year}:${it.title}" } }) { event ->
+                                EventHubCard(event) { selectedRelatedEventId = event.id }
                             }
-                            item { RelationshipLedger(relations) }
+                            item { SectionTitle("人物之间的关系") }
+                            items(relations, key = { relationKey(it) }) { relation ->
+                                RelationHubCard(relation) { selectedRelationKey = relationKey(relation) }
+                            }
                         }
                     }
                 }
@@ -353,6 +377,36 @@ private fun PersonChronologyRail(
 }
 
 @Composable
+private fun PeopleTabRail(selected: PeopleTab, onSelected: (PeopleTab) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = PaperLight.copy(alpha = 0.88f),
+        shape = CutCornerShape(8.dp),
+        border = BorderStroke(1.dp, LineGold),
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            PeopleTab.entries.forEach { tab ->
+                val active = selected == tab
+                Text(
+                    text = tab.label,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(CutCornerShape(5.dp))
+                        .clickable { onSelected(tab) }
+                        .background(if (active) Vermilion else Color.Transparent)
+                        .padding(vertical = 10.dp),
+                    color = if (active) PaperLight else Ink,
+                    textAlign = TextAlign.Center,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun CategoryRail(selectedCategory: PersonCategory, onSelected: (PersonCategory) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -383,32 +437,6 @@ private fun CategoryRail(selectedCategory: PersonCategory, onSelected: (PersonCa
     }
 }
 
-@Composable
-private fun PeopleTabRail(selected: PeopleTab, onSelected: (PeopleTab) -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = PaperLight.copy(alpha = 0.88f),
-        shape = CutCornerShape(8.dp),
-        border = BorderStroke(1.dp, LineGold),
-    ) {
-        Row(modifier = Modifier.padding(4.dp)) {
-            PeopleTab.entries.forEach { tab ->
-                val active = selected == tab
-                Text(
-                    text = tab.label,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(CutCornerShape(5.dp))
-                        .clickable { onSelected(tab) }
-                        .background(if (active) Vermilion else Color.Transparent)
-                        .padding(vertical = 10.dp),
-                    color = if (active) PaperLight else Ink,
-                    textAlign = TextAlign.Center,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
-    }
-}
+/** 关系卡片的稳定 key：三人组合（甲乙名＋关系类型）。数据中该组合唯一。 */
+private fun relationKey(relation: PersonRelation): String =
+    "${relation.fromName}|${relation.type.label}|${relation.toName}"

@@ -22,6 +22,8 @@ data class HistoricalEvent(
     /** 展开事件后显示；避免把史料正文硬写在 Compose 界面中。 */
     val detail: String = description,
     val participants: List<String> = emptyList(),
+    /** 参与人在事件中的作用（决策者／统帅／主将等），姓名 → 作用。 */
+    val participantRoles: Map<String, String> = emptyMap(),
     val consequence: String = "",
     /** 事件详情采用统一分栏；卡片仅展示摘要，独立页面展示这些正文。 */
     val sections: List<EventSection> = emptyList(),

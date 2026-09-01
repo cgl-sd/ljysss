@@ -18,8 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.model.HistoricalEvent
+import com.ljyss.data.model.PersonRelation
 import com.ljyss.ui.components.MingArticleSection
 import com.ljyss.ui.components.MingPersonLinks
+import com.ljyss.ui.relationship.RelationGraphCard
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -28,7 +30,7 @@ import com.ljyss.ui.theme.Vermilion
 
 /** 本朝大事的独立阅读页；档案卡不再在原位置展开。 */
 @Composable
-internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) -> Unit) {
+internal fun ArchiveEventProfile(event: HistoricalEvent, relations: List<PersonRelation>, onOpenPerson: (String) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = CutCornerShape(10.dp),
@@ -68,7 +70,16 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, onOpenPerson: (String) 
             if (event.participants.isNotEmpty()) {
                 Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-                MingPersonLinks(event.participants, onOpenPerson)
+                MingPersonLinks(event.participants, onOpenPerson, roles = event.participantRoles)
+            }
+            // 事件关系：只画该事件参与人之间的直接关系，共同经历即连线依据。
+            if (event.participants.size >= 2) {
+                val eventRelations = relations.filter {
+                    it.fromName in event.participants && it.toName in event.participants
+                }
+                Text("事件关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
+                RelationGraphCard(names = event.participants.distinct(), relations = eventRelations, onOpenPerson = onOpenPerson)
             }
             if (event.sections.isEmpty()) {
                 event.consequence.takeIf { it.isNotBlank() }?.let { EventArticleSection("影响", it) }

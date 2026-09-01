@@ -61,6 +61,7 @@ internal fun MingPersonLinks(
     names: List<String>,
     onOpenPerson: (String) -> Unit,
     modifier: Modifier = Modifier,
+    roles: Map<String, String> = emptyMap(),
 ) {
     val distinctNames = names.filter { it.isNotBlank() }.distinct()
     FlowRow(
@@ -75,16 +76,25 @@ internal fun MingPersonLinks(
                 color = Vermilion.copy(alpha = 0.08f),
                 border = BorderStroke(1.dp, Vermilion.copy(alpha = 0.65f)),
             ) {
-                Text(
-                    name,
-                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
-                    color = Vermilion,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Column(modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp)) {
+                    Text(
+                        name,
+                        color = Vermilion,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    roles[name]?.takeIf { it.isNotBlank() }?.let { role ->
+                        Text(
+                            role,
+                            color = Vermilion.copy(alpha = 0.75f),
+                            fontFamily = FontFamily.Serif,
+                            fontSize = 11.sp,
+                        )
+                    }
+                }
             }
         }
     }
