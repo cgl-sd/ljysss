@@ -114,6 +114,9 @@ internal fun PersonProfile(
 
 @Composable
 internal fun PersonRelatedEventsPanel(events: List<RelatedEvent>, onOpenEvent: (String) -> Unit) {
+    var expanded by remember(events) { mutableStateOf(false) }
+    val limit = 12
+    val shown = if (expanded || events.size <= limit) events else events.take(limit)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = CutCornerShape(10.dp),
@@ -127,7 +130,20 @@ internal fun PersonRelatedEventsPanel(events: List<RelatedEvent>, onOpenEvent: (
         ) {
             Text("相关事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-            MingEventLinks(events, onOpenEvent)
+            MingEventLinks(shown, onOpenEvent)
+            if (!expanded && events.size > limit) {
+                Text(
+                    "展开全部（共 ${events.size} 条）",
+                    modifier = Modifier
+                        .clip(CutCornerShape(5.dp))
+                        .clickable { expanded = true }
+                        .padding(horizontal = 4.dp, vertical = 6.dp),
+                    color = Celadon,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
         }
     }
 }

@@ -17,12 +17,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ljyss.data.model.HistoricalEvent
-import com.ljyss.data.model.PersonRelation
+import com.ljyss.ui.components.MingEventLinks
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
 import com.ljyss.ui.theme.PaperLight
+import com.ljyss.data.model.HistoricalEvent
+import com.ljyss.data.model.PersonRelation
+import com.ljyss.data.model.RelatedEvent
 import com.ljyss.ui.theme.Vermilion
 
 /** 关系详情页：关系概要、局部关系图谱与两人共同参与的事件。 */
@@ -74,25 +76,11 @@ internal fun RelationDetailScreen(
             if (sharedEvents.isNotEmpty()) {
                 Text("共同事件", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-                sharedEvents.forEachIndexed { index, event ->
-                    if (index > 0) HorizontalDivider(color = LineGold.copy(alpha = .65f))
-                    Text(
-                        text = listOfNotNull(eventYearLabel(event), event.title).joinToString(" "),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onOpenEvent(event.id) }
-                            .padding(vertical = 4.dp),
-                        color = Ink,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 14.sp,
-                    )
-                }
+                MingEventLinks(
+                    events = sharedEvents.map { RelatedEvent(it.id, it.year ?: 0, it.title) },
+                    onOpenEvent = onOpenEvent,
+                )
             }
         }
     }
 }
-
-private fun eventYearLabel(event: HistoricalEvent): String = event.year?.let { start ->
-    val end = event.endYear
-    if (end != null && end != start) "$start—$end" else start.toString()
-}.orEmpty()

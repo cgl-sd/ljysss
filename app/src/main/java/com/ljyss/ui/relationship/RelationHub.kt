@@ -107,8 +107,7 @@ private fun RelationRowLine(row: RelationRow, onOpenRelation: (PersonRelation) -
             text = row.otherName,
             color = Ink,
             fontFamily = FontFamily.Serif,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

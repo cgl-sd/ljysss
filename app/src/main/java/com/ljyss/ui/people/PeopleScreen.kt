@@ -80,6 +80,8 @@ internal fun PeopleScreen(
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
     // 默认筛选洪武；再次点击当前朝代即可取消筛选、显示当前分类的全部人物。
     var selectedPeopleReign by rememberSaveable { mutableStateOf<String?>("洪武") }
+    // 关系页年表筛选：与人物页年表同款，按人物主要纪年筛选关系分组。
+    var selectedRelationReign by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedPersonName by rememberSaveable { mutableStateOf<String?>(null) }
     // 人物页中的事件详情在本页栈内打开：返回时稳定回到原人物，而不依赖切换底部导航。
     var selectedRelatedEventId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -352,7 +354,24 @@ internal fun PeopleScreen(
                             }
                         }
                         PeopleTab.RELATIONSHIPS -> {
-                            relationGroups.forEach { (dynasty, groups) ->
+                            item {
+                                RelationChronologyRail(
+                                    reigns = reigns,
+                                    selectedReign = selectedRelationReign,
+                                    onSelected = { reign ->
+                                        selectedRelationReign = if (selectedRelationReign == reign) null else reign
+                                    },
+                                )
+                            }
+                            val shownGroups = selectedRelationReign?.let { selected ->
+                                relationGroups.filter { it.first == selected }
+                            } ?: relationGroups
+                            if (shownGroups.isEmpty()) {
+                                item {
+                                    Text("当前筛选下暂无关系", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                                }
+                            }
+                            shownGroups.forEach { (dynasty, groups) ->
                                 item(key = "dynasty-$dynasty") {
                                     RelationDynastyHeader(dynasty, groups.size)
                                 }
@@ -383,6 +402,61 @@ private fun PersonChronologyRail(
     selectedReign: String?,
     onSelected: (String) -> Unit,
 ) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = PaperLight.copy(alpha = 0.62f),
+        shape = CutCornerShape(6.dp),
+        border = BorderStroke(1.dp, LineGold.copy(alpha = 0.8f)),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Text("人物年表", color = Ink, fontFamily = FontFamily.Serif, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                items(reigns, key = { it.title }) { reign ->
+                    val firstYear = reign.yearRange.substringBefore("—")
+                    val selected = reign.title == selectedReign
+                    Row(
+                        modifier = Modifier
+                            .clip(CutCornerShape(4.dp))
+                            .clickable { onSelected(reign.title) }
+                            .padding(horizontal = 5.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(if (selected) 8.dp else 6.dp),
+                            shape = RoundedCornerShape(50),
+                            color = if (selected) Vermilion else Brass,
+                        ) {}
+                        Column {
+                            Text(
+                                reign.title,
+                                color = if (selected) Vermilion else Ink,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(firstYear, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 9.sp)
+                        }
+                        HorizontalDivider(modifier = Modifier.width(14.dp), color = Brass, thickness = 1.dp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RelationChronologyRail(
+    reigns: List<Reign>,
+    selectedReign: String?,
+    onSelected: (String) -> Unit,
+) {
+    // 与人物页年表同款：朝代点按时间顺序横排，选中高亮朱红，再次点击取消筛选。
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = PaperLight.copy(alpha = 0.62f),
