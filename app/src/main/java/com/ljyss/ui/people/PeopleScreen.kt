@@ -106,6 +106,9 @@ internal fun PeopleScreen(
     val selectedPerson = focusedPerson ?: allPeople.firstOrNull { it.name == selectedPersonName }
     val selectedRelatedEvent = selectedRelatedEventId?.let { eventByKey[it] }
     val selectedRelation = selectedRelationKey?.let { key -> relations.firstOrNull { relationKey(it) == key } }
+    // 跨页跳入人物时 focusPersonId 先于 LaunchedEffect 生效：顶层页面直接按
+    // 目标人物渲染，避免先闪现人物 tab 列表再切到详情的过渡停顿。
+    val topPage = if (focusedPerson != null) PeoplePage.PROFILE else pageStack.last()
     // 列表与各详情页各自维护滚动位置，互不覆盖；详情页返回时保留原位置。
     val peopleListState = rememberLazyListState()
     val profileListState = rememberLazyListState()
@@ -141,7 +144,7 @@ internal fun PeopleScreen(
         // 从人物详情逐层回退：先回事件/关系详情（保持其滚动位置），最后才回列表。
         selectedPersonName = null
         personStack = emptyList()
-        pageStack = pageStack.dropLast(1)
+        pageStack = if (pageStack.size > 1) pageStack.dropLast(1) else listOf(PeoplePage.LIST)
         if (pageStack.last() == PeoplePage.LIST) {
             onProfileExit()
         }
@@ -219,21 +222,20 @@ internal fun PeopleScreen(
         }
     }
 
-    // 返回键按页面栈逐层回退：人物详情 → 事件/关系详情 → 列表。
-    BackHandler(enabled = pageStack.last() == PeoplePage.EVENT) {
+    BackHandler(enabled = topPage == PeoplePage.EVENT) {
         selectedRelatedEventId = null
         pageStack = pageStack.dropLast(1)
     }
-    BackHandler(enabled = pageStack.last() == PeoplePage.RELATION) {
+    BackHandler(enabled = topPage == PeoplePage.RELATION) {
         selectedRelationKey = null
         pageStack = pageStack.dropLast(1)
     }
-    BackHandler(enabled = pageStack.last() == PeoplePage.PROFILE) {
+    BackHandler(enabled = topPage == PeoplePage.PROFILE) {
         closeProfileStep()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        when (pageStack.last()) {
+        when (topPage) {
             PeoplePage.EVENT -> {
                 // 事件使用独立滚动状态；关闭后不会覆盖人物详情或人物列表原有的位置。
                 MingList(contentPadding, state = eventDetailListState) {

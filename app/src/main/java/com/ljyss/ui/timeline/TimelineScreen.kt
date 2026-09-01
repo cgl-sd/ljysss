@@ -50,9 +50,14 @@ internal fun TimelineScreen(
         "${event.year ?: 0}:${event.title}"
     }
     val selectedArchiveEvent = reigns.flatMap { it.events }.firstOrNull { eventKey(it) == selectedArchiveEventId }
-    // 每次打开事件详情都从列表首项开始，避免返回后再次点击时沿用上一次的滚动位置。
+    // 每次打开新事件都从列表首项开始；从人物详情返回同一事件时保持原滚动位置。
+    var lastOpenedEventKey by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(selectedArchiveEventId) {
-        if (selectedArchiveEventId != null) eventDetailListState.scrollToItem(0)
+        val key = selectedArchiveEventId
+        if (key != null && key != lastOpenedEventKey) {
+            eventDetailListState.scrollToItem(0)
+            lastOpenedEventKey = key
+        }
     }
     LaunchedEffect(searchDestination) {
         val destination = searchDestination ?: return@LaunchedEffect
