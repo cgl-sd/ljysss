@@ -32,24 +32,7 @@ import com.ljyss.ui.theme.LineGold
 import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.Vermilion
 
-/** 关系页按朝代分组的小标题：朝代名＋人物数。 */
-@Composable
-internal fun RelationDynastyHeader(title: String, personCount: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 18.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        HorizontalDivider(modifier = Modifier.width(28.dp), color = Vermilion)
-        Text(title, color = Ink, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text("${personCount} 人", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp)
-    }
-    HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp), color = LineGold.copy(alpha = .65f))
-}
-
-/** 以人物为核心的关系卡片：人物名＋称号＋纪年，下面列出与其直接相关的人物与关系类型。 */
+/** 以人物为核心的关系卡片：整卡点击进入人物详情；关系行点击进入关系详情。 */
 @Composable
 internal fun RelationPersonCard(
     person: HistoricalPerson,
@@ -58,7 +41,9 @@ internal fun RelationPersonCard(
     onOpenRelation: (PersonRelation) -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onOpenPerson(person.name) },
         shape = CutCornerShape(9.dp),
         border = BorderStroke(1.dp, LineGold),
         colors = CardDefaults.cardColors(containerColor = PaperLight),
@@ -68,7 +53,6 @@ internal fun RelationPersonCard(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = person.displayName,
-                    modifier = Modifier.clickable { onOpenPerson(person.name) },
                     color = Ink,
                     fontFamily = FontFamily.Serif,
                     fontSize = 19.sp,
@@ -85,45 +69,48 @@ internal fun RelationPersonCard(
     }
 }
 
-/** 一条关系：类型色点＋类型名＋对方人物。点击进入关系详情。 */
+/** 一条关系：类型色点＋类型名＋对方人物与说明。点击整行进入关系详情。 */
 @Composable
 private fun RelationRowLine(row: RelationRow, onOpenRelation: (PersonRelation) -> Unit) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpenRelation(row.relation) }
             .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        Surface(modifier = Modifier.size(7.dp), shape = RoundedCornerShape(50), color = relationshipColor(row.relation.type)) {}
-        Text(
-            text = row.relation.type.label,
-            color = InkSoft,
-            fontFamily = FontFamily.Serif,
-            fontSize = 13.sp,
-        )
-        Text(
-            text = row.otherName,
-            color = Ink,
-            fontFamily = FontFamily.Serif,
-            fontSize = 14.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(row.relation.reign, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 11.sp)
-    }
-    if (row.relation.note.isNotBlank()) {
-        Text(
-            text = row.relation.note,
-            modifier = Modifier.padding(start = 14.dp, bottom = 2.dp),
-            color = InkSoft,
-            fontFamily = FontFamily.Serif,
-            fontSize = 12.sp,
-            lineHeight = 17.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            Surface(modifier = Modifier.size(7.dp), shape = RoundedCornerShape(50), color = relationshipColor(row.relation.type)) {}
+            Text(
+                text = row.relation.type.label,
+                color = InkSoft,
+                fontFamily = FontFamily.Serif,
+                fontSize = 13.sp,
+            )
+            Text(
+                text = row.otherName,
+                color = Ink,
+                fontFamily = FontFamily.Serif,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(row.relation.reign, color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 11.sp)
+        }
+        if (row.relation.note.isNotBlank()) {
+            Text(
+                text = row.relation.note,
+                modifier = Modifier.padding(start = 14.dp),
+                color = InkSoft,
+                fontFamily = FontFamily.Serif,
+                fontSize = 12.sp,
+                lineHeight = 17.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 

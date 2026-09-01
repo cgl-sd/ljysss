@@ -54,7 +54,6 @@ import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.relationship.RelationDetailScreen
-import com.ljyss.ui.relationship.RelationDynastyHeader
 import com.ljyss.ui.relationship.RelationPersonCard
 import com.ljyss.ui.relationship.RelationRow
 import com.ljyss.ui.timeline.ReignRail
@@ -371,22 +370,17 @@ internal fun PeopleScreen(
                                     Text("当前筛选下暂无关系", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
                                 }
                             }
-                            shownGroups.forEach { (dynasty, groups) ->
-                                item(key = "dynasty-$dynasty") {
-                                    RelationDynastyHeader(dynasty, groups.size)
-                                }
-                                groups.forEach { group ->
-                                    item(key = "person-${group.person.id}") {
-                                        RelationPersonCard(
-                                            person = group.person,
-                                            rows = group.rows,
-                                            onOpenPerson = { openProfileFromBrowse(it) },
-                                            onOpenRelation = { relation ->
-                                                selectedRelationKey = relationKey(relation)
-                                                pageStack = pageStack + PeoplePage.RELATION
-                                            },
-                                        )
-                                    }
+                            shownGroups.flatMap { it.second }.forEach { group ->
+                                item(key = "person-${group.person.id}") {
+                                    RelationPersonCard(
+                                        person = group.person,
+                                        rows = group.rows,
+                                        onOpenPerson = { openProfileFromBrowse(it) },
+                                        onOpenRelation = { relation ->
+                                            selectedRelationKey = relationKey(relation)
+                                            pageStack = pageStack + PeoplePage.RELATION
+                                        },
+                                    )
                                 }
                             }
                         }
