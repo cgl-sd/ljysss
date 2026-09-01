@@ -4,13 +4,16 @@
 {"citation": "全国哲学社会科学工作办公室《明代省镇营兵制研究》成果简介，概述卫所制、京营兵制与省镇营兵制的区分。", "id": "ming-military-system-v1", "review_status": "资料已登记", "title": "明代军制专题索引", "url": "https://www.nopss.gov.cn/GB/219506/219508/219522/14960693.html"}
 {"citation": "北京市政府明十三陵文化信息页，作为北京明代陵寝群的地点来源登记。", "id": "beijing-ming-tombs-v1", "review_status": "资料已登记", "title": "北京市政府：明十三陵资料索引", "url": "https://english.beijing.gov.cn/beijinginfo/culture/culturaltreasures/sevenculture/202401/t20240111_3532654.html"}
 {"citation": "项目内置中文维基百科 Parquet 数据包；仅用于编辑校验和内容重建。", "id": "wikipedia-zh-20231101", "review_status": "编辑依据", "title": "中文维基百科本地数据包（2023-11-01快照）", "url": ""}
-{"citation":"美国疾病控制与预防中心关于肥皂洗手与清洁流程的公开指引；用于洗涤条目的健康原则校核。","id":"guide-handwashing-cdc-v1","review_status":"资料已登记","title":"CDC：洗手与卫生","url":"https://www.cdc.gov/clean-hands/data-research/facts-stats/index.html"}
-{"citation":"美国疾病控制与预防中心关于安全储水、容器选择及避免二次污染的公开指引；用于饮水条目校核。","id":"guide-water-cdc-v1","review_status":"资料已登记","title":"CDC：安全储水","url":"https://www.cdc.gov/global-water-sanitation-hygiene/about/about-safe-water-storage.html"}
-{"citation":"联合国粮食及农业组织关于堆肥、土壤有机质、绿肥与轮作的资料；用于农事条目校核。","id":"guide-agriculture-fao-v1","review_status":"资料已登记","title":"FAO：堆肥与土壤管理","url":"https://www.fao.org/4/s8930e/s8930e.pdf"}
-{"citation":"美国国家家庭食品保藏中心关于干燥、腌渍、发酵、储存和食品安全的研究型公众指引；用于保藏条目校核。","id":"guide-food-nchfp-v1","review_status":"资料已登记","title":"国家家庭食品保藏中心：保藏方法","url":"https://nchfp.uga.edu/"}
-{"citation":"美国国家生物技术信息中心关于甲醇毒性及家庭蒸馏风险的医学资料；用于蒸馏条目的安全边界校核。","id":"guide-distillation-safety-v1","review_status":"资料已登记","title":"NCBI：甲醇毒性","url":"https://www.ncbi.nlm.nih.gov/books/NBK482121/"}
-{"citation":"康宁玻璃博物馆关于玻璃组成、炉窑作业与玻璃工艺的教育资料；用于玻璃条目校核。","id":"guide-glass-cmog-v1","review_status":"资料已登记","title":"康宁玻璃博物馆：玻璃工艺","url":"https://info.cmog.org/frequently-asked-questions"}
-{"citation":"美国国家公园管理局关于石灰砂浆、砌体相容性与历史建筑维护的技术资料；用于砂浆条目校核。","id":"guide-masonry-nps-v1","review_status":"资料已登记","title":"NPS：石灰砂浆与砌体维护","url":"https://www.nps.gov/orgs/1739/upload/preservation-brief-02-repointing.pdf"}
-{"citation":"美国国会图书馆关于纸张、排版、试印、校对和印刷流程的馆藏研究资料；用于印刷条目校核。","id":"guide-printing-loc-v1","review_status":"资料已登记","title":"美国国会图书馆：印刷流程","url":"https://blogs.loc.gov/bibliomania/2025/01/24/before-control-p-the-printing-process/"}
-{"citation":"美国能源部关于水力驱动的历史与基本用途的公开资料；用于水车条目校核。","id":"guide-waterpower-doe-v1","review_status":"资料已登记","title":"美国能源部：水力利用史","url":"https://www.energy.gov/cmei/water/history-hydropower"}
-{"citation":"美国职业安全与健康管理局关于金属加工、高温、通风和隔离的安全资料；用于金属工坊条目校核。","id":"guide-metalwork-osha-v1","review_status":"资料已登记","title":"OSHA：金属加工安全","url":"https://www.osha.gov/metalworking-fluids/manual"}
+{"citation": "美国疾病控制与预防中心关于肥皂洗手与清洁流程的公开指引；用于洗涤条目的健康原则校核。", "id": "guide-handwashing-cdc-v1", "review_status": "资料已登记", "title": "CDC：洗手与卫生", "url": "https://www.cdc.gov/clean-hands/data-research/facts-stats/index.html"}
+{"citation": "美国疾病控制与预防中心关于安全储水、容器选择及避免二次污染的公开指引；用于饮水条目校核。", "id": "guide-water-cdc-v1", "review_status": "资料已登记", "title": "CDC：安全储水", "url": "https://www.cdc.gov/global-water-sanitation-hygiene/about/about-safe-water-storage.html"}
+{"citation": "联合国粮食及农业组织关于堆肥、土壤有机质、绿肥与轮作的资料；用于农事条目校核。", "id": "guide-agriculture-fao-v1", "review_status": "资料已登记", "title": "FAO：堆肥与土壤管理", "url": "https://www.fao.org/4/s8930e/s8930e.pdf"}
+{"citation": "美国国家家庭食品保藏中心关于干燥、腌渍、发酵、储存和食品安全的研究型公众指引；用于保藏条目校核。", "id": "guide-food-nchfp-v1", "review_status": "资料已登记", "title": "国家家庭食品保藏中心：保藏方法", "url": "https://nchfp.uga.edu/"}
+{"citation": "美国国家生物技术信息中心关于甲醇毒性及家庭蒸馏风险的医学资料；用于蒸馏条目的安全边界校核。", "id": "guide-distillation-safety-v1", "review_status": "资料已登记", "title": "NCBI：甲醇毒性", "url": "https://www.ncbi.nlm.nih.gov/books/NBK482121/"}
+{"citation": "康宁玻璃博物馆关于玻璃组成、炉窑作业与玻璃工艺的教育资料；用于玻璃条目校核。", "id": "guide-glass-cmog-v1", "review_status": "资料已登记", "title": "康宁玻璃博物馆：玻璃工艺", "url": "https://info.cmog.org/frequently-asked-questions"}
+{"citation": "美国国家公园管理局关于石灰砂浆、砌体相容性与历史建筑维护的技术资料；用于砂浆条目校核。", "id": "guide-masonry-nps-v1", "review_status": "资料已登记", "title": "NPS：石灰砂浆与砌体维护", "url": "https://www.nps.gov/orgs/1739/upload/preservation-brief-02-repointing.pdf"}
+{"citation": "美国国会图书馆关于纸张、排版、试印、校对和印刷流程的馆藏研究资料；用于印刷条目校核。", "id": "guide-printing-loc-v1", "review_status": "资料已登记", "title": "美国国会图书馆：印刷流程", "url": "https://blogs.loc.gov/bibliomania/2025/01/24/before-control-p-the-printing-process/"}
+{"citation": "美国能源部关于水力驱动的历史与基本用途的公开资料；用于水车条目校核。", "id": "guide-waterpower-doe-v1", "review_status": "资料已登记", "title": "美国能源部：水力利用史", "url": "https://www.energy.gov/cmei/water/history-hydropower"}
+{"citation": "美国职业安全与健康管理局关于金属加工、高温、通风和隔离的安全资料；用于金属工坊条目校核。", "id": "guide-metalwork-osha-v1", "review_status": "资料已登记", "title": "OSHA：金属加工安全", "url": "https://www.osha.gov/metalworking-fluids/manual"}
+{"id": "tiangong-kaiwu-v1", "title": "《天工开物》（1637，宋应星）", "url": "https://zh.wikipedia.org/wiki/天工开物", "citation": "明代工农业技术总录：造纸、冶炼、烧制等", "review_status": "资料已登记"}
+{"id": "nongzheng-quanshu-v1", "title": "《农政全书》（1639，徐光启）", "url": "https://zh.wikipedia.org/wiki/农政全书", "citation": "明代农学总汇：粪肥、绿肥、窖藏等", "review_status": "资料已登记"}
+{"id": "bencao-gangmu-v1", "title": "《本草纲目》（1596，李时珍）", "url": "https://zh.wikipedia.org/wiki/本草纲目", "citation": "明代药物学：烧酒、花露等条目", "review_status": "资料已登记"}
