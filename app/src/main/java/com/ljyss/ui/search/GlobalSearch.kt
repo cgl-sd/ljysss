@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
 import com.ljyss.data.model.HistoricalEvent
+import com.ljyss.domain.bestMatch
+import com.ljyss.domain.normalizeSearchText
+import com.ljyss.domain.rankByFirstMatch
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -106,7 +109,7 @@ fun GlobalSearchScreen(
             SearchFilterRail(filter) { filter = it }
             when {
                 query.isBlank() -> Text(
-                    "输入关键词，即可检索人物、岁月、天下与手册资料。",
+                    "输入中文或拼音，即可检索人物、岁月、天下与手册资料。",
                     color = InkSoft,
                     fontFamily = FontFamily.Serif,
                     fontSize = 15.sp,
@@ -164,7 +167,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
             Icon(Icons.Outlined.Search, contentDescription = null, tint = Vermilion, modifier = Modifier.padding(end = 9.dp))
             Box(modifier = Modifier.weight(1f).padding(vertical = 10.dp)) {
                 if (query.isBlank()) {
-                    Text("姓名、年号、官职、事件、机构、典章或手册", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                    Text("姓名、年号、官职、事件、机构、典章或手册（支持拼音）", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
                 }
                 BasicTextField(
                     value = query,
@@ -180,7 +183,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
 
 @Composable
 private fun SearchEmptyState() {
-    Text("未寻得相符条目。可尝试姓名、年号、官职、机构或手册主题。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+    Text("未寻得相符条目。可尝试姓名、年号、官职、机构或手册主题（支持拼音）。", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
 }
 
 @Composable
@@ -212,7 +215,7 @@ private fun SearchFilter.matches(result: SearchResult): Boolean = when (this) {
 }
 
 private fun searchCatalog(repository: MingRepository, rawQuery: String): List<SearchResult> {
-    val query = rawQuery.trim().lowercase()
+    val query = normalizeSearchText(rawQuery)
     if (query.isBlank()) return emptyList()
     fun text(value: String) = value.replace(Regex("\\s+"), " ").trim()
     fun eventText(reign: String, event: HistoricalEvent) = listOf(reign, event.year, event.month, event.title, event.description, event.detail, event.place, event.participants.joinToString("、"), event.consequence).joinToString(" ")
@@ -246,5 +249,7 @@ private fun searchCatalog(repository: MingRepository, rawQuery: String): List<Se
             add(SearchResult("guide:${guide.id}", "手册", guide.title, text("${guide.category}｜${guide.description}"), searchable, SearchDestination(3, guideId = guide.id)))
         }
     }
-    return results.filter { it.haystack.lowercase().contains(query) }.take(80)
+    return rankByFirstMatch(
+        results.map { result -> result to bestMatch(normalizeSearchText(result.haystack), query) },
+    ).take(80)
 }
