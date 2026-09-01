@@ -72,12 +72,12 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, relations: List<PersonR
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
                 MingPersonLinks(event.participants, onOpenPerson)
             }
-            // 事件关系：只画该事件参与人之间的直接关系，共同经历即连线依据。
+            // 人物关系：只画该事件参与人之间的直接关系，共同经历即连线依据。
             if (event.participants.size >= 2) {
                 val eventRelations = relations.filter {
                     it.fromName in event.participants && it.toName in event.participants
                 }
-                Text("事件关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text("人物关系", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
                 RelationGraphCard(names = event.participants.distinct(), relations = eventRelations, onOpenPerson = onOpenPerson)
             }

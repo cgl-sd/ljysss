@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
+import com.ljyss.data.model.HistoricalPerson
 import com.ljyss.data.model.PeopleTab
 import com.ljyss.data.model.PersonCategory
 import com.ljyss.data.model.PersonRelation
@@ -53,7 +54,9 @@ import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
 import com.ljyss.ui.relationship.RelationDetailScreen
-import com.ljyss.ui.relationship.RelationHubCard
+import com.ljyss.ui.relationship.RelationDynastyHeader
+import com.ljyss.ui.relationship.RelationPersonCard
+import com.ljyss.ui.relationship.RelationRow
 import com.ljyss.ui.timeline.ReignRail
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
@@ -138,6 +141,27 @@ internal fun PeopleScreen(
                 (selectedPeopleReign?.let { person.reign.contains(it) } ?: true)
         }
         orderedPeopleForCards(filtered, selectedPeopleReign)
+    }
+    val relationGroups = remember(relations, allPeople, reigns) {
+        val peopleByName = allPeople.associateBy { it.name }
+        val dynastyOrder = reigns.map { it.title }
+        val rowsByPerson = mutableMapOf<String, MutableList<RelationRow>>()
+        relations.forEach { relation ->
+            rowsByPerson.getOrPut(relation.fromName) { mutableListOf() }
+                .add(RelationRow(relation.toName, relation))
+            rowsByPerson.getOrPut(relation.toName) { mutableListOf() }
+                .add(RelationRow(relation.fromName, relation))
+        }
+        data class Group(val person: HistoricalPerson, val rows: List<RelationRow>)
+        val groups = rowsByPerson.mapNotNull { (name, rows) ->
+            peopleByName[name]?.let { person -> Group(person, rows) }
+        }
+        val byDynasty = groups.groupBy { group ->
+            val primary = group.person.reign.substringBefore('、').trim()
+            if (primary in dynastyOrder) primary else "其他"
+        }
+        dynastyOrder.mapNotNull { dynasty -> byDynasty[dynasty]?.let { dynasty to it } } +
+            byDynasty.entries.filter { it.key !in dynastyOrder }.map { it.key to it.value }
     }
 
     fun returnFromProfile() {
@@ -328,10 +352,22 @@ internal fun PeopleScreen(
                             }
                         }
                         PeopleTab.RELATIONSHIPS -> {
-                            items(relations, key = { relationKey(it) }) { relation ->
-                                RelationHubCard(relation) {
-                                    selectedRelationKey = relationKey(relation)
-                                    pageStack = pageStack + PeoplePage.RELATION
+                            relationGroups.forEach { (dynasty, groups) ->
+                                item(key = "dynasty-$dynasty") {
+                                    RelationDynastyHeader(dynasty, groups.size)
+                                }
+                                groups.forEach { group ->
+                                    item(key = "person-${group.person.id}") {
+                                        RelationPersonCard(
+                                            person = group.person,
+                                            rows = group.rows,
+                                            onOpenPerson = { openProfileFromBrowse(it) },
+                                            onOpenRelation = { relation ->
+                                                selectedRelationKey = relationKey(relation)
+                                                pageStack = pageStack + PeoplePage.RELATION
+                                            },
+                                        )
+                                    }
                                 }
                             }
                         }
