@@ -52,10 +52,8 @@ import kotlinx.coroutines.withContext
 import com.ljyss.ui.components.MingList
 import com.ljyss.ui.components.MingMasthead
 import com.ljyss.ui.components.OrnamentalTitle
-import com.ljyss.ui.relationship.EventHubCard
 import com.ljyss.ui.relationship.RelationDetailScreen
 import com.ljyss.ui.relationship.RelationHubCard
-import com.ljyss.ui.relationship.SectionTitle
 import com.ljyss.ui.timeline.ReignRail
 import com.ljyss.ui.theme.Brass
 import com.ljyss.ui.theme.Ink
@@ -63,6 +61,8 @@ import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
 import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.Vermilion
+/** 人物页内的顶层页面：人物详情可叠在事件/关系详情之上，返回时逐层回退到跳转前的一页。 */
+private enum class PeoplePage { LIST, EVENT, RELATION, PROFILE }
 
 @Composable
 internal fun PeopleScreen(
@@ -82,6 +82,8 @@ internal fun PeopleScreen(
     var selectedRelatedEventId by rememberSaveable { mutableStateOf<String?>(null) }
     // 关系 tab 的关系详情同样在本页栈内打开，与事件详情互斥渲染。
     var selectedRelationKey by rememberSaveable { mutableStateOf<String?>(null) }
+    // 页面栈：底 → 顶。人物详情可叠在事件/关系详情之上，返回时逐层回退。
+    var pageStack by rememberSaveable { mutableStateOf(listOf(PeoplePage.LIST)) }
     var personStack by rememberSaveable { mutableStateOf(listOf<String>()) }
     var returnListIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var returnListOffset by rememberSaveable { mutableIntStateOf(0) }
@@ -89,8 +91,6 @@ internal fun PeopleScreen(
     val relations = remember(repository) { repository.personRelations() }
     val allPeople = remember(repository) { repository.allPeople() }
     val allEvents = remember(reigns) { reigns.flatMap { it.events } }
-    // 关系 tab 事件分组按年份升序；空/无 year 的事件排最后。
-    val sortedEvents = remember(allEvents) { allEvents.sortedBy { it.year ?: Int.MAX_VALUE } }
     // 相关事件使用稳定 ID 索引；同时登记年份+标题回退键，兼容旧内容包中的空 ID。
     val eventByKey = remember(allEvents) {
         buildMap {
@@ -106,11 +106,11 @@ internal fun PeopleScreen(
     val selectedPerson = focusedPerson ?: allPeople.firstOrNull { it.name == selectedPersonName }
     val selectedRelatedEvent = selectedRelatedEventId?.let { eventByKey[it] }
     val selectedRelation = selectedRelationKey?.let { key -> relations.firstOrNull { relationKey(it) == key } }
+    // 列表与各详情页各自维护滚动位置，互不覆盖；详情页返回时保留原位置。
     val peopleListState = rememberLazyListState()
-    // 列表与人物详情各自维护滚动位置。否则从一位人物的长传记跳到另一人时，
-    // 新人物会错误地继承旧页面的中段位置。
     val profileListState = rememberLazyListState()
     val eventDetailListState = rememberLazyListState()
+    val relationDetailListState = rememberLazyListState()
     LaunchedEffect(selectedRelatedEventId) {
         if (selectedRelatedEventId != null) eventDetailListState.scrollToItem(0)
     }
@@ -138,20 +138,22 @@ internal fun PeopleScreen(
     }
 
     fun returnFromProfile() {
-        selectedRelatedEventId = null
-        selectedRelationKey = null
+        // 从人物详情逐层回退：先回事件/关系详情（保持其滚动位置），最后才回列表。
         selectedPersonName = null
         personStack = emptyList()
-        onProfileExit()
+        pageStack = pageStack.dropLast(1)
+        if (pageStack.last() == PeoplePage.LIST) {
+            onProfileExit()
+        }
     }
 
     fun openProfileFromBrowse(name: String) {
-        selectedRelatedEventId = null
-        selectedRelationKey = null
+        // 从事件/关系详情跳人物时保留详情页：人物详情叠在其上，返回时原页仍在。
         returnListIndex = peopleListState.firstVisibleItemIndex
         returnListOffset = peopleListState.firstVisibleItemScrollOffset
         selectedPersonName = name
         personStack = emptyList()
+        pageStack = pageStack + PeoplePage.PROFILE
     }
 
     LaunchedEffect(selectedPersonName) {
@@ -176,12 +178,21 @@ internal fun PeopleScreen(
         // 空 ID 的旧数据通过回退键仍可打开对应事件详情。
         if (eventId.isNotBlank()) {
             selectedRelatedEventId = eventId
+            pageStack = pageStack + PeoplePage.EVENT
         }
     }
 
     fun openPersonFromEvent(targetName: String) {
-        selectedRelatedEventId = null
-        if (selectedPersonName == null) openProfileFromBrowse(targetName) else openRelatedPerson(targetName)
+        // 保留事件详情：人物详情叠在其上，返回时回到该事件。
+        if (selectedPersonName == null) {
+            returnListIndex = peopleListState.firstVisibleItemIndex
+            returnListOffset = peopleListState.firstVisibleItemScrollOffset
+            selectedPersonName = targetName
+            personStack = emptyList()
+            pageStack = pageStack + PeoplePage.PROFILE
+        } else {
+            openRelatedPerson(targetName)
+        }
     }
 
     fun closeProfileStep() {
@@ -202,47 +213,53 @@ internal fun PeopleScreen(
                 selectedCategory = person.category
                 selectedPersonName = person.name
                 personStack = emptyList()
+                pageStack = listOf(PeoplePage.LIST, PeoplePage.PROFILE)
             }
             onFocusConsumed()
         }
     }
 
-    BackHandler(enabled = selectedRelatedEvent != null) {
+    // 返回键按页面栈逐层回退：人物详情 → 事件/关系详情 → 列表。
+    BackHandler(enabled = pageStack.last() == PeoplePage.EVENT) {
         selectedRelatedEventId = null
+        pageStack = pageStack.dropLast(1)
     }
-    BackHandler(enabled = selectedRelationKey != null && selectedRelatedEvent == null) {
+    BackHandler(enabled = pageStack.last() == PeoplePage.RELATION) {
         selectedRelationKey = null
+        pageStack = pageStack.dropLast(1)
     }
-    BackHandler(enabled = selectedPersonName != null && selectedRelatedEvent == null) {
+    BackHandler(enabled = pageStack.last() == PeoplePage.PROFILE) {
         closeProfileStep()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (selectedRelatedEvent != null) {
-            // 事件使用独立滚动状态；关闭后不会覆盖人物详情或人物列表原有的位置。
-            MingList(contentPadding, state = eventDetailListState) {
-                item {
-                    ArchiveEventProfile(selectedRelatedEvent, relations, ::openPersonFromEvent)
+        when (pageStack.last()) {
+            PeoplePage.EVENT -> {
+                // 事件使用独立滚动状态；关闭后不会覆盖人物详情或人物列表原有的位置。
+                MingList(contentPadding, state = eventDetailListState) {
+                    item {
+                        ArchiveEventProfile(selectedRelatedEvent!!, relations, ::openPersonFromEvent)
+                    }
                 }
             }
-        } else if (selectedRelation != null) {
-            MingList(contentPadding) {
-                item {
-                    RelationDetailScreen(
-                        relation = selectedRelation,
-                        relations = relations,
-                        events = allEvents,
-                        onOpenPerson = { name ->
-                            if (selectedPersonName == null) openProfileFromBrowse(name) else openRelatedPerson(name)
-                        },
-                        onOpenEvent = { eventId -> if (eventId.isNotBlank()) selectedRelatedEventId = eventId },
-                    )
+            PeoplePage.RELATION -> {
+                MingList(contentPadding, state = relationDetailListState) {
+                    item {
+                        RelationDetailScreen(
+                            relation = selectedRelation!!,
+                            relations = relations,
+                            events = allEvents,
+                            onOpenPerson = { name ->
+                                if (selectedPersonName == null) openProfileFromBrowse(name) else openRelatedPerson(name)
+                            },
+                            onOpenEvent = { eventId -> openRelatedEvent(eventId) },
+                        )
+                    }
                 }
             }
-        } else {
-            MingList(contentPadding, state = if (selectedPerson != null) profileListState else peopleListState) {
-                if (selectedPerson != null) {
-                    val profile = profileDetail ?: selectedPerson
+            PeoplePage.PROFILE -> {
+                val profile = profileDetail ?: selectedPerson!!
+                MingList(contentPadding, state = profileListState) {
                     item {
                         PersonProfile(
                             person = profile,
@@ -258,7 +275,10 @@ internal fun PeopleScreen(
                             )
                         }
                     }
-                } else {
+                }
+            }
+            PeoplePage.LIST -> {
+                MingList(contentPadding, state = peopleListState) {
                     item { MingMasthead(onSearch) }
                     item { OrnamentalTitle("人物") }
                     item {
@@ -306,13 +326,11 @@ internal fun PeopleScreen(
                             }
                         }
                         PeopleTab.RELATIONSHIPS -> {
-                            item { SectionTitle("事件") }
-                            items(sortedEvents, key = { it.id.ifBlank { "${it.year}:${it.title}" } }) { event ->
-                                EventHubCard(event) { selectedRelatedEventId = event.id }
-                            }
-                            item { SectionTitle("人物之间的关系") }
                             items(relations, key = { relationKey(it) }) { relation ->
-                                RelationHubCard(relation) { selectedRelationKey = relationKey(relation) }
+                                RelationHubCard(relation) {
+                                    selectedRelationKey = relationKey(relation)
+                                    pageStack = pageStack + PeoplePage.RELATION
+                                }
                             }
                         }
                     }
@@ -321,7 +339,6 @@ internal fun PeopleScreen(
         }
     }
 }
-
 @Composable
 private fun PersonChronologyRail(
     reigns: List<Reign>,

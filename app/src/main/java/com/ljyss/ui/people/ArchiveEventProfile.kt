@@ -70,7 +70,7 @@ internal fun ArchiveEventProfile(event: HistoricalEvent, relations: List<PersonR
             if (event.participants.isNotEmpty()) {
                 Text("相关人物", color = Ink, fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = LineGold.copy(alpha = 0.75f))
-                MingPersonLinks(event.participants, onOpenPerson, roles = event.participantRoles)
+                MingPersonLinks(event.participants, onOpenPerson)
             }
             // 事件关系：只画该事件参与人之间的直接关系，共同经历即连线依据。
             if (event.participants.size >= 2) {

@@ -130,19 +130,6 @@ class BundledMingRepository private constructor(
                 ).groupBy { it.required("event_id") }.mapValues { (_, rows) ->
                     rows.map { it.required("name") }
                 }
-                val rolesByEvent = database.rows(
-                    """
-                    SELECT ep.event_id, p.name, ep.role
-                    FROM event_participant AS ep
-                    JOIN person AS p ON p.id = ep.person_id
-                    ORDER BY ep.event_id, ep.rowid
-                    """.trimIndent(),
-                ).groupBy { it.required("event_id") }.mapValues { (_, rows) ->
-                    rows.mapNotNull { row ->
-                        val role = row.value("role")
-                        if (role.isBlank()) null else row.required("name") to role
-                    }.toMap()
-                }
                 val eventsByReign = database.rows(
                     """
                     SELECT e.id, e.reign_id, e.year, e.end_year, e.month, e.title, e.event_type,
@@ -164,7 +151,6 @@ class BundledMingRepository private constructor(
                             place = row.required("place"),
                             participants = participantsByEvent[row.required("id")]
                                 ?: row.value("participants").split("、").filter { it.isNotBlank() },
-                            participantRoles = rolesByEvent[row.required("id")].orEmpty(),
                             consequence = row.required("consequence"),
                             sections = eventSections[row.required("id")].orEmpty(),
                         )
