@@ -68,6 +68,16 @@ android {
             isShrinkResources = true
         }
     }
+
+    // 发布包以应用名拼音首字母命名（默认 <module>-<buildType>.apk 会输出 app-release.apk；
+    // GitHub release 资产不支持中文文件名，使用与仓库同名的 ljysss.apk）
+    androidComponents {
+        onVariants(selector().withBuildType("release")) { variant ->
+            variant.outputs.forEach { output ->
+                output.outputFileName.set("ljysss.apk")
+            }
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
