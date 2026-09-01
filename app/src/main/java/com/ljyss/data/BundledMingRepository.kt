@@ -87,7 +87,7 @@ class BundledMingRepository private constructor(
                 val people = database.rows(
                     """
                     SELECT id, name, display_name, title, reign, archive_start_year, years, category, courtesy_name,
-                           summary, biography, family_summary, portrait_key
+                           summary, biography
                     FROM person ORDER BY reign, name
                     """.trimIndent(),
                 ).map { row ->
@@ -101,8 +101,6 @@ class BundledMingRepository private constructor(
                         years = row.required("years"),
                         note = row.required("summary"),
                         biography = row.required("biography"),
-                        familySummary = row.required("family_summary"),
-                        portraitKey = row.value("portrait_key").ifBlank { null },
                         category = PersonCategory.entries.first { it.label == row.required("category") },
                         sections = sections[row.required("id")].orEmpty(),
                         relatedEvents = relatedEventsByPerson[row.required("id")].orEmpty(),
@@ -165,7 +163,6 @@ class BundledMingRepository private constructor(
                     Reign(
                         title = title,
                         yearRange = if (start == end) "$start" else "$start—$end",
-                        displayYear = "${title}元年 · $start",
                         summary = row.required("summary"),
                         events = eventsByReign[row.required("id")].orEmpty(),
                     )

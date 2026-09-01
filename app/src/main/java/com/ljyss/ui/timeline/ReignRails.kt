@@ -82,24 +82,6 @@ internal fun ReignRail(reigns: List<Reign>, selectedTitle: String, onSelected: (
 }
 
 @Composable
-internal fun DynastyRangeBar() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text("1368", color = Vermilion, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-        HorizontalDivider(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 10.dp),
-            color = Brass,
-            thickness = 2.dp,
-        )
-        Text("1644", color = Ink, fontFamily = FontFamily.Serif, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
 internal fun ReignYearRail(reign: Reign, selectedYear: Int, onSelected: (Int) -> Unit) {
     val eventCountByYear = remember(reign) {
         reign.events.groupingBy { it.year ?: reign.startYear() }.eachCount()
@@ -153,33 +135,6 @@ internal fun ReignYearRail(reign: Reign, selectedYear: Int, onSelected: (Int) ->
                         fontSize = 9.sp,
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-internal fun MonthLine(activeMonths: List<String>) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        listOf("正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "冬月", "腊月").forEach { month ->
-            val active = activeMonths.contains(month)
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(3.dp),
-            ) {
-                Text(
-                    text = month.take(2),
-                    color = if (active) Vermilion else InkSoft,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 11.sp,
-                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                )
-                Surface(
-                    modifier = Modifier.size(if (active) 10.dp else 7.dp),
-                    shape = RoundedCornerShape(50),
-                    color = if (active) Vermilion else Brass,
-                ) {}
             }
         }
     }

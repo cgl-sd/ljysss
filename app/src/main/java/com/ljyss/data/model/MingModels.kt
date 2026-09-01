@@ -3,7 +3,6 @@ package com.ljyss.data.model
 data class Reign(
     val title: String,
     val yearRange: String,
-    val displayYear: String,
     val summary: String,
     val events: List<HistoricalEvent>,
 )
@@ -54,11 +53,6 @@ data class HistoricalPerson(
     val id: String = "",
     val courtesyName: String = "",
     val biography: String = note,
-    val familySummary: String = "",
-    /** 史料影印像或生成的绢本示意像均用后端资源键引用。 */
-    val portraitKey: String? = null,
-    /** 内部数据状态；用户端不再区分来源，界面不展示此字段。 */
-    val verificationStatus: String = "已校验",
     /** 详情正文按栏目组织；空列表时界面自动回退为 biography 单段。 */
     val sections: List<PersonSection> = emptyList(),
     /** 面向读者的姓名；宗室女性有可考本名时与档案封号分开保存。 */
