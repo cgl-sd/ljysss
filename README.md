@@ -86,6 +86,6 @@ export LJYSS_RELEASE_KEY_PASSWORD=…
 ./gradlew :app:assembleRelease :app:bundleRelease
 ```
 
-可安装包输出在 `app/build/outputs/apk/release/app-release.apk`（签名证书 CN=两京一十三省）；应用商店上传包输出在 `app/build/outputs/bundle/release/app-release.aab`。
+可安装包输出在 `app/build/outputs/apk/release/ljysss.apk`（签名证书 CN=两京一十三省；GitHub release 资产不支持中文文件名，故用应用名拼音首字母）；应用商店上传包输出在 `app/build/outputs/bundle/release/app-release.aab`。
 
 协作约定见 `AGENTS.md`；接口契约见 `docs/backend-api-contract.md`。
