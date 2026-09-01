@@ -20,3 +20,5 @@ local.properties
 # 名录匹配与合并的中间产物，可由脚本重算，不进版本库
 /backend/data/staging/
 /backend/data/content/world_image_bases/
+/.pytest_cache
+/.kotlin/

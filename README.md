@@ -59,7 +59,7 @@ cd backend && .venv/bin/uvicorn app.main:app --port 8000
 
 ## 发布
 
-阅读端不访问网络，资料库和图片均随 APK 打包。正式发布使用独立的 Android 签名密钥；密钥和密码不进入版本库，通过下列环境变量在本机或持续集成环境提供：
+阅读端不访问网络，资料库和图片均随 APK 打包。release 构建启用 R8 代码压缩与资源收缩，并打包从编辑库投影出的阅读端发布库（剔除编辑专用表，`backend/scripts/build_release_database.py` 生成）；动态查找的图片资源由 `res/raw/keep.xml` 逐一保留。正式发布使用独立的 Android 签名密钥；密钥和密码不进入版本库，通过下列环境变量在本机或持续集成环境提供：
 
 ```bash
 export LJYSS_RELEASE_STORE_FILE=/path/to/release.p12

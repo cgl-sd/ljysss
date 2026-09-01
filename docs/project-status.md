@@ -27,3 +27,10 @@
 - 正式发布通过独立签名密钥生成 APK 与 AAB；密钥不进入版本库，构建方式见根目录 `README.md` 的“发布”章节。
 - 阅读端已移除联网权限和明文网络许可；系统备份与设备迁移均明确排除，避免资料库或本地状态被导出。
 - Android 内容服务可由 `cd backend && .venv/bin/uvicorn app.main:app --port 8000` 启动，用于编辑与开发核对；应用界面直接读取已打包的统一资料库。
+
+## 发布前检查（2026-09-01）
+
+- release 构建启用 R8 代码压缩与资源收缩；动态查找的图片资源（画像、机构、典章、手册插绘）由 `res/raw/keep.xml` 显式保留，资源名完整进入资源表。
+- 打包库改为阅读端发布库：`backend/scripts/build_release_database.py` 从编辑库投影 19 张阅读端表（27M → 19M，索引与登记触发器保留，外键校验通过），编辑专用表（维基原文、CBDB、明史语料、研究状态、引用登记等）不进 APK。
+- 清理：`tmp/`、`backend/data/staging/`、AI 出图原始 PNG 底图、6 张未引用 WebP（special_cover_*/special_artifact/palace/system）、根 `.DS_Store`、`.pytest_cache`。
+- 验证：`assembleDebug`/`assembleRelease` 通过；lint 0 错误；后端 pytest 96 通过；release APK（R8）安装到模拟器冒烟——首页、穿越手册列表与详情插绘、人物绢本画像均渲染正常。release APK 体积 24M（debug 46M）。
