@@ -86,5 +86,4 @@ export LJYSS_RELEASE_KEY_PASSWORD=…
 ./gradlew :app:assembleRelease :app:bundleRelease
 ```
 
-**应用内检查更新**：「我的」页提供「应用更新」卡片，手动点击检查 GitHub 最新 release 并下载安装整包 APK。发布新版时：先打语义化版本 tag（如 `v1.2.0`，须为纯数字点分格式，带不带 `v` 前缀均可），再把 release 构建的 `ljysss.apk` 上传为该 release 的资产即可；`GitHubUpdateSource.kt` 读取 `cgl-sd/ljysss` 的 `releases/latest`，按资产名 `ljysss.apk` 匹配更新包。升级安装走系统安装器（首次需在系统弹窗中允许「安装未知应用」），因此发布包与已安装包必须同证书签名——用户从 GitHub 安装 release 包后，后续 release 升级可正常覆盖；调试包（debug 签名）不会被 release 包覆盖，属预期行为。检查接口与下载均为 HTTPS，未认证调用受 GitHub 公开 API 限流（60 次/小时），手动检查足够。
 协作约定见 `AGENTS.md`；接口契约见 `docs/backend-api-contract.md`。
