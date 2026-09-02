@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ljyss.data.MingRepository
 import com.ljyss.data.BundledMingRepository
+import com.ljyss.data.GitHubUpdateSource
 import com.ljyss.ui.people.PeopleScreen
 import com.ljyss.ui.profile.ProfileScreen
 import com.ljyss.ui.search.GlobalSearchScreen
@@ -128,6 +129,7 @@ private val appSections = listOf(
 private fun TwoCapitalsApp(repository: MingRepository) {
     var selectedSection by rememberSaveable { mutableIntStateOf(0) }
     var searchOpen by rememberSaveable { mutableStateOf(false) }
+    val updateSource = remember { GitHubUpdateSource() }
     var searchDestination by remember { mutableStateOf<SearchDestination?>(null) }
     var personDestination by remember { mutableStateOf<PersonDestination?>(null) }
     var personReturnSection by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -211,6 +213,7 @@ private fun TwoCapitalsApp(repository: MingRepository) {
                     )
                     else -> ProfileScreen(
                         repository = repository,
+                        updateSource = updateSource,
                         contentPadding = innerPadding,
                         searchDestination = searchDestination,
                         onSearchDestinationConsumed = { searchDestination = null },
