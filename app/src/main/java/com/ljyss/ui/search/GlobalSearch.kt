@@ -45,6 +45,7 @@ import com.ljyss.data.model.HistoricalEvent
 import com.ljyss.domain.bestMatch
 import com.ljyss.domain.normalizeSearchText
 import com.ljyss.domain.rankByFirstMatch
+import com.ljyss.domain.toPinyin
 import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.InkSoft
 import com.ljyss.ui.theme.LineGold
@@ -52,6 +53,9 @@ import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.PaperShade
 import com.ljyss.ui.theme.Vermilion
 import com.ljyss.ui.components.mingScrollbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 /** 搜索结果的去向。sectionIndex 与底部四页保持同一顺序。 */
 data class SearchDestination(
@@ -70,7 +74,6 @@ private data class SearchResult(
     val kind: String,
     val title: String,
     val excerpt: String,
-    val haystack: String,
     val destination: SearchDestination,
 )
 
@@ -88,10 +91,23 @@ fun GlobalSearchScreen(
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf(SearchFilter.ALL) }
     val searchFocus = remember { FocusRequester() }
-    val results = remember(repository, query, filter) {
-        searchCatalog(repository, query).filter { result -> filter.matches(result) }
-    }
     val resultListState = rememberLazyListState()
+    var index by remember { mutableStateOf(emptyList<IndexedResult>()) }
+    var results by remember { mutableStateOf(emptyList<SearchResult>()) }
+    LaunchedEffect(repository) {
+        index = withContext(Dispatchers.Default) { buildSearchIndex(repository) }
+    }
+    LaunchedEffect(query, filter, index) {
+        delay(150)
+        results = withContext(Dispatchers.Default) {
+            val normalized = normalizeSearchText(query)
+            val ranked = if (normalized.isBlank()) emptyList()
+            else rankByFirstMatch(
+                index.map { indexed -> indexed.result to bestMatch(indexed.haystack, normalized, indexed.pinyin) },
+            )
+            ranked.filter { filter.matches(it) }.take(80)
+        }
+    }
     BackHandler(onBack = onDismiss)
     LaunchedEffect(Unit) { searchFocus.requestFocus() }
     Surface(modifier = Modifier.fillMaxSize(), color = PaperLight) {
@@ -108,7 +124,7 @@ fun GlobalSearchScreen(
             SearchField(query = query, onQueryChange = { query = it }, modifier = Modifier.focusRequester(searchFocus))
             SearchFilterRail(filter) { filter = it }
             when {
-                query.isBlank() -> Text(
+                query.isBlank() || index.isEmpty() -> Text(
                     "输入中文或拼音，即可检索人物、岁月、天下与手册资料。",
                     color = InkSoft,
                     fontFamily = FontFamily.Serif,
@@ -157,7 +173,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = PaperShade.copy(alpha = 0.52f),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(50),
         border = BorderStroke(1.dp, LineGold.copy(alpha = 0.82f)),
     ) {
         Row(
@@ -167,7 +183,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
             Icon(Icons.Outlined.Search, contentDescription = null, tint = Vermilion, modifier = Modifier.padding(end = 9.dp))
             Box(modifier = Modifier.weight(1f).padding(vertical = 10.dp)) {
                 if (query.isBlank()) {
-                    Text("姓名、年号、官职、事件、机构、典章或手册（支持拼音）", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp)
+                    Text("姓名、年号、官职、事件、机构……", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 BasicTextField(
                     value = query,
@@ -214,22 +230,31 @@ private fun SearchFilter.matches(result: SearchResult): Boolean = when (this) {
     SearchFilter.GUIDE -> result.kind == "手册"
 }
 
-private fun searchCatalog(repository: MingRepository, rawQuery: String): List<SearchResult> {
-    val query = normalizeSearchText(rawQuery)
-    if (query.isBlank()) return emptyList()
+/** 检索索引项：haystack 已归一化，pinyin 一次性预计算，避免逐键重复转换全库文本。 */
+private data class IndexedResult(
+    val result: SearchResult,
+    val haystack: String,
+    val pinyin: String,
+)
+
+private fun buildSearchIndex(repository: MingRepository): List<IndexedResult> {
     fun text(value: String) = value.replace(Regex("\\s+"), " ").trim()
     fun eventText(reign: String, event: HistoricalEvent) = listOf(reign, event.year, event.month, event.title, event.description, event.detail, event.place, event.participants.joinToString("、"), event.consequence).joinToString(" ")
-    val results = buildList {
+    fun indexed(result: SearchResult, searchable: String): IndexedResult {
+        val haystack = normalizeSearchText(searchable)
+        return IndexedResult(result, haystack, toPinyin(haystack))
+    }
+    return buildList {
         repository.allPeople().forEach { person ->
             val searchable = listOf(person.displayName, person.name, person.title, person.reign, person.years, person.note, person.biography, person.courtesyName)
                 .plus(person.sections.map { it.title + " " + it.content })
                 .joinToString(" ")
-            add(SearchResult("person:${person.id}", "人物", person.displayName, text("${person.title}｜${person.reign}｜${person.note}"), searchable, SearchDestination(1, personName = person.name)))
+            add(indexed(SearchResult("person:${person.id}", "人物", person.displayName, text("${person.title}｜${person.reign}｜${person.note}"), SearchDestination(1, personName = person.name)), searchable))
         }
         repository.reigns().forEach { reign ->
-            add(SearchResult("reign:${reign.title}", "年号", reign.title, text("${reign.yearRange}｜${reign.summary}"), "${reign.title} ${reign.yearRange} ${reign.summary}", SearchDestination(0, reignTitle = reign.title)))
+            add(indexed(SearchResult("reign:${reign.title}", "年号", reign.title, text("${reign.yearRange}｜${reign.summary}"), SearchDestination(0, reignTitle = reign.title)), "${reign.title} ${reign.yearRange} ${reign.summary}"))
             reign.events.forEach { event ->
-                add(SearchResult("event:${event.id}", "大事", event.title, text("${reign.title}${event.year ?: ""}年｜${event.description}"), eventText(reign.title, event), SearchDestination(0, reignTitle = reign.title, year = event.year, eventId = event.id)))
+                add(indexed(SearchResult("event:${event.id}", "大事", event.title, text("${reign.title}${event.year ?: ""}年｜${event.description}"), SearchDestination(0, reignTitle = reign.title, year = event.year, eventId = event.id)), eventText(reign.title, event)))
             }
         }
         repository.institutions().forEach { institution ->
@@ -237,19 +262,16 @@ private fun searchCatalog(repository: MingRepository, rawQuery: String): List<Se
                 .plus(institution.promotionTracks.flatMap { track -> listOf(track.title) + track.steps })
                 .plus(institution.reforms.flatMap { listOf(it.year, it.title, it.description) })
                 .joinToString(" ")
-            add(SearchResult("institution:${institution.id}", "机构", institution.name, text("${institution.category}｜${institution.function}"), searchable, SearchDestination(2, worldSection = "机构", worldCategory = institution.category)))
+            add(indexed(SearchResult("institution:${institution.id}", "机构", institution.name, text("${institution.category}｜${institution.function}"), SearchDestination(2, worldSection = "机构", worldCategory = institution.category)), searchable))
         }
         repository.specialItems().forEach { item ->
-            add(SearchResult("special:${item.id}", "典章", item.name, text("${item.category}｜${item.era}｜${item.description}"), "${item.name} ${item.category} ${item.era} ${item.description}", SearchDestination(2, worldSection = "典章", worldCategory = item.category)))
+            add(indexed(SearchResult("special:${item.id}", "典章", item.name, text("${item.category}｜${item.era}｜${item.description}"), SearchDestination(2, worldSection = "典章", worldCategory = item.category)), "${item.name} ${item.category} ${item.era} ${item.description}"))
         }
         repository.travelGuides().forEach { guide ->
             val searchable = listOf(guide.title, guide.category, guide.subtitle, guide.description)
                 .plus(guide.sections.map { it.title + " " + it.content })
                 .joinToString(" ")
-            add(SearchResult("guide:${guide.id}", "手册", guide.title, text("${guide.category}｜${guide.description}"), searchable, SearchDestination(3, guideId = guide.id)))
+            add(indexed(SearchResult("guide:${guide.id}", "手册", guide.title, text("${guide.category}｜${guide.description}"), SearchDestination(3, guideId = guide.id)), searchable))
         }
     }
-    return rankByFirstMatch(
-        results.map { result -> result to bestMatch(normalizeSearchText(result.haystack), query) },
-    ).take(80)
 }

@@ -62,15 +62,18 @@ internal fun toPinyin(raw: String): String {
     return sb.toString()
 }
 
+internal fun bestMatch(normalizedHaystack: String, normalizedQuery: String): MatchHit? =
+    bestMatch(normalizedHaystack, normalizedQuery, toPinyin(normalizedHaystack))
+
 /**
- * 双路匹配取更优命中：中文查询命中汉字文本、拼音查询（含中文查询转拼音）命中拼音文本，
- * 两条路线分别取首次命中，取位置更早者；位置相同取整词命中者；都未命中返回 null。
+ * 双路匹配取更优命中，拼音文本由调用方预计算传入。
+ * 与双参数版语义一致，但避免热路径（逐键检索）对整条文本重复做拼音转换。
  */
-internal fun bestMatch(normalizedHaystack: String, normalizedQuery: String): MatchHit? {
+internal fun bestMatch(normalizedHaystack: String, normalizedQuery: String, pinyinHaystack: String): MatchHit? {
     if (normalizedQuery.isEmpty()) return MatchHit(0, true)
     val hanHit = firstMatch(normalizedHaystack, normalizedQuery)
     val pyQuery = toPinyin(normalizedQuery).replace(" ", "")
-    val pyHit = if (pyQuery.isEmpty()) null else firstMatch(toPinyin(normalizedHaystack), pyQuery)
+    val pyHit = if (pyQuery.isEmpty()) null else firstMatch(pinyinHaystack, pyQuery)
     return listOfNotNull(hanHit, pyHit)
         .minWithOrNull(compareBy<MatchHit> { it.index }.thenBy { !it.exact })
 }
