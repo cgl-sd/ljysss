@@ -15,8 +15,8 @@ android {
         applicationId = "com.ljyss"
         minSdk = 24
         targetSdk = 37
-        versionCode = 10_002
-        versionName = "1.1.1"
+        versionCode = 10_003
+        versionName = "1.1.2"
 
         // 内容库独立于 App 版本发布。将 SQLite 内容指纹编入 BuildConfig，
         // 让设备上的私有副本在数据更新后自动替换，即使 versionCode 没有变化。
