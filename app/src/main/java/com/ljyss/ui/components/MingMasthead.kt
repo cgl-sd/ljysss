@@ -1,23 +1,25 @@
 package com.ljyss.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -29,36 +31,49 @@ import com.ljyss.ui.theme.Ink
 import com.ljyss.ui.theme.PaperLight
 import com.ljyss.ui.theme.Vermilion
 
-/** 书眉：以较小的藏书题签统摄四页，避免与各页主标题争夺视觉重心。 */
+/** 书眉：以较小的藏书题签统摄四页，避免与各页主标题争夺视觉重心。点击鼎与题名可拉出左侧功能侧栏。 */
 @Composable
-internal fun MingMasthead(onSearch: (() -> Unit)? = null) {
+internal fun MingMasthead(onSearch: (() -> Unit)? = null, onOpenMenu: (() -> Unit)? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
-            painter = painterResource(R.drawable.ding_map_emblem),
-            contentDescription = "两京一十三省的鼎形图标",
-            modifier = Modifier.size(32.dp),
-            contentScale = ContentScale.Fit,
-        )
-        Spacer(Modifier.width(8.dp))
-        Column {
-            Text(
-                text = "两京一十三省",
-                color = Ink,
-                fontFamily = FontFamily.Serif,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp,
+        val brandModifier = if (onOpenMenu != null) {
+            Modifier
+                .clip(CutCornerShape(6.dp))
+                .clickable(onClick = onOpenMenu)
+                .padding(horizontal = 4.dp, vertical = 3.dp)
+        } else {
+            Modifier
+        }
+        Row(
+            modifier = brandModifier,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ding_map_emblem),
+                contentDescription = "两京一十三省的鼎形图标",
+                modifier = Modifier.size(32.dp),
+                contentScale = ContentScale.Fit,
             )
-            Text(
-                text = "明代历史图录",
-                color = Vermilion,
-                fontFamily = FontFamily.Serif,
-                fontSize = 9.sp,
-                letterSpacing = 1.6.sp,
-            )
+            Spacer(Modifier.width(8.dp))
+            Column {
+                Text(
+                    text = "两京一十三省",
+                    color = Ink,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.2.sp,
+                )
+                Text(
+                    text = "明代历史图录",
+                    color = Vermilion,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 9.sp,
+                    letterSpacing = 1.6.sp,
+                )
+            }
         }
         if (onSearch != null) {
             Spacer(Modifier.weight(1f))

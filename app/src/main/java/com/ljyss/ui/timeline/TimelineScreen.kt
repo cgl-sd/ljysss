@@ -33,6 +33,7 @@ internal fun TimelineScreen(
     searchDestination: SearchDestination? = null,
     onSearchDestinationConsumed: () -> Unit = {},
     onSearch: () -> Unit = {},
+    onOpenMenu: () -> Unit = {},
 ) {
     val reigns = remember(repository) { repository.reigns() }
     val allPeople = remember(repository) { repository.allPeople() }
@@ -77,7 +78,7 @@ internal fun TimelineScreen(
             item { ArchiveEventProfile(selectedArchiveEvent, relations, onOpenPerson) }
         }
     } else MingList(contentPadding, state = archiveListState) {
-            item { MingMasthead(onSearch) }
+            item { MingMasthead(onSearch = onSearch, onOpenMenu = onOpenMenu) }
             item { OrnamentalTitle("岁月") }
             item {
                 ReignRail(reigns, selectedTitle) {

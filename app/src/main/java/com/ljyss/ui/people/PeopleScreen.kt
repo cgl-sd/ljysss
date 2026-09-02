@@ -74,6 +74,7 @@ internal fun PeopleScreen(
     onFocusConsumed: () -> Unit = {},
     onProfileExit: () -> Unit = {},
     onSearch: () -> Unit = {},
+    onOpenMenu: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(PeopleTab.PEOPLE) }
     var selectedCategory by rememberSaveable { mutableStateOf(PersonCategory.EMPERORS) }
@@ -306,7 +307,7 @@ internal fun PeopleScreen(
             }
             PeoplePage.LIST -> {
                 MingList(contentPadding, state = peopleListState) {
-                    item { MingMasthead(onSearch) }
+                    item { MingMasthead(onSearch = onSearch, onOpenMenu = onOpenMenu) }
                     item { OrnamentalTitle("人物") }
                     item {
                         PeopleTabRail(

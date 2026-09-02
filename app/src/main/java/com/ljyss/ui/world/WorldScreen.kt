@@ -82,6 +82,7 @@ internal fun WorldScreen(
     onSearchDestinationConsumed: () -> Unit = {},
     onSearch: () -> Unit = {},
     onOpenPerson: (String) -> Unit = {},
+    onOpenMenu: () -> Unit = {},
 ) {
     var worldSection by rememberSaveable { mutableStateOf(WorldSection.MAP) }
     val institutions = remember(repository) { repository.institutions() }
@@ -134,7 +135,7 @@ internal fun WorldScreen(
     MingList(contentPadding, state = worldListState) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                MingMasthead(onSearch)
+                MingMasthead(onSearch = onSearch, onOpenMenu = onOpenMenu)
                 OrnamentalTitle("天下")
                 WorldSectionRail(
                     selected = worldSection,
